@@ -15,6 +15,8 @@ class Block:
         self.vert_velocity = 0
         self.t_m = terrain_manager
         self.rect = pg.Rect(position[0], position[1], 10, 10)
+        self.quadtree = None
+        self.grounded = False
 
 
     def update(self, screen):
@@ -22,8 +24,12 @@ class Block:
         pg.draw.rect(surface=screen, color=(150,190,0), rect=self.rect)
 
     def move(self):
-        collisions = physics.check_collision(self.rect, self.t_m.block_rects)
+        if not self.quadtree or self.grounded:
+            return
+        neighboring_blocks = self.quadtree.get_neighbors()
+        collisions = physics.check_collision(self, neighboring_blocks)
         if collisions:
+            self.vert_velocity = 0
             return self.position
         if self.vert_velocity < physics.terminal_velocity:
             self.vert_velocity += (physics.gravity * self.move_speed)
