@@ -7,7 +7,7 @@ import pygame as pg
 gravity = 9.8
 terminal_velocity = 26
 display_res = []
-ground = 1100
+ground = 1400
 
 # to improve processing efficiency, divide screen into grid & only pass in blocks in same + neighboring grids
 # or, pass in any blocks that are within x distance of the block. WOuld involve looping thorugh all blocks

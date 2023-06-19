@@ -57,19 +57,20 @@ while game_running:
     screen.fill((0, 0, 0))
 
     # visualization
-    pg.draw.line(screen, (0, 0, 255), (0, 1100), (2400, 1100))  # Ground
+    pg.draw.line(screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
     for q in quadtrees:
         pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x + q.width, q.y))
         pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
 
     # timed functions
-    if timer > 60:
-        block = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(600, 900, 0, 200),
-                                terrain_manager=terrain_manager)[0]
+    if timer > 60 and timer < 600:
+        blocks = terrain_gen.gen_terrain(block_list=(5, Sand()), bounds=(100, 2200, 0, 200),
+                                terrain_manager=terrain_manager)
         # terrain_manager.blocks.extend(sand_blocks)
-        sand_blocks.append(block)
-        terrain_manager.blocks.append(block)
-        terrain_manager.block_rects.append(block.rect)
+        sand_blocks.extend(blocks)
+        terrain_manager.blocks.extend(blocks)
+        [terrain_manager.block_rects.extend(block.rect) for block in blocks]
+        [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in blocks]
 
 
 
@@ -78,6 +79,8 @@ while game_running:
 # TODO: Big slowdown occurs from this line:
    # [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in sand_blocks]
 
+    # Updated to this, fixes FPS. No longer have object list being cleared and recreated every frame
+    # Only blocks that leave their quadtree look for new ones.
     [physics.update_block_quadtree(block) for block in sand_blocks if block.collision_detection and block.quadtree]
 
     terrain_manager.update(screen)
@@ -87,6 +90,8 @@ while game_running:
     pg.event.pump()
     pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
 
+    col_blocks = [block for block in sand_blocks if block.collision_detection]
+    print(f'{str(len(sand_blocks))} sand blocks  /  {str(len(col_blocks))} col blocks')
 pg.quit()
 
 
