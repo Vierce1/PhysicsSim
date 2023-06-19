@@ -22,7 +22,7 @@ def check_collision(block, other_blocks: list) -> bool:
             block.grounded_timer += 1
             return True
     if block.rect.y + block.rect.height >= ground:  # block is at ground level, stop detecting collision
-        block.collision_detection = True
+        block.collision_detection = False
         return True
 
     return False

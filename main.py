@@ -17,8 +17,10 @@ game_running = True
 
 player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
-sand_blocks = terrain_gen.gen_terrain(block_list=(1000, Sand()), bounds=(100, 2000, 0, 1000),
+sand_blocks = terrain_gen.gen_terrain(block_list=(2000, Sand()), bounds=(100, 2000, 0, 1000),
                                       terrain_manager=terrain_manager)
+
+
 terrain_manager.blocks.extend(sand_blocks)
 block_rects = [block.rect for block in sand_blocks]
 terrain_manager.block_rects.extend(block_rects)
@@ -63,8 +65,8 @@ while game_running:
         pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
 
     # timed functions
-    if timer > 60 and timer < 600:
-        blocks = terrain_gen.gen_terrain(block_list=(5, Sand()), bounds=(100, 2200, 0, 200),
+    if timer > 60 and timer < 120:
+        blocks = terrain_gen.gen_terrain(block_list=(10, Sand()), bounds=(100, 2200, 0, 200),
                                 terrain_manager=terrain_manager)
         # terrain_manager.blocks.extend(sand_blocks)
         sand_blocks.extend(blocks)
