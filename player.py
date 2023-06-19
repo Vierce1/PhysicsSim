@@ -3,7 +3,7 @@ import pygame as pg
 class Player:
     def __init__(self):
         self.position = (100, 100)
-        self.move_speed = 0.35
+        self.move_speed = 10
 
     def update(self, events, screen):
         self.accept_input(events=events, screen=screen)

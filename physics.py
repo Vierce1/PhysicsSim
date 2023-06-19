@@ -17,11 +17,15 @@ def check_collision(block, rects: list[pg.Rect]) -> bool:
             continue
         # if block.colliderect(object):
         #     return True
-        if rect.top == block.rect.bottom and abs(rect.x - block.rect.x) < 10:
-                #and block.y > object.y:
+        # if rect.top == block.rect.bottom \
+        if abs(rect.top - block.rect.bottom) < rect.height * 0.25 \
+            and abs(rect.x - block.rect.x) < block.rect.width * 1.5:
+                #and block.y > object.y: # not needed?
+            # move the block back 1 frame so they aren't occluded
+            block.rect.y = rect.y - rect.height
             return True
-    if block.rect.y + block.rect.height >= ground:
-        block.grounded = True
+    if block.rect.y + block.rect.height >= ground:  # block is at ground level, stop detecting collision
+        block.collision_detection = True
         return True
 
     return False
