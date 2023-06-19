@@ -6,7 +6,7 @@ class Quadtree:
         self.y = y
         self.width = width
         self.height = height
-        self.objects = []  # rects stored inside this cell
+        self.objects = []  # BLOCKS stored inside this cell
         self.north = None
         self.south = None
         self.east = None

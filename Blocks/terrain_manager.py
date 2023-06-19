@@ -20,9 +20,19 @@ class Terrain_Manager:
 
 
 
+# improvement: 1 option = only calling this for blocks with collision_detection = True
+# option 2 = starting with the Quadtree and only passing in blocks that are close + collision detection
     def add_rect_to_quadtree(self, block, quadtrees: list[Quadtree]):
         for quadtree in quadtrees:
-            if block.rect.x <= quadtree.x + quadtree.width and block.rect.x >= quadtree.x \
-              and block.rect.y <= quadtree.y + quadtree.height and block.rect.y >= quadtree.y:
-                quadtree.objects.append(block.rect)
+            if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
+              and quadtree.y <= block.rect.centery <= quadtree.y + quadtree.height:
+                quadtree.objects.append(block)
                 block.quadtree = quadtree
+
+# This ended up being slightly slower:
+#     def add_rects_to_quadtree(self, quadtree: Quadtree, moving_blocks: list):
+#         for block in moving_blocks:
+#             if quadtree.x <= block.rect.x <= quadtree.x + quadtree.width \
+#               and quadtree.y <= block.rect.y <= quadtree.y + quadtree.height:
+#                     quadtree.objects.append(block.rect)
+#                     block.quadtree = quadtree

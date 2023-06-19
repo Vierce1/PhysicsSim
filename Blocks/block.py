@@ -16,10 +16,13 @@ class Block:
         self.t_m = terrain_manager
         self.rect = pg.Rect(position[0], position[1], 10, 10)
         self.quadtree = None
-        self.collision_detection = False  # starts off then when triggered begins detection
+        self.collision_detection = True  # starts off then when triggered begins detection
+        self.grounded_timer = 0
 
 
     def update(self, screen):
+        if self.grounded_timer == 20:
+            self.collision_detection = False
         self.position = self.move()
         pg.draw.rect(surface=screen, color=(150,190,0), rect=self.rect)
 
