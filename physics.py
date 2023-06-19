@@ -4,7 +4,7 @@ from Blocks import block
 import pygame as pg
 
 
-gravity = 9.8
+gravity = 3  # 9.8
 terminal_velocity = 26
 display_res = []
 ground = 1400
@@ -15,8 +15,8 @@ def check_collision(block, other_blocks: list) -> bool:
     for oth_block in other_blocks:
         if oth_block == block:
             continue
-        if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.y < oth_block.rect.y \
-                and -1 * oth_block.rect.width <= oth_block.rect.x - block.rect.x <= oth_block.rect.width:
+        if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
+                and -1 * oth_block.rect.width <= oth_block.rect.centerx - block.rect.centerx <= oth_block.rect.width:
             # move the block back 1 frame so they aren't occluded. Grid system will also help with this
             block.rect.bottom = oth_block.rect.top
             block.grounded_timer += 1

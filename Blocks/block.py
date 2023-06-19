@@ -16,7 +16,7 @@ class Block:
         self.t_m = terrain_manager
         self.rect = pg.Rect(position[0], position[1], 10, 10)
         self.quadtree = None
-        self.collision_detection = True  # starts off then when triggered begins detection
+        self.collision_detection = not type.rigid  # False for rigid = True blocks
         self.grounded_timer = 0
 
 
@@ -24,12 +24,14 @@ class Block:
         if self.grounded_timer == 20:
             self.collision_detection = False
         self.position = self.move()
-        pg.draw.rect(surface=screen, color=(150,190,0), rect=self.rect)
+        pg.draw.rect(surface=screen, color=self.type.color, rect=self.rect)
 
     def move(self):
         if not self.collision_detection or not self.quadtree:
             return
         neighboring_blocks = self.quadtree.get_neighbors()
+        if self.type.name == 'sand':
+            print(f'neighboring rock blocks = {str(len([b for b in neighboring_blocks if b.type == "rock"]))}')
         collisions = physics.check_collision(self, neighboring_blocks)
         if collisions:
             self.vert_velocity = 0

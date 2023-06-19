@@ -13,7 +13,7 @@ class Quadtree:
         self.west = None
         # print(str(self.x) + " .  " + str(self.y))
 
-    def get_neighbors(self) -> list[pg.Rect]:
+    def get_neighbors(self) -> list:  # list of blocks
         neighbors = []
         if self.north:
             neighbors.extend(self.north.objects)
