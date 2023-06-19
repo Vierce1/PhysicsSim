@@ -19,7 +19,7 @@ def check_collision(block, rects: list[pg.Rect]) -> bool:
         #     return True
         # if rect.top == block.rect.bottom \
         if abs(rect.top - block.rect.bottom) < rect.height * 0.25 \
-            and abs(rect.x - block.rect.x) < block.rect.width * 1.5:
+            and abs(rect.x - block.rect.x) < block.rect.width:
                 #and block.y > object.y: # not needed?
             # move the block back 1 frame so they aren't occluded
             block.rect.y = rect.y - rect.height

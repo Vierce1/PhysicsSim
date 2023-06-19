@@ -16,7 +16,7 @@ class Block:
         self.t_m = terrain_manager
         self.rect = pg.Rect(position[0], position[1], 10, 10)
         self.quadtree = None
-        self.collision_detection = False
+        self.collision_detection = False  # starts off then when triggered begins detection
 
 
     def update(self, screen):
@@ -24,7 +24,7 @@ class Block:
         pg.draw.rect(surface=screen, color=(150,190,0), rect=self.rect)
 
     def move(self):
-        if not self.quadtree or self.collision_detection:
+        if not self.collision_detection or not self.quadtree:
             return
         neighboring_blocks = self.quadtree.get_neighbors()
         collisions = physics.check_collision(self, neighboring_blocks)
