@@ -30,8 +30,8 @@ class Block:
         if not self.collision_detection or not self.quadtree:
             return
         neighboring_blocks = self.quadtree.get_neighbors()
-        if self.type.name == 'sand':
-            print(f'neighboring rock blocks = {str(len([b for b in neighboring_blocks if b.type == "rock"]))}')
+        # if self.type.name == 'sand':
+        #     print(f'neighboring rock blocks = {str(len([b for b in neighboring_blocks if b.type.name == "rock"]))}')
         collisions = physics.check_collision(self, neighboring_blocks)
         if collisions:
             self.vert_velocity = 0
@@ -39,6 +39,8 @@ class Block:
         if self.vert_velocity < physics.terminal_velocity:
             self.vert_velocity += (physics.gravity * self.move_speed)
         position = (self.position[0], self.position[1] + self.vert_velocity)
+        # self.rect = self.rect.move(position[0] - self.rect.x, position[1] - self.rect.y)
+#TODO: Which is more efficient?
         self.rect.left = position[0]
         self.rect.top = position[1]
         return position

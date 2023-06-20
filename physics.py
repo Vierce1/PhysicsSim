@@ -4,8 +4,8 @@ from Blocks import block
 import pygame as pg
 
 
-gravity = 3  # 9.8
-terminal_velocity = 26
+gravity = .3  # 9.8
+terminal_velocity = 10 # 26
 display_res = []
 ground = 1400
 
@@ -15,12 +15,16 @@ def check_collision(block, other_blocks: list) -> bool:
     for oth_block in other_blocks:
         if oth_block == block:
             continue
-        if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
-                and -1 * oth_block.rect.width <= oth_block.rect.centerx - block.rect.centerx <= oth_block.rect.width:
-            # move the block back 1 frame so they aren't occluded. Grid system will also help with this
-            block.rect.bottom = oth_block.rect.top
-            block.grounded_timer += 1
-            return True
+            #  and block.rect.centery < oth_block.rect.centery \
+        if block.rect.bottom - oth_block.rect.top <= 0 \
+            and -1 * oth_block.rect.width <= oth_block.rect.centerx - block.rect.centerx <= oth_block.rect.width:
+            # and -1 * oth_block.rect.width <= oth_block.rect.centerx - block.rect.centerx <= oth_block.rect.width:
+                # move the block back 1 frame so they aren't occluded. Grid system will also help with this
+        # had to remove this because it was bouncing blocks out of their quadtree
+                # block.rect.bottom = oth_block.rect.top
+                block.grounded_timer += 1
+                # print(f'collission timer {str(block.grounded_timer)}.')
+                return True
     if block.rect.y + block.rect.height >= ground:  # block is at ground level, stop detecting collision
         block.collision_detection = False
         return True
@@ -33,20 +37,24 @@ def update_block_quadtree(block):
     y_change = block.rect.centery - block.quadtree.y
     if x_change < 0 or x_change > block.quadtree.width \
         or y_change < 0 or y_change > block.quadtree.height:
-        return  # inside bounds of its quadtree. No change needed
-    else:  # no longer inside the quadtree. assign it to the new one
-        # block.quadtree.objects.remove(block)
-        block.quadtree.objects = [b for b in block.quadtree.objects if b != block]
-        if y_change < 0 and block.quadtree.south:  # assign south
+        # no longer inside the quadtree. assign it to the new one
+        block.quadtree.objects.remove(block)
+        # block.quadtree.objects = [b for b in block.quadtree.objects if b != block]
+
+        if y_change > 0 :  # assign south
+            print("assigning south. Quadtree origin = " + str(block.quadtree.x / block.quadtree.width) + "  /  " \
+                  + str(block.quadtree.y / block.quadtree.height))
             block.quadtree.south.objects.append(block)
             block.quadtree = block.quadtree.south
+            print('new block quadtree at ' + str(block.quadtree.y) + '  '
+                        '(position ' + str(block.quadtree.y / block.quadtree.height) + ')\n')
         elif x_change < 0 and block.quadtree.west:  # assign west
             block.quadtree.west.objects.append(block)
             block.quadtree = block.quadtree.west
         elif x_change > 0 and block.quadtree.east:  # assign east
             block.quadtree.east.objects.append(block)
             block.quadtree = block.quadtree.east
-        elif y_change > 0 and block.quadtree.north:  # assign north
+        elif y_change < 0 and block.quadtree.north:  # assign north
             block.quadtree.north.objects.append(block)
             block.quadtree = block.quadtree.north
 
