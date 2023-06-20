@@ -16,9 +16,8 @@ def check_collision(block, other_blocks: list) -> bool:
         if oth_block == block:
             continue
             #  and block.rect.centery < oth_block.rect.centery \
-        if block.rect.bottom - oth_block.rect.top <= 0 \
+        if block.rect.bottom - oth_block.rect.top >= 0 \
             and -1 * oth_block.rect.width <= oth_block.rect.centerx - block.rect.centerx <= oth_block.rect.width:
-            # and -1 * oth_block.rect.width <= oth_block.rect.centerx - block.rect.centerx <= oth_block.rect.width:
                 # move the block back 1 frame so they aren't occluded. Grid system will also help with this
         # had to remove this because it was bouncing blocks out of their quadtree
                 # block.rect.bottom = oth_block.rect.top
@@ -35,28 +34,23 @@ def check_collision(block, other_blocks: list) -> bool:
 def update_block_quadtree(block):
     x_change = block.rect.centerx - block.quadtree.x
     y_change = block.rect.centery - block.quadtree.y
+
     if x_change < 0 or x_change > block.quadtree.width \
         or y_change < 0 or y_change > block.quadtree.height:
         # no longer inside the quadtree. assign it to the new one
-        block.quadtree.objects.remove(block)
-        # block.quadtree.objects = [b for b in block.quadtree.objects if b != block]
-
-        if y_change > 0 :  # assign south
-            print("assigning south. Quadtree origin = " + str(block.quadtree.x / block.quadtree.width) + "  /  " \
-                  + str(block.quadtree.y / block.quadtree.height))
-            block.quadtree.south.objects.append(block)
-            block.quadtree = block.quadtree.south
-            print('new block quadtree at ' + str(block.quadtree.y) + '  '
-                        '(position ' + str(block.quadtree.y / block.quadtree.height) + ')\n')
-        elif x_change < 0 and block.quadtree.west:  # assign west
-            block.quadtree.west.objects.append(block)
-            block.quadtree = block.quadtree.west
-        elif x_change > 0 and block.quadtree.east:  # assign east
-            block.quadtree.east.objects.append(block)
-            block.quadtree = block.quadtree.east
-        elif y_change < 0 and block.quadtree.north:  # assign north
-            block.quadtree.north.objects.append(block)
-            block.quadtree = block.quadtree.north
+            block.quadtree.objects.remove(block)
+            if y_change > 0 :  # assign south
+                block.quadtree.south.objects.append(block)
+                block.quadtree = block.quadtree.south
+            elif x_change < 0 and block.quadtree.west:  # assign west
+                block.quadtree.west.objects.append(block)
+                block.quadtree = block.quadtree.west
+            elif x_change > 0 and block.quadtree.east:  # assign east
+                block.quadtree.east.objects.append(block)
+                block.quadtree = block.quadtree.east
+            elif y_change < 0 and block.quadtree.north:  # assign north
+                block.quadtree.north.objects.append(block)
+                block.quadtree = block.quadtree.north
 
 
 

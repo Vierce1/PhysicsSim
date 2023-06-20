@@ -31,7 +31,7 @@ class Block:
             return
         neighboring_blocks = self.quadtree.get_neighbors()
         # if self.type.name == 'sand':
-        #     print(f'neighboring rock blocks = {str(len([b for b in neighboring_blocks if b.type.name == "rock"]))}')
+        #      print(f'neighboring rock blocks = {str(len([b for b in neighboring_blocks if b.type.name == "rock"]))}')
         collisions = physics.check_collision(self, neighboring_blocks)
         if collisions:
             self.vert_velocity = 0
