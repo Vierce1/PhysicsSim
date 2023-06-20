@@ -14,7 +14,7 @@ class Block:
         self.move_speed = .03  # different blocks can fall different speeds
         self.vert_velocity = 0
         self.t_m = terrain_manager
-        self.rect = pg.Rect(position[0], position[1], 3, 3)
+        self.rect = pg.Rect(position[0], position[1], 20, 20)
         self.quadtree = None
         self.collision_detection = not type.rigid  # False for rigid=True blocks
         self.grounded_timer = 0
@@ -30,11 +30,10 @@ class Block:
         if not self.collision_detection or not self.quadtree:
             return
         neighboring_blocks = self.quadtree.get_neighbors()
-        # if self.type.name == 'sand':
-        #      print(f'neighboring rock blocks = {str(len([b for b in neighboring_blocks if b.type.name == "rock"]))}')
         collisions = physics.check_collision(self, neighboring_blocks)
-        if collisions:
+        if collisions:  # collided. Check if it should slide
             self.vert_velocity = 0
+
             return self.position
         if self.vert_velocity < physics.terminal_velocity:
             self.vert_velocity += (physics.gravity * self.move_speed)
