@@ -19,7 +19,7 @@ player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
 blocks = terrain_gen.gen_terrain(block_list=(1000, Sand()), bounds=(200, 1800, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(100, Rock()), bounds=(100, 2000, 750, 800),
+rocks = terrain_gen.gen_terrain(block_list=(3000, Rock()), bounds=(100, 2000, 750, 1800),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
 print(f'length of blocks = {str(len(blocks))}')
@@ -45,17 +45,6 @@ for quadtree in quadtrees:
     quadtree.east = next(iter([q for q in quadtrees if q.x == quadtree.x + q.width and q.y == quadtree.y]), None)
     quadtree.west = next(iter([q for q in quadtrees if q.x == quadtree.x - q.width and q.y == quadtree.y]), None)
 [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in blocks]
-# print(f'{str([round(q.north.x)  or "None" for q in quadtrees if q.north])}  ' \
-#       f'{str([round(q.north.y)  or "None" for q in quadtrees if q.north])} ')
-
-#
-# for q in quadtrees:
-#     for o in q.objects:
-#         if o.type.name == 'sand':
-#             print('original quad = ' + str(o.quadtree.x / o.quadtree.width) + "  /  " \
-#                   + str(o.quadtree.y / o.quadtree.height))
-#             print('block start y =  ' + str(o.rect.y))
-
 
 
 clock = time.Clock()
@@ -84,14 +73,14 @@ while game_running:
         pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
 
     # timed functions
-    # if timer > 60:
-    #     new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(100, 2200, 0, 200),
-    #                             terrain_manager=terrain_manager)
-    #     # terrain_manager.blocks.extend(blocks)
-    #     blocks.extend(new_blocks)
-    #     terrain_manager.blocks.extend(new_blocks)
-    #     [terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
-    #     [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in new_blocks]
+    if timer > 60:
+        new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(100, 2200, 0, 200),
+                                terrain_manager=terrain_manager)
+        # terrain_manager.blocks.extend(blocks)
+        blocks.extend(new_blocks)
+        terrain_manager.blocks.extend(new_blocks)
+        [terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
+        [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in new_blocks]
 
 
 
@@ -110,8 +99,6 @@ while game_running:
     pg.event.pump()
     pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
 
-    # col_blocks = [block for block in blocks if block.collision_detection]
-    # print(f'{str(len(blocks))} sand blocks  /  {str(len(col_blocks))} col blocks')
 pg.quit()
 
 
