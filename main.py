@@ -17,9 +17,9 @@ game_running = True
 
 player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
-blocks = terrain_gen.gen_terrain(block_list=(1000, Sand()), bounds=(200, 1800, 100, 600),
+blocks = terrain_gen.gen_terrain(block_list=(500, Sand()), bounds=(200, 1800, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(3000, Rock()), bounds=(100, 2000, 750, 1800),
+rocks = terrain_gen.gen_terrain(block_list=(10000, Rock()), bounds=(100, 2000, 800, 1000),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
 print(f'length of blocks = {str(len(blocks))}')
@@ -66,15 +66,15 @@ while game_running:
     # fill screen with black
     screen.fill((0, 0, 0))
 
-    # visualization
-    pg.draw.line(screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
-    for q in quadtrees:
-        pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x + q.width, q.y))
-        pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
+    # # visualization
+    # pg.draw.line(screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
+    # for q in quadtrees:
+    #     pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x + q.width, q.y))
+    #     pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
 
     # timed functions
     if timer > 60:
-        new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(100, 2200, 0, 200),
+        new_blocks = terrain_gen.gen_terrain(block_list=(10, Sand()), bounds=(100, 2200, 0, 200),
                                 terrain_manager=terrain_manager)
         # terrain_manager.blocks.extend(blocks)
         blocks.extend(new_blocks)

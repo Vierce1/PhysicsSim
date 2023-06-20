@@ -4,11 +4,12 @@ from Blocks import block
 import pygame as pg
 
 
-gravity = .1633
-terminal_velocity = 200000
+gravity = 2
+terminal_velocity = 200
 display_res = []
 ground = 1400
 collision_width = 0.25  # how far offset two blocks can be to still collide
+frames_til_grounded = 100  # how many frames a block must be stationary before being grounded
 
 # to improve processing efficiency, divide screen into grid & only pass in blocks in same + neighboring grids
 # or, pass in any blocks that are within x distance of the block. WOuld involve looping thorugh all blocks

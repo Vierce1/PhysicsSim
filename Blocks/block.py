@@ -14,14 +14,14 @@ class Block:
         self.move_speed = .03  # different blocks can fall different speeds
         self.vert_velocity = 0
         self.t_m = terrain_manager
-        self.rect = pg.Rect(position[0], position[1], 2, 2)
+        self.rect = pg.Rect(position[0], position[1], 3, 3)
         self.quadtree = None
         self.collision_detection = not type.rigid  # False for rigid=True blocks
         self.grounded_timer = 0
 
 
     def update(self, screen):
-        if self.grounded_timer == 100:
+        if self.grounded_timer == physics.frames_til_grounded:
             self.collision_detection = False
         self.position = self.move()
         pg.draw.rect(surface=screen, color=self.type.color, rect=self.rect)
