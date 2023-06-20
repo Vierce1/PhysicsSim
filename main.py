@@ -17,7 +17,7 @@ game_running = True
 
 player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
-blocks = terrain_gen.gen_terrain(block_list=(100, Sand()), bounds=(200, 1800, 100, 600),
+blocks = terrain_gen.gen_terrain(block_list=(1000, Sand()), bounds=(200, 1800, 100, 600),
                                       terrain_manager=terrain_manager)
 rocks = terrain_gen.gen_terrain(block_list=(100, Rock()), bounds=(100, 2000, 750, 800),
                                       terrain_manager=terrain_manager)

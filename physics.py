@@ -15,8 +15,7 @@ def check_collision(block, other_blocks: list) -> bool:
     for oth_block in other_blocks:
         if oth_block == block:
             continue
-            #  and block.rect.centery < oth_block.rect.centery \
-        if block.rect.bottom - oth_block.rect.top >= 0 \
+        if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
             and -1 * oth_block.rect.width <= oth_block.rect.centerx - block.rect.centerx <= oth_block.rect.width:
                 # move the block back 1 frame so they aren't occluded. Grid system will also help with this
         # had to remove this because it was bouncing blocks out of their quadtree
