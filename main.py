@@ -19,9 +19,9 @@ game_running = True
 
 player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
-blocks = terrain_gen.gen_terrain(block_list=(300, Sand()), bounds=(620, 780, 100, 600),
+blocks = terrain_gen.gen_terrain(block_list=(500, Sand()), bounds=(620, 780, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(800, Rock()), bounds=(600, 800, 800, 900),
+rocks = terrain_gen.gen_terrain(block_list=(1500, Rock()), bounds=(600, 800, 800, 900),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
 blocks.extend(terrain_gen.gen_terrain(block_list=(100, Rock()), bounds=(580, 599, 760, 800),
@@ -82,14 +82,14 @@ while game_running:
         pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
 
     # timed functions
-    # if timer > 60:
-    #     new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 0, 200),
-    #                             terrain_manager=terrain_manager)
-    #     # terrain_manager.blocks.extend(blocks)
-    #     blocks.extend(new_blocks)
-    #     terrain_manager.blocks.extend(new_blocks)
-    #     [terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
-    #     [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in new_blocks]
+    if timer > 60:
+        new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 0, 200),
+                                terrain_manager=terrain_manager)
+        # terrain_manager.blocks.extend(blocks)
+        blocks.extend(new_blocks)
+        terrain_manager.blocks.extend(new_blocks)
+        [terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
+        [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in new_blocks]
 
 
 
@@ -106,7 +106,7 @@ while game_running:
     # draw_area = render_image.get_rect().move(0, 0)
     # screen.blit(render_image, draw_area)  # blitting was slower
 
-    # player.update(events, screen)
+    player.update(events, screen)
 
     pg.event.pump()
     pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update

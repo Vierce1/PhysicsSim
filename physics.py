@@ -46,7 +46,7 @@ def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide
 
 def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
     for oth_block in other_blocks:
-        if side:
+        if left_side:
             return oth_block.rect.right == block.rect.left
         else:
             return oth_block.rect.left == block.rect.right
