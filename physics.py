@@ -32,33 +32,11 @@ def check_collision(block, other_blocks: list) -> bool:
     return False
 
 
-def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
-    # get relative x position of block
-    x_diff = block.rect.centerx - collided_block.rect.centerx
-    # incorporate the friction
-    if block.type.friction
-
-
-def update_block_quadtree(block):
-    x_change = block.rect.centerx - block.quadtree.x
-    y_change = block.rect.centery - block.quadtree.y
-
-    if x_change < 0 or x_change > block.quadtree.width \
-        or y_change < 0 or y_change > block.quadtree.height:
-        # no longer inside the quadtree. assign it to the new one
-            block.quadtree.objects.remove(block)
-            if y_change > 0 :  # assign south
-                block.quadtree.south.objects.append(block)
-                block.quadtree = block.quadtree.south
-            elif x_change < 0 and block.quadtree.west:  # assign west
-                block.quadtree.west.objects.append(block)
-                block.quadtree = block.quadtree.west
-            elif x_change > 0 and block.quadtree.east:  # assign east
-                block.quadtree.east.objects.append(block)
-                block.quadtree = block.quadtree.east
-            elif y_change < 0 and block.quadtree.north:  # assign north
-                block.quadtree.north.objects.append(block)
-                block.quadtree = block.quadtree.north
+# def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
+#     # get relative x position of block
+#     x_diff = block.rect.centerx - collided_block.rect.centerx
+#     # incorporate the friction
+#     if block.type.friction
 
 
 

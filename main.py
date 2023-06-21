@@ -19,7 +19,7 @@ player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
 blocks = terrain_gen.gen_terrain(block_list=(300, Sand()), bounds=(200, 1800, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(50, Rock()), bounds=(100, 2000, 800, 805),
+rocks = terrain_gen.gen_terrain(block_list=(50, Rock()), bounds=(100., 2000, 800, 805),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
 print(f'length of blocks = {str(len(blocks))}')
@@ -28,9 +28,9 @@ terrain_manager.blocks.extend(blocks)
 block_rects = [block.rect for block in blocks]
 terrain_manager.block_rects.extend(block_rects)
 
-# Initial load time goes up with more cells, but FPS better
-y_count = 20 # 50
-x_count = 32 # 80
+# Initial load time goes up with more cells, but fps is better
+y_count = round(display_resolution[1] / 45)  #45) # 72
+x_count = round(display_resolution[0] / 50) #50) # 80
 # The quadtrees are slowing it down. More quadtrees = slower
 width = display_resolution[0] / x_count
 height = display_resolution[1] / y_count
@@ -49,11 +49,12 @@ for quadtree in quadtrees:
 
 clock = time.Clock()
 timer = 0
-
+# bliting slowed down by 30%+. Drawing directly on screen faster
+# render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
 
 print('\n\nGame Loaded')
 while game_running:
-    clock.tick(60)
+    clock.tick(999)
     timer += 1
     print(f'fps: {str(round(clock.get_fps()))}')
 
@@ -64,17 +65,18 @@ while game_running:
             game_running = False
 
     # fill screen with black
+    # render_image.fill((0, 0, 0))
     screen.fill((0, 0, 0))
 
     # # visualization
-    # pg.draw.line(screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
-    # for q in quadtrees:
-    #     pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x + q.width, q.y))
-    #     pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
+    pg.draw.line(screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
+    for q in quadtrees:
+        pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x + q.width, q.y))
+        pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
 
     # timed functions
     if timer > 60:
-        new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(100, 2200, 0, 200),
+        new_blocks = terrain_gen.gen_terrain(block_list=(2, Sand()), bounds=(100, 2200, 0, 200),
                                 terrain_manager=terrain_manager)
         # terrain_manager.blocks.extend(blocks)
         blocks.extend(new_blocks)
@@ -90,11 +92,14 @@ while game_running:
 
     # Updated to this, fixes FPS. No longer have object list being cleared and recreated every frame
     # Only blocks that leave their quadtree look for new ones.
-    [physics.update_block_quadtree(block) for block in blocks if block.collision_detection] # and block.quadtree
+    [terrain_manager.update_block_quadtree(block=block) for block in blocks if block.collision_detection] # and block.quadtree
 
-    terrain_manager.update(screen)
+    terrain_manager.update(screen=screen)
+    # render_image.convert()  # optimize image after drawing on it
+    # draw_area = render_image.get_rect().move(0, 0)
+    # screen.blit(render_image, draw_area)  # blitting was slower
 
-    player.update(events, screen)
+    # player.update(events, screen)
 
     pg.event.pump()
     pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update

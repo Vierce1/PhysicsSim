@@ -16,7 +16,7 @@ class Terrain_Manager:
 
     def update(self, screen):
         for block in self.blocks:
-            block.update(screen)
+            block.update(screen=screen)
 
 
 
@@ -36,3 +36,29 @@ class Terrain_Manager:
 #               and quadtree.y <= block.rect.y <= quadtree.y + quadtree.height:
 #                     quadtree.objects.append(block.rect)
 #                     block.quadtree = quadtree
+
+
+    def update_block_quadtree(self, block):
+        x_change = block.rect.centerx - block.quadtree.x
+        y_change = block.rect.centery - block.quadtree.y
+
+        if x_change < 0 or x_change > block.quadtree.width \
+            or y_change < 0 or y_change > block.quadtree.height:
+            # no longer inside the quadtree. assign it to the new one
+                try:
+                    block.quadtree.objects.remove(block)
+                except:
+                    block.quadtree.objects = [b for b in block.quadtree.objects if b != block]
+                if y_change > 0 and block.quadtree.south:  # assign south
+                    block.quadtree.south.objects.append(block)
+                    block.quadtree = block.quadtree.south
+                elif x_change < 0 and block.quadtree.west:  # assign west
+                    block.quadtree.west.objects.append(block)
+                    block.quadtree = block.quadtree.west
+                elif x_change > 0 and block.quadtree.east:  # assign east
+                    block.quadtree.east.objects.append(block)
+                    block.quadtree = block.quadtree.east
+                elif y_change < 0 and block.quadtree.north:  # assign north
+                    block.quadtree.north.objects.append(block)
+                    block.quadtree = block.quadtree.north
+
