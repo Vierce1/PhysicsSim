@@ -16,6 +16,7 @@ class Terrain_Manager:
 
     def update(self, screen):
         for block in self.blocks:
+
             block.update(screen=screen)
 
 

@@ -1,5 +1,6 @@
 import pygame as pg
 from pygame import time
+from pygame.locals import *
 from player import Player
 import Blocks
 from Blocks.block import Block
@@ -11,6 +12,7 @@ from quadtree import Quadtree
 
 pg.init()
 display_resolution = [2560, 1440]
+flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
 screen = pg.display.set_mode(display_resolution)
 physics.display_res = display_resolution
 game_running = True
@@ -55,10 +57,11 @@ clock = time.Clock()
 timer = 0
 # bliting slowed down by 30%+. Drawing directly on screen faster
 # render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
+pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.KEYUP]) # limit allowed events we have to check for every frame
 
 print('\n\nGame Loaded')
 while game_running:
-    clock.tick(60)
+    clock.tick(999)
     timer += 1
     print(f'fps: {str(round(clock.get_fps()))}')
 
@@ -79,14 +82,14 @@ while game_running:
         pg.draw.line(screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
 
     # timed functions
-    if timer > 60:
-        new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 0, 200),
-                                terrain_manager=terrain_manager)
-        # terrain_manager.blocks.extend(blocks)
-        blocks.extend(new_blocks)
-        terrain_manager.blocks.extend(new_blocks)
-        [terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
-        [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in new_blocks]
+    # if timer > 60:
+    #     new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 0, 200),
+    #                             terrain_manager=terrain_manager)
+    #     # terrain_manager.blocks.extend(blocks)
+    #     blocks.extend(new_blocks)
+    #     terrain_manager.blocks.extend(new_blocks)
+    #     [terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
+    #     [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in new_blocks]
 
 
 
@@ -107,6 +110,8 @@ while game_running:
 
     pg.event.pump()
     pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
+    # blocks_update = [block.rect for block in blocks]  # slower and would need to also clear the prev. space
+    # pg.display.update(blocks_update)
 
 pg.quit()
 

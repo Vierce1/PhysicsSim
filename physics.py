@@ -38,13 +38,18 @@ def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide
     # incorporate the friction to determine if it slides off
     if x_diff > block.type.friction:
         return 1
-    elif x_diff * -1 < block.type.friction:
+    elif x_diff < block.type.friction * -1:
         return -1
     else:
         return 0
 
 
-def check_collision(block, other_blocks: list, side: (int, int)) -> bool:
+def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
+    for oth_block in other_blocks:
+        if side:
+            return oth_block.rect.right == block.rect.left
+        else:
+            return oth_block.rect.left == block.rect.right
 
 
 

@@ -15,10 +15,11 @@ class Block:
         self.vert_velocity = 0
         self.horiz_velocity = 0
         self.t_m = terrain_manager
-        self.rect = pg.Rect(position[0], position[1], 5, 5)
+        self.rect = pg.Rect(position[0], position[1], 6,6)
         self.quadtree = None
         self.collision_detection = not type.rigid  # False for rigid=True blocks
         self.grounded_timer = 0
+        self.neighboring_blocks = []
 
 
     def update(self, screen):
@@ -32,7 +33,7 @@ class Block:
         if not self.collision_detection or not self.quadtree:
             self.horiz_velocity = 0
             return self.position
-        neighboring_blocks = self.quadtree.get_neighbors()
+        self.neighboring_blocks = self.quadtree.get_neighbors()
         collision = physics.check_down_collision(self, neighboring_blocks)
         if collision:  # collided. Check if it should slide to either side
             self.vert_velocity = 0
@@ -40,9 +41,7 @@ class Block:
             if type(collision) is Block and collision.vert_velocity == 0:
                 slide = physics.check_slide(self, collision)
                 # check if there is a block in the way to stop sliding that direction
-                stop_slide = physics.check_collision(self, neighboring_blocks, (slide, 0))
-                self.horiz_velocity += slide * self.rect.width / 20
-                # position = (self.position[0] + self.horiz_velocity, self.position[1])
+                self.horiz_velocity = slide * self.rect.width / 20
             return self.position
         if self.vert_velocity < physics.terminal_velocity:
             self.vert_velocity += (physics.gravity * self.move_speed)
@@ -56,6 +55,10 @@ class Block:
     def slide(self):
         if self.vert_velocity != 0 or self.grounded_timer > physics.frames_til_grounded:
             return self.position
+        if physics.check_side_collision(self, self.neighboring_blocks, self.horiz_velocity < 0):
+            self.horiz_velocity = 0
+            return self.position
+        # not blocked to the side trying to slide
         position = (self.position[0] + self.horiz_velocity, self.position[1])
         self.rect.left = position[0]
         self.rect.top = position[1]
