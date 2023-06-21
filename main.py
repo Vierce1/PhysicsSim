@@ -19,9 +19,13 @@ player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
 blocks = terrain_gen.gen_terrain(block_list=(300, Sand()), bounds=(620, 780, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(1000, Rock()), bounds=(600, 800, 800, 900),
+rocks = terrain_gen.gen_terrain(block_list=(800, Rock()), bounds=(600, 800, 800, 900),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
+blocks.extend(terrain_gen.gen_terrain(block_list=(100, Rock()), bounds=(580, 599, 760, 800),
+                                      terrain_manager=terrain_manager))
+blocks.extend(terrain_gen.gen_terrain(block_list=(100, Rock()), bounds=(801, 820, 760, 800),
+                                      terrain_manager=terrain_manager))
 print(f'length of blocks = {str(len(blocks))}')
 
 terrain_manager.blocks.extend(blocks)

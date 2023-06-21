@@ -33,13 +33,14 @@ class Block:
             self.horiz_velocity = 0
             return self.position
         neighboring_blocks = self.quadtree.get_neighbors()
-        collision = physics.check_collision(self, neighboring_blocks)
+        collision = physics.check_down_collision(self, neighboring_blocks)
         if collision:  # collided. Check if it should slide to either side
             self.vert_velocity = 0
 #TODO: is this causing slowdowns?
-            if type(collision) is Block:
-            # if isinstance(collision, Block):
+            if type(collision) is Block and collision.vert_velocity == 0:
                 slide = physics.check_slide(self, collision)
+                # check if there is a block in the way to stop sliding that direction
+                stop_slide = physics.check_collision(self, neighboring_blocks, (slide, 0))
                 self.horiz_velocity += slide * self.rect.width / 20
                 # position = (self.position[0] + self.horiz_velocity, self.position[1])
             return self.position

@@ -9,10 +9,10 @@ terminal_velocity = 200
 display_res = []
 ground = 1400
 collision_width = 0.25  # how far offset two blocks can be to still collide
-frames_til_grounded = 60 # 100  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 80 # 100  # how many frames a block must be stationary before being grounded
 
 # to improve processing efficiency, divide screen into quadtrees & only pass in blocks in same + neighboring quadtrees
-def check_collision(block, other_blocks: list):  # -> Block or bool
+def check_down_collision(block, other_blocks: list):  # -> Block or bool
     for oth_block in other_blocks:
         if oth_block == block:
             continue
@@ -43,6 +43,8 @@ def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide
     else:
         return 0
 
+
+def check_collision(block, other_blocks: list, side: (int, int)) -> bool:
 
 
 
