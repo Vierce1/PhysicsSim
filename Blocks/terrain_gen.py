@@ -20,8 +20,12 @@ def gen_terrain(block_list: (int, Block_Type), bounds: (int, int, int, int),
 def get_random_coords(x_bounds: (int, int), y_bounds: (int, int), prev_blocks: list[Block]):
     coord_x = random.randrange(x_bounds[0], x_bounds[1])
     coord_y = random.randrange(y_bounds[0], y_bounds[1])
+    loop_break = 0
     while len([b for b in prev_blocks if abs(b.rect.x - coord_x) < b.rect.width
                 and abs(b.rect.y - coord_y) < b.rect.height]) > 0:
         coord_x = random.randrange(x_bounds[0], x_bounds[1])
         coord_y = random.randrange(y_bounds[0], y_bounds[1])
+        loop_break += 1
+        if loop_break > 20:
+            break
     return coord_x, coord_y

@@ -36,9 +36,11 @@ class Block:
         collision = physics.check_collision(self, neighboring_blocks)
         if collision:  # collided. Check if it should slide to either side
             self.vert_velocity = 0
-            if isinstance(collision, Block):
+#TODO: is this causing slowdowns?
+            if type(collision) is Block:
+            # if isinstance(collision, Block):
                 slide = physics.check_slide(self, collision)
-                self.horiz_velocity += slide
+                self.horiz_velocity += slide * self.rect.width / 20
                 # position = (self.position[0] + self.horiz_velocity, self.position[1])
             return self.position
         if self.vert_velocity < physics.terminal_velocity:
@@ -51,7 +53,7 @@ class Block:
         return position
 
     def slide(self):
-        if self.vert_velocity != 0:
+        if self.vert_velocity != 0 or self.grounded_timer > physics.frames_til_grounded:
             return self.position
         position = (self.position[0] + self.horiz_velocity, self.position[1])
         self.rect.left = position[0]

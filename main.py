@@ -17,9 +17,9 @@ game_running = True
 
 player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
-blocks = terrain_gen.gen_terrain(block_list=(300, Sand()), bounds=(200, 1800, 100, 600),
+blocks = terrain_gen.gen_terrain(block_list=(300, Sand()), bounds=(620, 780, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(1000, Rock()), bounds=(100, 2000, 800, 900),
+rocks = terrain_gen.gen_terrain(block_list=(1000, Rock()), bounds=(600, 800, 800, 900),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
 print(f'length of blocks = {str(len(blocks))}')
@@ -76,7 +76,7 @@ while game_running:
 
     # timed functions
     if timer > 60:
-        new_blocks = terrain_gen.gen_terrain(block_list=(2, Sand()), bounds=(100, 2200, 0, 200),
+        new_blocks = terrain_gen.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 0, 200),
                                 terrain_manager=terrain_manager)
         # terrain_manager.blocks.extend(blocks)
         blocks.extend(new_blocks)
