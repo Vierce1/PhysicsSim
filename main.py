@@ -17,16 +17,15 @@ screen = pg.display.set_mode(display_resolution)
 physics.display_res = display_resolution
 game_running = True
 
-player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
 blocks = terrain_gen.gen_terrain(block_list=(500, Sand()), bounds=(620, 780, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(1500, Rock()), bounds=(600, 800, 800, 900),
+rocks = terrain_gen.gen_terrain(block_list=(800, Rock()), bounds=(600, 800, 800, 900),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
-blocks.extend(terrain_gen.gen_terrain(block_list=(100, Rock()), bounds=(580, 599, 760, 800),
+blocks.extend(terrain_gen.gen_terrain(block_list=(60, Rock()), bounds=(580, 599, 760, 800),
                                       terrain_manager=terrain_manager))
-blocks.extend(terrain_gen.gen_terrain(block_list=(100, Rock()), bounds=(801, 820, 760, 800),
+blocks.extend(terrain_gen.gen_terrain(block_list=(600, Rock()), bounds=(801, 820, 760, 800),
                                       terrain_manager=terrain_manager))
 print(f'length of blocks = {str(len(blocks))}')
 
@@ -52,6 +51,7 @@ for quadtree in quadtrees:
     quadtree.west = next(iter([q for q in quadtrees if q.x == quadtree.x - q.width and q.y == quadtree.y]), None)
 [terrain_manager.add_rect_to_quadtree(block, quadtrees) for block in blocks]
 
+player = Player(quadtrees=quadtrees)
 
 clock = time.Clock()
 timer = 0
