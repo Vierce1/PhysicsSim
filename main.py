@@ -19,7 +19,7 @@ player = Player()
 terrain_manager = terrain_manager.Terrain_Manager()
 blocks = terrain_gen.gen_terrain(block_list=(300, Sand()), bounds=(200, 1800, 100, 600),
                                       terrain_manager=terrain_manager)
-rocks = terrain_gen.gen_terrain(block_list=(50, Rock()), bounds=(100., 2000, 800, 805),
+rocks = terrain_gen.gen_terrain(block_list=(1000, Rock()), bounds=(100, 2000, 800, 900),
                                       terrain_manager=terrain_manager)
 blocks.extend(rocks)
 print(f'length of blocks = {str(len(blocks))}')
@@ -54,7 +54,7 @@ timer = 0
 
 print('\n\nGame Loaded')
 while game_running:
-    clock.tick(999)
+    clock.tick(60)
     timer += 1
     print(f'fps: {str(round(clock.get_fps()))}')
 

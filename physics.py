@@ -12,7 +12,7 @@ collision_width = 0.25  # how far offset two blocks can be to still collide
 frames_til_grounded = 100  # how many frames a block must be stationary before being grounded
 
 # to improve processing efficiency, divide screen into quadtrees & only pass in blocks in same + neighboring quadtrees
-def check_collision(block, other_blocks: list) -> bool:
+def check_collision(block, other_blocks: list):  # -> Block or bool
     for oth_block in other_blocks:
         if oth_block == block:
             continue
@@ -24,19 +24,24 @@ def check_collision(block, other_blocks: list) -> bool:
         # had to remove this because it was bouncing blocks out of their quadtree
                 # block.rect.bottom = oth_block.rect.top
                 block.grounded_timer += 1
-                return True
+                return oth_block
     if block.rect.y + block.rect.height >= ground:  # block is at ground level, stop detecting collision
-        block.collision_detection = False
+        block.collision_detection = None
         return True
 
-    return False
+    return None
 
 
-# def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
-#     # get relative x position of block
-#     x_diff = block.rect.centerx - collided_block.rect.centerx
-#     # incorporate the friction
-#     if block.type.friction
+def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
+    # get relative x position of block against the collided block
+    x_diff = block.rect.centerx - collided_block.rect.centerx
+    # incorporate the friction to determine if it slides off
+    if x_diff > block.type.friction:
+        return 1
+    elif x_diff * -1 < block.type.friction:
+        return -1
+    else:
+        return 0
 
 
 
