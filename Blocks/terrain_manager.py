@@ -8,10 +8,10 @@ import pygame as pg
 
 class Terrain_Manager:
     def __init__(self):
-        pass
+        self.blocks = []
+        self.block_rects = []
 
-    blocks = []
-    block_rects = []
+
 
 
     def update(self, screen):
