@@ -15,6 +15,12 @@ class Game:
         self.display_resolution = display_resolution
         self.screen = screen
         self.quadtrees = []
+        # Initial load time goes up with more cells, but fps is better
+        self.y_count = round(self.display_resolution[1] / 45)  # 45) # 72
+        self.x_count = round(self.display_resolution[0] / 50)  # 50) # 80
+        # The quadtrees are slowing it down. More quadtrees = slower
+        self.width = self.display_resolution[0] / self.x_count
+        self.height = self.display_resolution[1] / self.y_count
 
 
     def setup(self):
@@ -34,16 +40,15 @@ class Game:
         block_rects = [block.rect for block in self.blocks]
         self.terrain_manager.block_rects.extend(block_rects)
 
-        # Initial load time goes up with more cells, but fps is better
-        y_count = round(self.display_resolution[1] / 45)  # 45) # 72
-        x_count = round(self.display_resolution[0] / 50)  # 50) # 80
-        # The quadtrees are slowing it down. More quadtrees = slower
-        width = self.display_resolution[0] / x_count
-        height = self.display_resolution[1] / y_count
-        for y in range(y_count):
-            for x in range(x_count):
+
+        for y in range(self.y_count):
+            for x in range(self.x_count):
                 # order of appending doesn't matter, what matters is how blocks get added
-                self.quadtrees.append(Quadtree(x * width, y * height, width, height))
+                self.quadtrees.append(Quadtree(x * self.width, y * self.height, self.width, self.height))
+
+        # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
+        self.terrain_manager.organize_trees(quadtrees=self.quadtrees)
+
         for quadtree in self.quadtrees:
             quadtree.north = \
                 next(iter([q for q in self.quadtrees if q.y == quadtree.y - q.height and q.x == quadtree.x]),
@@ -57,11 +62,10 @@ class Game:
             quadtree.west = \
                 next(iter([q for q in self.quadtrees if q.x == quadtree.x - q.width and q.y == quadtree.y]),
                                  None)
-        [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees) for block in self.blocks]
+        [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees, self.y_count, self.x_count)
+                for block in self.blocks]
 
         self.player = Player(quadtrees=self.quadtrees)
-        # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
-        self.terrain_manager.organize_trees(quadtrees=self.quadtrees)
 
 
     def update(self, timer: int, events: list[pg.event.Event]):
@@ -72,18 +76,20 @@ class Game:
         # # visualization
         pg.draw.line(self.screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
         for q in self.quadtrees:
-            pg.draw.line(self.screen, (255, 255, 255), (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.screen, (255, 255, 255), (q.x, q.y), (q.x, q.y - q.height))
+            color = (255, 255, 255) if len(q.objects) == 0 else (255, 0, 0)
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
 
         # timed functions
-        if timer > 60:
-            new_blocks = tg.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 0, 200),
-                                                 terrain_manager=self.terrain_manager)
-            # terrain_manager.blocks.extend(blocks)
-            self.blocks.extend(new_blocks)
-            self.terrain_manager.blocks.extend(new_blocks)
-            [self.terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
-            [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees) for block in new_blocks]
+        # if timer > 60:
+        #     new_blocks = tg.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 0, 200),
+        #                                          terrain_manager=self.terrain_manager)
+        #     # terrain_manager.blocks.extend(blocks)
+        #     self.blocks.extend(new_blocks)
+        #     self.terrain_manager.blocks.extend(new_blocks)
+        #     [self.terrain_manager.block_rects.extend(block.rect) for block in new_blocks]
+        #     [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees, self.y_count, self.x_count)
+        #             for block in new_blocks]
 
         # TODO: Big slowdown occurs from this method:
         # [q.objects.clear() for q in quadtrees if len(q.objects) > 0]

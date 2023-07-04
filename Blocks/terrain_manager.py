@@ -5,6 +5,7 @@ import Blocks.block_type
 from Blocks import block
 from quadtree import Quadtree
 import pygame as pg
+import math
 
 class Terrain_Manager:
     def __init__(self):
@@ -31,7 +32,8 @@ class Terrain_Manager:
 
 # improvement: 1 option = only calling this for blocks with collision_detection = True
 # option 2 = starting with the Quadtree and only passing in blocks that are close + collision detection
-    def add_rect_to_quadtree(self, block, quadtrees: list[Quadtree]):
+    def add_rect_to_quadtree(self, block, quadtrees: list[Quadtree], y_count: int, x_count: int):
+        # Only called on block spawn.
         # Instead of iterating I should just do an equation that rounds the position of the block and
         # applies that to the proper quadtree
         # Arrange the quadtrees into a 2d array and convert real-x real-y to the array indices
@@ -40,8 +42,12 @@ class Terrain_Manager:
               and quadtree.y <= block.rect.centery <= quadtree.y + quadtree.height:
                 quadtree.objects.append(block)
                 block.quadtree = quadtree
-
-        block_x = block.rect.centerx
+        # new method: place blocks in tree based on x,y and self.tree_org indices
+        # x_index = math.floor(block.rect.centerx / x_count)
+        # y_index = math.floor(block.rect.centery / y_count)
+        # tree = self.tree_org[y_index][x_index]
+        # tree.objects.append(block)
+        # block.quadtree = tree
 
 
 
