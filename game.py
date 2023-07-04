@@ -16,8 +16,10 @@ class Game:
         self.screen = screen
         self.quadtrees = []
         # Initial load time goes up with more cells, but fps is better
-        self.y_count = round(self.display_resolution[1] / 45)  # 45) # 72
-        self.x_count = round(self.display_resolution[0] / 50)  # 50) # 80
+        # Having a huge number of trees decreases FPS but reduces impact of collision.
+#TODO:  Figure out a way to have large number of trees w/out impacting (non-collision-based) fps
+        self.y_count = round(self.display_resolution[1] / 18)  # 45) # 72
+        self.x_count = round(self.display_resolution[0] / 20)  # 50) # 80
         # The quadtrees are slowing it down. More quadtrees = slower
         self.width = self.display_resolution[0] / self.x_count
         self.height = self.display_resolution[1] / self.y_count
@@ -97,8 +99,8 @@ class Game:
 
         # Updated to this, fixes FPS. No longer have object list being cleared and recreated every frame
         # Only blocks that leave their quadtree look for new ones.
-        [self.terrain_manager.update_block_quadtree(block=block) for block in self.blocks if
-         block.collision_detection]  # and block.quadtree
+        [self.terrain_manager.update_block_quadtree(block=block)
+            for block in self.blocks if block.collision_detection]  # and block.quadtree
 
         self.terrain_manager.update(screen=self.screen)
         # render_image.convert()  # optimize image after drawing on it

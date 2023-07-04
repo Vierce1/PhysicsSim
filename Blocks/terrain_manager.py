@@ -52,7 +52,16 @@ class Terrain_Manager:
 
 
 
-    def update_block_quadtree(self, block):
+    def update_block_quadtree(self, block) -> None:  #, y_count: int, x_count: int
+        # slower :(   32 fps lowest vs 39 fps
+        # block.quadtree.objects.remove(block)
+        # x_index = math.floor(block.rect.centerx / x_count)
+        # y_index = math.floor(block.rect.centery / y_count)
+        # tree = self.tree_org[y_index][x_index]
+        # tree.objects.append(block)
+        # block.quadtree = tree
+        # return
+
         x_change = block.rect.centerx - block.quadtree.x
         y_change = block.rect.centery - block.quadtree.y
 
