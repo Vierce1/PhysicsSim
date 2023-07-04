@@ -39,7 +39,7 @@ class Terrain_Manager:
         # Arrange the quadtrees into a 2d array and convert real-x real-y to the array indices
         for quadtree in quadtrees:
             if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
-              and quadtree.y <= block.rect.centery <= quadtree.y + quadtree.height:
+              and quadtree.y >= block.rect.centery >= quadtree.y - quadtree.height:
                 quadtree.objects.append(block)
                 block.quadtree = quadtree
         # new method: place blocks in tree based on x,y and self.tree_org indices
