@@ -9,39 +9,51 @@ import math
 
 class Terrain_Manager:
     def __init__(self):
+        self.quadtrees = []
         self.blocks = []
         self.block_rects = []
         # 2d array representing the spatials organization of the quadtrees. Used to quickly assess block location
         self.tree_org = []
+        # New idea: first block that builds quadtree nieghbors sends the list here
+        self.q_neighbors = dict()
 
-    def organize_trees(self, quadtrees: list[Quadtree]):
-        for tree in quadtrees:
-            if tree.x == 0.0:
-                self.tree_org.append([])
-            self.tree_org[-1].append(tree)
-        # trees now arranged in 2d array of size y_count * x_count
+    # def organize_trees(self, quadtrees: list[Quadtree]):
+    #     for tree in quadtrees:
+    #         if tree.x == 0.0:
+    #             self.tree_org.append([])
+    #         self.tree_org[-1].append(tree)
+    #     # trees now arranged in 2d array of size y_count * x_count
 
 
 
     def update(self, screen):
-        for block in self.blocks:
+        # [q.neighbors.clear() for q in self.quadtrees if len(q.neighbors) > 0]  # clear neighbors to begin building new list
+        # Updated to this, fixes FPS. No longer have object list being cleared and recreated every frame
+        # Only blocks that leave their quadtree look for new ones.
+        [self.update_block_quadtree(block=block)
+         for block in self.blocks if block.collision_detection]  # and block.quadtree
 
+        for block in self.blocks:
             block.update(screen=screen)
 
 
 
-# improvement: 1 option = only calling this for blocks with collision_detection = True
-# option 2 = starting with the Quadtree and only passing in blocks that are close + collision detection
+    def update_neighbors(self, quadtree):
+        if quadtree in self.q_neighbors:
+            return self.q_neighbors[quadtree]
+        neighbors = quadtree.get_neighbors()
+        self.q_neighbors[quadtree] = neighbors
+        return neighbors
+
+
     def add_rect_to_quadtree(self, block, quadtrees: list[Quadtree], y_count: int, x_count: int):
-        # Only called on block spawn.
-        # Instead of iterating I should just do an equation that rounds the position of the block and
-        # applies that to the proper quadtree
-        # Arrange the quadtrees into a 2d array and convert real-x real-y to the array indices
+        # Only called on block spawn
         for quadtree in quadtrees:
             if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
               and quadtree.y >= block.rect.centery >= quadtree.y - quadtree.height:
                 quadtree.objects.append(block)
                 block.quadtree = quadtree
+            self.quadtrees.append(quadtree)
         # new method: place blocks in tree based on x,y and self.tree_org indices
         # x_index = math.floor(block.rect.centerx / x_count)
         # y_index = math.floor(block.rect.centery / y_count)
@@ -51,8 +63,11 @@ class Terrain_Manager:
 
 
 
-
+# improvement: 1 option = only calling this for blocks with collision_detection = True
+  # option 2 = starting with the Quadtree and only passing in blocks that are close + collision detection
+    # Called every frame for blocks with collision detection True
     def update_block_quadtree(self, block) -> None:  #, y_count: int, x_count: int
+
         # slower :(   32 fps lowest vs 39 fps
         # block.quadtree.objects.remove(block)
         # x_index = math.floor(block.rect.centerx / x_count)
@@ -84,4 +99,3 @@ class Terrain_Manager:
                 elif y_change < 0 and block.quadtree.north:  # assign north
                     block.quadtree.north.objects.append(block)
                     block.quadtree = block.quadtree.north
-

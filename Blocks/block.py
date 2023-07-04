@@ -33,7 +33,8 @@ class Block:
         if not self.collision_detection or not self.quadtree:
             self.horiz_velocity = 0
             return self.position
-        self.neighboring_blocks = self.quadtree.get_neighbors()
+
+        self.neighboring_blocks = self.t_m.update_neighbors(self.quadtree)
         collision = physics.check_down_collision(self, self.neighboring_blocks)
         if collision:  # collided. Check if it should slide to either side
             self.vert_velocity = 0
@@ -41,7 +42,7 @@ class Block:
             if type(collision) is Block and collision.vert_velocity == 0:
                 slide = physics.check_slide(self, collision)
                 # check if there is a block in the way to stop sliding that direction
-                self.horiz_velocity = slide * self.rect.width / 20
+                self.horiz_velocity = slide * self.rect.width * physics.slide_factor
             return self.position
         if self.vert_velocity < physics.terminal_velocity:
             self.vert_velocity += (physics.gravity * self.move_speed)
@@ -53,7 +54,7 @@ class Block:
         return position
 
     def slide(self):
-        if self.vert_velocity != 0 or self.grounded_timer > physics.frames_til_grounded:
+        if self.vert_velocity > 0 or self.grounded_timer > physics.frames_til_grounded:
             return self.position
         if physics.check_side_collision(self, self.neighboring_blocks, self.horiz_velocity < 0):
             self.horiz_velocity = 0
