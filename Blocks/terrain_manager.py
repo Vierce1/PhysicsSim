@@ -10,7 +10,15 @@ class Terrain_Manager:
     def __init__(self):
         self.blocks = []
         self.block_rects = []
+        # 2d array representing the spatials organization of the quadtrees. Used to quickly assess block location
+        self.tree_org = []
 
+    def organize_trees(self, quadtrees: list[Quadtree]):
+        for tree in quadtrees:
+            if tree.x == 0.0:
+                self.tree_org.append([])
+            self.tree_org[-1].append(tree)
+        # trees now arranged in 2d array of size y_count * x_count
 
 
 
@@ -24,19 +32,18 @@ class Terrain_Manager:
 # improvement: 1 option = only calling this for blocks with collision_detection = True
 # option 2 = starting with the Quadtree and only passing in blocks that are close + collision detection
     def add_rect_to_quadtree(self, block, quadtrees: list[Quadtree]):
+        # Instead of iterating I should just do an equation that rounds the position of the block and
+        # applies that to the proper quadtree
+        # Arrange the quadtrees into a 2d array and convert real-x real-y to the array indices
         for quadtree in quadtrees:
             if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
               and quadtree.y <= block.rect.centery <= quadtree.y + quadtree.height:
                 quadtree.objects.append(block)
                 block.quadtree = quadtree
 
-# This ended up being slightly slower:
-#     def add_rects_to_quadtree(self, quadtree: Quadtree, moving_blocks: list):
-#         for block in moving_blocks:
-#             if quadtree.x <= block.rect.x <= quadtree.x + quadtree.width \
-#               and quadtree.y <= block.rect.y <= quadtree.y + quadtree.height:
-#                     quadtree.objects.append(block.rect)
-#                     block.quadtree = quadtree
+        block_x = block.rect.centerx
+
+
 
 
     def update_block_quadtree(self, block):

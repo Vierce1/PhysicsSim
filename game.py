@@ -60,6 +60,8 @@ class Game:
         [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees) for block in self.blocks]
 
         self.player = Player(quadtrees=self.quadtrees)
+        # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
+        self.terrain_manager.organize_trees(quadtrees=self.quadtrees)
 
 
     def update(self, timer: int, events: list[pg.event.Event]):
