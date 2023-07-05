@@ -19,16 +19,16 @@ class Game:
         # Having a huge number of trees decreases FPS but reduces impact of collision.
 #TODO:  Figure out a way to have large number of trees w/out impacting (non-collision-based) fps
 # Why does fps slow down for more trees?
-        self.y_count = round(self.display_resolution[1] / 45)  #30 18  45) # 72
-        self.x_count = round(self.display_resolution[0] / 50)  #33  20 50) # 80
-        # The quadtrees are slowing it down. More quadtrees = slower
-        self.width = self.display_resolution[0] / self.x_count
-        self.height = self.display_resolution[1] / self.y_count
+        # width and height of each quadtree cell
+        self.height = 50  # round(1440 / self.y_count)  # 45
+        self.width = 50  # round(2560 / self.x_count)  # 51
+        self.y_count = round(self.display_resolution[1] / self.height)
+        self.x_count = round(self.display_resolution[0] / self.width)
 
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager()
-        self.blocks = tg.gen_terrain(block_list=(500, Sand()), bounds=(620, 780, 100, 600),
+        self.blocks = tg.gen_terrain(block_list=(1000, Sand()), bounds=(620, 780, 100, 600),
                                          terrain_manager=self.terrain_manager)
         rocks = tg.gen_terrain(block_list=(800, Rock()), bounds=(600, 800, 800, 900),
                                         terrain_manager=self.terrain_manager)
@@ -78,10 +78,10 @@ class Game:
 
         # # visualization
         pg.draw.line(self.screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
-        # for q in self.quadtrees:
-        #     color = (255, 255, 255) if len(q.objects) == 0 else (255, 0, 0)
-        #     pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
-        #     pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
+        for q in self.quadtrees:
+            color = (255, 255, 255) if len(q.objects) == 0 else (255, 0, 0)
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
 
         # timed functions
         # if timer > 60:

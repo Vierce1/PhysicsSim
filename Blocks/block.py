@@ -33,9 +33,10 @@ class Block:
         if not self.collision_detection or not self.quadtree:
             self.horiz_velocity = 0
             return self.position
-
-        self.neighboring_blocks = self.t_m.update_neighbors(self.quadtree)
+        # self.neighboring_blocks = self.quadtree.get_neighbors()
+        self.neighboring_blocks = self.t_m.get_update_neighbors(self.quadtree)
         collision = physics.check_down_collision(self, self.neighboring_blocks)
+
         if collision:  # collided. Check if it should slide to either side
             self.vert_velocity = 0
 #TODO: is this causing slowdowns?

@@ -27,7 +27,7 @@ class Terrain_Manager:
 
 
     def update(self, screen):
-        # [q.neighbors.clear() for q in self.quadtrees if len(q.neighbors) > 0]  # clear neighbors to begin building new list
+        # self.q_neighbors = dict()
         # Updated to this, fixes FPS. No longer have object list being cleared and recreated every frame
         # Only blocks that leave their quadtree look for new ones.
         [self.update_block_quadtree(block=block)
@@ -38,7 +38,7 @@ class Terrain_Manager:
 
 
 
-    def update_neighbors(self, quadtree):
+    def get_update_neighbors(self, quadtree):
         if quadtree in self.q_neighbors:
             return self.q_neighbors[quadtree]
         neighbors = quadtree.get_neighbors()

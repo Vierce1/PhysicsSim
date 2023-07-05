@@ -12,9 +12,10 @@ from quadtree import Quadtree
 
 
 pg.init()
-display_resolution = [2560, 1440]
+display_resolution = [1920,1080]
 flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
 screen = pg.display.set_mode(display_resolution)
+
 physics.display_res = display_resolution
 game_running = True
 
