@@ -17,13 +17,11 @@ class Game:
         self.quadtrees = []
         # Initial load time goes up with more cells, but fps is better
         # Having a huge number of trees decreases FPS but reduces impact of collision.
-#TODO:  Figure out a way to have large number of trees w/out impacting (non-collision-based) fps
-# Why does fps slow down for more trees?
         # width and height of each quadtree cell
-        self.height = 50  # round(1440 / self.y_count)  # 45
-        self.width = 50  # round(2560 / self.x_count)  # 51
-        self.y_count = round(self.display_resolution[1] / self.height)
-        self.x_count = round(self.display_resolution[0] / self.width)
+        self.quadtree_height = 50 
+        self.quadtree_width = 50  
+        self.y_count = round(self.display_resolution[1] / self.quadtree_height)
+        self.x_count = round(self.display_resolution[0] / self.quadtree_width)
 
 
     def setup(self):
@@ -47,7 +45,7 @@ class Game:
         for y in range(self.y_count):
             for x in range(self.x_count):
                 # order of appending doesn't matter, what matters is how blocks get added
-                self.quadtrees.append(Quadtree(x * self.width, y * self.height, self.width, self.height))
+                self.quadtrees.append(Quadtree(x * self.quadtree_width, y * self.quadtree_height, self.quadtree_width, self.quadtree_height))
 
         # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
         # self.terrain_manager.organize_trees(quadtrees=self.quadtrees)

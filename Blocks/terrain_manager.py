@@ -27,7 +27,7 @@ class Terrain_Manager:
 
 
     def update(self, screen):
-        # self.q_neighbors = dict()
+        self.q_neighbors = dict()
         # Updated to this, fixes FPS. No longer have object list being cleared and recreated every frame
         # Only blocks that leave their quadtree look for new ones.
         [self.update_block_quadtree(block=block)
@@ -67,7 +67,7 @@ class Terrain_Manager:
   # option 2 = starting with the Quadtree and only passing in blocks that are close + collision detection
     # Called every frame for blocks with collision detection True
     def update_block_quadtree(self, block) -> None:  #, y_count: int, x_count: int
-
+#TODO: some blocks do not properly exit their quadtrees. The tree still has objects in its list
         # slower :(   32 fps lowest vs 39 fps
         # block.quadtree.objects.remove(block)
         # x_index = math.floor(block.rect.centerx / x_count)
@@ -83,10 +83,11 @@ class Terrain_Manager:
         if x_change < 0 or x_change > block.quadtree.width \
             or y_change < 0 or y_change > block.quadtree.height:
             # no longer inside the quadtree. assign it to the new one
-                try:
-                    block.quadtree.objects.remove(block)
-                except:
-                    block.quadtree.objects = [b for b in block.quadtree.objects if b != block]
+                block.quadtree.objects.remove(block)
+            #     try:
+            #         block.quadtree.objects.remove(block)
+            #     except:
+            #         block.quadtree.objects = [b for b in block.quadtree.objects if b != block]
                 if y_change > 0 and block.quadtree.south:  # assign south
                     block.quadtree.south.objects.append(block)
                     block.quadtree = block.quadtree.south

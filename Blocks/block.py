@@ -20,6 +20,7 @@ class Block:
         self.collision_detection = not type.rigid  # False for rigid=True blocks
         self.grounded_timer = 0
         self.neighboring_blocks = []
+        self.bottom_collide_block = None
 
 
     def update(self, screen):
@@ -34,11 +35,14 @@ class Block:
             self.horiz_velocity = 0
             return self.position
         # self.neighboring_blocks = self.quadtree.get_neighbors()
+        self.bottom_collide_block = None
         self.neighboring_blocks = self.t_m.get_update_neighbors(self.quadtree)
         collision = physics.check_down_collision(self, self.neighboring_blocks)
 
         if collision:  # collided. Check if it should slide to either side
             self.vert_velocity = 0
+            if collision != True:  # true means ground
+                self.bottom_collide_block = collision
 #TODO: is this causing slowdowns?
             if type(collision) is Block and collision.vert_velocity == 0:
                 slide = physics.check_slide(self, collision)
@@ -55,7 +59,8 @@ class Block:
         return position
 
     def slide(self):
-        if self.vert_velocity > 0 or self.grounded_timer > physics.frames_til_grounded:
+        if self.vert_velocity > 0 or self.grounded_timer > physics.frames_til_grounded \
+                or (self.bottom_collide_block and self.bottom_collide_block.vert_velocity > 0):
             return self.position
         if physics.check_side_collision(self, self.neighboring_blocks, self.horiz_velocity < 0):
             self.horiz_velocity = 0
