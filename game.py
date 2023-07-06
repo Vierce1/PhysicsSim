@@ -18,10 +18,12 @@ class Game:
         # Initial load time goes up with more cells, but fps is better
         # Having a huge number of trees decreases FPS but reduces impact of collision.
         # width and height of each quadtree cell
-        self.quadtree_height = 50 
-        self.quadtree_width = 50  
-        self.y_count = round(self.display_resolution[1] / self.quadtree_height)
-        self.x_count = round(self.display_resolution[0] / self.quadtree_width)
+        self.quadtree_height = 500  # Update to nested nodes
+        self.quadtree_width = 1000
+        self.y_count = 2
+        self.x_count = 2
+        # self.y_count = round(self.display_resolution[1] / self.quadtree_height)
+        # self.x_count = round(self.display_resolution[0] / self.quadtree_width)
 
 
     def setup(self):
@@ -45,7 +47,10 @@ class Game:
         for y in range(self.y_count):
             for x in range(self.x_count):
                 # order of appending doesn't matter, what matters is how blocks get added
-                self.quadtrees.append(Quadtree(x * self.quadtree_width, y * self.quadtree_height, self.quadtree_width, self.quadtree_height))
+                self.quadtrees.append(Quadtree(x * self.quadtree_width,
+                                               y * self.quadtree_height,
+                                               self.quadtree_width, self.quadtree_height))
+                print(f'{self.quadtrees[-1].x} / {self.quadtrees[-1].y}')
 
         # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
         # self.terrain_manager.organize_trees(quadtrees=self.quadtrees)
@@ -79,7 +84,7 @@ class Game:
         for q in self.quadtrees:
             color = (255, 255, 255) if len(q.objects) == 0 else (255, 0, 0)
             pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y + q.height))
 
         # timed functions
         # if timer > 60:
@@ -92,10 +97,7 @@ class Game:
         #     [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees, self.y_count, self.x_count)
         #             for block in new_blocks]
 
-#TODO: New method: each quadtree containing blocks builds its neighbor objects ONCE per frame
-# Starting from the blocks should be faster so don't have to check every tree
-# Check the index of the first block and flip a bool
-        self.terrain_manager.update(screen=self.screen)
+
         # render_image.convert()  # optimize image after drawing on it
         # draw_area = render_image.get_rect().move(0, 0)
         # screen.blit(render_image, draw_area)  # blitting was slower
