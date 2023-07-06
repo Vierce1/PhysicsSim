@@ -8,6 +8,7 @@ from Blocks.block_type import *
 from Blocks import terrain_gen as tg, terrain_manager as tm
 import physics
 from quadtree import Quadtree
+import gc
 
 
 class Game:
@@ -27,8 +28,8 @@ class Game:
 
 
     def setup(self):
-        self.terrain_manager = tm.Terrain_Manager()
-        self.blocks = tg.gen_terrain(block_list=(1000, Sand()), bounds=(620, 780, 100, 600),
+        self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
+        self.blocks = tg.gen_terrain(block_list=(500, Sand()), bounds=(620, 780, 100, 600),
                                          terrain_manager=self.terrain_manager)
         rocks = tg.gen_terrain(block_list=(800, Rock()), bounds=(600, 800, 800, 900),
                                         terrain_manager=self.terrain_manager)
@@ -44,37 +45,37 @@ class Game:
         self.terrain_manager.block_rects.extend(block_rects)
 
 
-        for y in range(self.y_count):
-            for x in range(self.x_count):
-                # Offset the tree by height to move it down to screen
-                self.quadtrees.append(Quadtree(x * self.quadtree_width,
-                                               self.quadtree_height + y * self.quadtree_height,
-                                               self.quadtree_width, self.quadtree_height,
-                                               branch_count=0))
-                # print(f'{self.quadtrees[-1].x} / {self.quadtrees[-1].y}')
-
-        # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
-        # self.terrain_manager.organize_trees(quadtrees=self.quadtrees)
-
-        for quadtree in self.quadtrees:
-            quadtree.north = \
-                next(iter([q for q in self.quadtrees if q.y == quadtree.y - q.height and q.x == quadtree.x]),
-                                  None)
-            quadtree.south = \
-                next(iter([q for q in self.quadtrees if q.y == quadtree.y + q.height and q.x == quadtree.x]),
-                                  None)
-            quadtree.east = \
-                next(iter([q for q in self.quadtrees if q.x == quadtree.x + q.width and q.y == quadtree.y]),
-                                 None)
-            quadtree.west = \
-                next(iter([q for q in self.quadtrees if q.x == quadtree.x - q.width and q.y == quadtree.y]),
-                                 None)
-
-        self.terrain_manager.root_quads = self.quadtrees
+        # for y in range(self.y_count):
+        #     for x in range(self.x_count):
+        #         # Offset the tree by height to move it down to screen
+        #         self.quadtrees.append(Quadtree(x * self.quadtree_width,
+        #                                        self.quadtree_height + y * self.quadtree_height,
+        #                                        self.quadtree_width, self.quadtree_height,
+        #                                        branch_count=0))
+        #         # print(f'{self.quadtrees[-1].x} / {self.quadtrees[-1].y}')
+        #
+        # # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
+        # # self.terrain_manager.organize_trees(quadtrees=self.quadtrees)
+        #
+        # for quadtree in self.quadtrees:
+        #     quadtree.north = \
+        #         next(iter([q for q in self.quadtrees if q.y == quadtree.y - q.height and q.x == quadtree.x]),
+        #                           None)
+        #     quadtree.south = \
+        #         next(iter([q for q in self.quadtrees if q.y == quadtree.y + q.height and q.x == quadtree.x]),
+        #                           None)
+        #     quadtree.east = \
+        #         next(iter([q for q in self.quadtrees if q.x == quadtree.x + q.width and q.y == quadtree.y]),
+        #                          None)
+        #     quadtree.west = \
+        #         next(iter([q for q in self.quadtrees if q.x == quadtree.x - q.width and q.y == quadtree.y]),
+        #                          None)
+        #
+        # self.terrain_manager.root_quads = self.quadtrees
         # [self.terrain_manager.add_rects_to_quadtree(block, self.quadtrees, self.y_count, self.x_count)
         #         for block in self.blocks]
 
-        self.player = Player(quadtrees=self.quadtrees)
+        # self.player = Player(quadtrees=self.quadtrees)
 
 
     def update(self, timer: int, events: list[pg.event.Event]):
@@ -108,9 +109,10 @@ class Game:
         # draw_area = render_image.get_rect().move(0, 0)
         # screen.blit(render_image, draw_area)  # blitting was slower
 
-        self.player.update(events, self.screen)
+        # self.player.update(events, self.screen)
 
         pg.event.pump()
         pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
+        gc.collect() # possible performance improvement by removing unreferenced memory
         # blocks_update = [block.rect for block in self.blocks]  # slower and would need to also clear the prev. space
         # pg.display.update(blocks_update)

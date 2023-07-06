@@ -17,15 +17,20 @@ class Quadtree:
 
 
     def create_branches(self, branch_count: int):
+        if len(self.children) > 0:
+            return self.children  # another block already created the children
         for i in range(2):
             for j in range(2):
                 child = Quadtree(x=self.x + j * self.width * 0.5, y=self.y - i * self.height * 0.5,
                                  width=self.width * 0.5, height=self.height * 0.5,
                                  branch_count=branch_count + 1)
                 self.children.append(child)
+        return self.children
 
 
 
+# TODO: To actually build the neighboring quads list, create a 2d list and access via index rather than
+# iterating through all the nodes
     def get_neighbors(self) -> list:  # list of blocks.
         neighbors = []
         if self.north:

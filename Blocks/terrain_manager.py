@@ -8,7 +8,7 @@ import pygame as pg
 import math
 
 class Terrain_Manager:
-    def __init__(self):
+    def __init__(self, screen_width: int, screen_height: int):
         self.root_quads = []
         self.all_quads = []
         self.blocks = []
@@ -16,7 +16,9 @@ class Terrain_Manager:
         # 2d array representing the spatials organization of the quadtrees. Used to quickly assess block location
         self.tree_org = []
         # New idea: first block that builds quadtree nieghbors sends the list here
-        self.q_neighbors = dict()
+        # self.q_neighbors = dict()
+        self.screen_width = screen_width
+        self.screen_height = screen_height
 
     # def organize_trees(self, quadtrees: list[Quadtree]):
     #     for tree in quadtrees:
@@ -28,18 +30,45 @@ class Terrain_Manager:
 
 
     def update(self, screen) -> list:
-        self.all_quads = []
-        self.update_quadtrees()
+        self.all_quads = []  # just for drawing visually
+        # self.update_quadtrees()
 
         # blocks update to a new quadtree if they leave their current tree
-        [self.update_block_quadtree(block=block)
-         for block in self.blocks if block.collision_detection]
+        # [self.update_block_quadtree(block=block)
+        #  for block in self.blocks if block.collision_detection]
+
+        root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
+                                 width=self.screen_width, height=self.screen_height, branch_count=0)
+        [self.insert_blocks(block, root_quadtree) for block in self.blocks]
+
+        # self.update_quad_neighbors()
 
         for block in self.blocks:
             block.update(screen=screen)
 
         print(f'{len(self.all_quads)} all quads')
         return self.all_quads
+
+
+
+    def insert_blocks(self, block, root_quadtree):
+        leaf = self.find_leaf(block, root_quadtree)
+        self.add_rects_to_quadtree(block, [leaf])
+
+
+#TODO: We don't want to create nodes that already were created by other blocks
+    def find_leaf(self, block, quadtree):  # recursively move out toward leaves
+        if quadtree.branch_count == 4:
+            self.all_quads.append(quadtree)
+            return quadtree
+        children = quadtree.create_branches(quadtree.branch_count)
+        # determine which child contains the block
+        for child in children:
+            contained = self.check_block_in_quad(block, child)
+            if contained:
+                return self.find_leaf(block, child)
+
+
 
 
 
@@ -61,6 +90,8 @@ class Terrain_Manager:
                     del child
                     q.children.clear()
 
+
+    def update_quad_neighbors(self):
         for quadtree in self.all_quads:
             quadtree.north = \
                 next(iter([q for q in self.all_quads if q.y == quadtree.y - q.height and q.x == quadtree.x]),
