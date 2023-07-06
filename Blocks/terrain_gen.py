@@ -26,6 +26,6 @@ def get_random_coords(x_bounds: (int, int), y_bounds: (int, int), prev_blocks: l
         coord_x = random.randrange(x_bounds[0], x_bounds[1])
         coord_y = random.randrange(y_bounds[0], y_bounds[1])
         loop_break += 1
-        if loop_break > 20:
+        if loop_break > 5:
             break
     return coord_x, coord_y
