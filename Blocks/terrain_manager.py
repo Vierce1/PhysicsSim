@@ -10,7 +10,7 @@ import math
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
         self.root_quads = []
-        self.all_quads = []
+        self.all_quads = set()
         self.blocks = []
         self.block_rects = []
         # 2d array representing the spatials organization of the quadtrees. Used to quickly assess block location
@@ -30,7 +30,7 @@ class Terrain_Manager:
 
 
     def update(self, screen) -> list:
-        self.all_quads = []  # just for drawing visually
+        # self.all_quads = set()  # just for drawing visually
         # self.update_quadtrees()
 
         # blocks update to a new quadtree if they leave their current tree
@@ -46,7 +46,7 @@ class Terrain_Manager:
         for block in self.blocks:
             block.update(screen=screen)
 
-        print(f'{len(self.all_quads)} all quads')
+        # print(f'{len(self.all_quads)} all quads')
         return self.all_quads
 
 
@@ -59,7 +59,7 @@ class Terrain_Manager:
 #TODO: We don't want to create nodes that already were created by other blocks
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
         if quadtree.branch_count == 4:
-            self.all_quads.append(quadtree)
+            # self.all_quads.add(quadtree)
             return quadtree
         children = quadtree.create_branches(quadtree.branch_count)
         # determine which child contains the block
