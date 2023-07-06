@@ -46,9 +46,9 @@ class Game:
 
         for y in range(self.y_count):
             for x in range(self.x_count):
-                # order of appending doesn't matter, what matters is how blocks get added
+                # Offset the tree by height to move it down to screen
                 self.quadtrees.append(Quadtree(x * self.quadtree_width,
-                                               y * self.quadtree_height,
+                                               self.quadtree_height + y * self.quadtree_height,
                                                self.quadtree_width, self.quadtree_height))
                 print(f'{self.quadtrees[-1].x} / {self.quadtrees[-1].y}')
 
@@ -68,6 +68,7 @@ class Game:
             quadtree.west = \
                 next(iter([q for q in self.quadtrees if q.x == quadtree.x - q.width and q.y == quadtree.y]),
                                  None)
+
         [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees, self.y_count, self.x_count)
                 for block in self.blocks]
 
@@ -84,7 +85,7 @@ class Game:
         for q in self.quadtrees:
             color = (255, 255, 255) if len(q.objects) == 0 else (255, 0, 0)
             pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y + q.height))
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
 
         # timed functions
         # if timer > 60:
@@ -97,6 +98,7 @@ class Game:
         #     [self.terrain_manager.add_rect_to_quadtree(block, self.quadtrees, self.y_count, self.x_count)
         #             for block in new_blocks]
 
+        self.terrain_manager.update(screen=self.screen)
 
         # render_image.convert()  # optimize image after drawing on it
         # draw_area = render_image.get_rect().move(0, 0)
