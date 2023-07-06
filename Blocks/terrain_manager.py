@@ -31,6 +31,10 @@ class Terrain_Manager:
 
 
 
+#TODO: Instead of quadtrees keeping track of their neighbors, blocks that cross multiple quadtrees can
+# give themselves to both leaves, so they are detected in collisions for either leaf
+# this will be lower cost since many fewer blocks in collision detection
+
     def update(self, screen) -> list:
         self.all_quads = set()  # just for drawing visually
         # self.update_quadtrees()
@@ -53,23 +57,31 @@ class Terrain_Manager:
 
 
 #TODO: Now collision detection is very efficient, but creating nodes every frame slow
-
+# Need a way to skip this for grounded blocks
     def insert_blocks(self, block, root_quadtree):
-        leaf = self.find_leaf(block, root_quadtree)
-        self.add_rects_to_quadtree(block, leaf)
+        block.leaves = []
+        # block.quadtrees = []
+        # leaf = self.find_leaf(block, root_quadtree)
+        self.find_leaf(block, root_quadtree)
+        for leaf in block.leaves:
+            self.add_rects_to_quadtree(block, leaf)
 
 
 
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
-        if quadtree.branch_count == self.max_branches or len(quadtree.objects) < self.capacity:
+        if quadtree.branch_count == self.max_branches:
+            # or 0 < len(quadtree.objects) < self.capacity: # doesn't work does it? what about for later blocks
             self.all_quads.add(quadtree)
-            return quadtree
-        children = quadtree.create_branches(quadtree.branch_count)
-        # determine which child contains the block
-        for child in children:
-            contained = self.check_block_in_quad(block, child)
-            if contained:
-                return self.find_leaf(block, child)
+            # return quadtree
+            block.leaves.append(quadtree)
+        else:
+            children = quadtree.create_branches(quadtree.branch_count)
+            # determine which child contains the block
+            for child in children:
+                contained = self.check_block_in_quad(block, child)
+                if contained:
+                    # return self.find_leaf(block, child)
+                    self.find_leaf(block, child)
 
 
 
@@ -93,24 +105,24 @@ class Terrain_Manager:
     #                 del child
     #                 q.children.clear()
 
-
-    def update_quad_neighbors(self):
-#TODO: To actually build the neighboring quads list, create a 2d list and access via index rather than
-# iterating through all the nodes
-
-        for quadtree in self.all_quads:
-            quadtree.north = \
-                next(iter([q for q in self.all_quads if q.y == quadtree.y - q.height and q.x == quadtree.x]),
-                                  None)
-            quadtree.south = \
-                next(iter([q for q in self.all_quads if q.y == quadtree.y + q.height and q.x == quadtree.x]),
-                                  None)
-            quadtree.east = \
-                next(iter([q for q in self.all_quads if q.x == quadtree.x + q.width and q.y == quadtree.y]),
-                                 None)
-            quadtree.west = \
-                next(iter([q for q in self.all_quads if q.x == quadtree.x - q.width and q.y == quadtree.y]),
-                                 None)
+#
+#     def update_quad_neighbors(self):
+# #TODO: To actually build the neighboring quads list, create a 2d list and access via index rather than
+# # iterating through all the nodes
+#
+#         for quadtree in self.all_quads:
+#             quadtree.north = \
+#                 next(iter([q for q in self.all_quads if q.y == quadtree.y - q.height and q.x == quadtree.x]),
+#                                   None)
+#             quadtree.south = \
+#                 next(iter([q for q in self.all_quads if q.y == quadtree.y + q.height and q.x == quadtree.x]),
+#                                   None)
+#             quadtree.east = \
+#                 next(iter([q for q in self.all_quads if q.x == quadtree.x + q.width and q.y == quadtree.y]),
+#                                  None)
+#             quadtree.west = \
+#                 next(iter([q for q in self.all_quads if q.x == quadtree.x - q.width and q.y == quadtree.y]),
+#                                  None)
 
 
 
@@ -128,9 +140,17 @@ class Terrain_Manager:
 
 
     def check_block_in_quad(self, block, quadtree):
-        if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
-            and quadtree.y >= block.rect.centery >= quadtree.y - quadtree.height:
+        # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
+        right = block.rect.right + (1 * block.rect.width)
+        left = block.rect.left - (1 * block.rect.width)
+        top = block.rect.top + (1 * block.rect.height)
+        bottom = block.rect.bottom - (1 * block.rect.height)
+        if (right >= quadtree.x and left <= quadtree.x + quadtree.width) \
+            and (bottom <= quadtree.y and top >= quadtree.y - quadtree.height):
                 return True
+        # if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
+        #     and quadtree.y >= block.rect.centery >= quadtree.y - quadtree.height:
+        #         return True
         else: return False
 
 
@@ -138,7 +158,7 @@ class Terrain_Manager:
         # for quadtree in quadtrees:
             # if self.check_block_in_quad(block, quadtree):
         quadtree.objects.append(block)
-        block.quadtree = quadtree
+        # block.quadtree = quadtree
             # self.quadtrees.append(quadtree)
         # new method: place blocks in tree based on x,y and self.tree_org indices
         # x_index = math.floor(block.rect.centerx / x_count)

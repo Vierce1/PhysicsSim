@@ -11,7 +11,7 @@ class Quadtree:
         self.south = None
         self.east = None
         self.west = None
-        self.branch_count = branch_count  # leaf at 4. 2*4^4 = 512 leaves
+        self.branch_count = branch_count  # leaf at 6. 2*4^6 = 8192 leaves
         self.neighbors = []
         self.children = []  # 4 quad children
 
@@ -31,14 +31,15 @@ class Quadtree:
 
 
     def get_neighbors(self) -> list:  # list of blocks.
-        neighbors = []
-        if self.north:
-            neighbors.extend(self.north.objects)
-        if self.south:
-            neighbors.extend(self.south.objects)
-        if self.east:
-            neighbors.extend(self.east.objects)
-        if self.west:
-            neighbors.extend(self.west.objects)
-        neighbors.extend(self.objects)
-        return neighbors
+        return self.objects
+        # neighbors = []
+        # if self.north:
+        #     neighbors.extend(self.north.objects)
+        # if self.south:
+        #     neighbors.extend(self.south.objects)
+        # if self.east:
+        #     neighbors.extend(self.east.objects)
+        # if self.west:
+        #     neighbors.extend(self.west.objects)
+        # neighbors.extend(self.objects)
+        # return neighbors

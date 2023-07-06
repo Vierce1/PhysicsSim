@@ -21,6 +21,7 @@ class Block:
         self.grounded_timer = 0
         self.neighboring_blocks = []
         self.bottom_collide_block = None
+        self.leaves = []
 
 
     def update(self, screen):
@@ -32,13 +33,15 @@ class Block:
 
 
     def move(self):
-        if not self.collision_detection or not self.quadtree:
+        if not self.collision_detection: # or len(self.quadtrees) == 0:  #not self.quadtree:
             self.horiz_velocity = 0
             return self.position
-        # self.neighboring_blocks = self.quadtree.get_neighbors()
+
         self.bottom_collide_block = None
-        # self.neighboring_blocks = self.t_m.get_update_neighbors(self.quadtree)
-        self.neighboring_blocks = self.t_m.get_neighbors(self.quadtree)
+        self.neighboring_blocks.clear()
+        print(f'qt len {len(self.leaves)}')
+        for quadtree in self.leaves:
+            self.neighboring_blocks.extend(self.t_m.get_neighbors(quadtree))
         collision = physics.check_down_collision(self, self.neighboring_blocks)
 
         if collision:  # collided. Check if it should slide to either side
