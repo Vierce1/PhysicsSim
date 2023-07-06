@@ -15,7 +15,7 @@ class Block:
         self.vert_velocity = 0
         self.horiz_velocity = 0
         self.t_m = terrain_manager
-        self.rect = pg.Rect(position[0], position[1], 2,2)
+        self.rect = pg.Rect(position[0], position[1], 3,3)
         self.quadtree = None
         self.collision_detection = not type.rigid  # False for rigid=True blocks
         self.grounded_timer = 0
@@ -29,6 +29,7 @@ class Block:
         self.position = self.move()
         self.position = self.slide()
         pg.draw.rect(surface=screen, color=self.type.color, rect=self.rect)
+
 
     def move(self):
         if not self.collision_detection or not self.quadtree:

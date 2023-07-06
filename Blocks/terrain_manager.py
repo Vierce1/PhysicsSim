@@ -14,11 +14,13 @@ class Terrain_Manager:
         self.blocks = []
         self.block_rects = []
         # 2d array representing the spatials organization of the quadtrees. Used to quickly assess block location
-        self.tree_org = []
+        # self.tree_org = []
         # New idea: first block that builds quadtree nieghbors sends the list here
         # self.q_neighbors = dict()
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.max_branches = 6
+        self.capacity = 16
 
     # def organize_trees(self, quadtrees: list[Quadtree]):
     #     for tree in quadtrees:
@@ -50,15 +52,16 @@ class Terrain_Manager:
         return self.all_quads
 
 
+#TODO: Now collision detection is very efficient, but creating nodes every frame slow
 
     def insert_blocks(self, block, root_quadtree):
         leaf = self.find_leaf(block, root_quadtree)
-        self.add_rects_to_quadtree(block, [leaf])
+        self.add_rects_to_quadtree(block, leaf)
 
 
 
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
-        if quadtree.branch_count == 6:
+        if quadtree.branch_count == self.max_branches or len(quadtree.objects) < self.capacity:
             self.all_quads.add(quadtree)
             return quadtree
         children = quadtree.create_branches(quadtree.branch_count)
@@ -70,25 +73,25 @@ class Terrain_Manager:
 
 
 
-
-
-    def update_quadtrees(self):
-        # start with root nodes
-        for q in self.root_quads:
-            for child in q.children:  # start by deleting all children
-                del child
-                q.children.clear()
-
-            empty = True
-            for block in self.blocks:
-                if self.check_block_in_quad(block, q):
-                    self.recursive_update_quadtrees(quadtree=q)
-                    empty = False
-                    break  # found at least 1 block in quad, break for this quad
-            if empty: # quadtree does not contain any blocks. Delete children
-                for child in q.children:
-                    del child
-                    q.children.clear()
+    #
+    #
+    # def update_quadtrees(self):
+    #     # start with root nodes
+    #     for q in self.root_quads:
+    #         for child in q.children:  # start by deleting all children
+    #             del child
+    #             q.children.clear()
+    #
+    #         empty = True
+    #         for block in self.blocks:
+    #             if self.check_block_in_quad(block, q):
+    #                 self.recursive_update_quadtrees(quadtree=q)
+    #                 empty = False
+    #                 break  # found at least 1 block in quad, break for this quad
+    #         if empty: # quadtree does not contain any blocks. Delete children
+    #             for child in q.children:
+    #                 del child
+    #                 q.children.clear()
 
 
     def update_quad_neighbors(self):
@@ -112,31 +115,16 @@ class Terrain_Manager:
 
 
 
-# Could only call this if the quadtree has > 1 block inside it. No need for detection if only 1 block.
-    def recursive_update_quadtrees(self, quadtree):
-        self.all_quads.append(quadtree)
-        if quadtree.branch_count < 3:  # not a leaf
-            quadtree.create_branches(branch_count=quadtree.branch_count)
-            for child in quadtree.children:
-                for block in self.blocks:
-                    if self.check_block_in_quad(block, child):
-                        self.recursive_update_quadtrees(quadtree=child)
-                        break
-        else:  # leaf
-            for block in self.blocks:
-                self.add_rects_to_quadtree(block=block, quadtrees=[quadtree])
-
-
     def get_neighbors(self, quadtree):
         return quadtree.get_neighbors()
 
 
-    def get_update_neighbors(self, quadtree):
-        if quadtree in self.q_neighbors:
-            return self.q_neighbors[quadtree]
-        neighbors = quadtree.get_neighbors()
-        self.q_neighbors[quadtree] = neighbors
-        return neighbors
+    # def get_update_neighbors(self, quadtree):
+    #     if quadtree in self.q_neighbors:
+    #         return self.q_neighbors[quadtree]
+    #     neighbors = quadtree.get_neighbors()
+    #     self.q_neighbors[quadtree] = neighbors
+    #     return neighbors
 
 
     def check_block_in_quad(self, block, quadtree):
@@ -146,11 +134,11 @@ class Terrain_Manager:
         else: return False
 
 
-    def add_rects_to_quadtree(self, block, quadtrees: list[Quadtree]):
-        for quadtree in quadtrees:
+    def add_rects_to_quadtree(self, block, quadtree: Quadtree):
+        # for quadtree in quadtrees:
             # if self.check_block_in_quad(block, quadtree):
-            quadtree.objects.append(block)
-            block.quadtree = quadtree
+        quadtree.objects.append(block)
+        block.quadtree = quadtree
             # self.quadtrees.append(quadtree)
         # new method: place blocks in tree based on x,y and self.tree_org indices
         # x_index = math.floor(block.rect.centerx / x_count)
@@ -164,36 +152,36 @@ class Terrain_Manager:
 # improvement: 1 option = only calling this for blocks with collision_detection = True
   # option 2 = starting with the Quadtree and only passing in blocks that are close + collision detection
     # Called every frame for blocks with collision detection True
-    def update_block_quadtree(self, block) -> None:  # , y_count: int, x_count: int
-        # TODO: some blocks do not properly exit their quadtrees. The tree still has objects in its list
-        # slower :(   32 fps lowest vs 39 fps
-        # block.quadtree.objects.remove(block)
-        # x_index = math.floor(block.rect.centerx / x_count)
-        # y_index = math.floor(block.rect.centery / y_count)
-        # tree = self.tree_org[y_index][x_index]
-        # tree.objects.append(block)
-        # block.quadtree = tree
-        # return
-
-        try:
-            x_change = block.rect.centerx - block.quadtree.x
-            y_change = block.rect.centery - block.quadtree.y
-        except:
-            return
-
-        if y_change > block.quadtree.height and block.quadtree.south:
-            block.quadtree.south.objects.append(block)
-            block.quadtree = block.quadtree.south
-            block.quadtree.objects.remove(block)
-        elif x_change < 0 and block.quadtree.west:
-            block.quadtree.west.objects.append(block)
-            block.quadtree = block.quadtree.west
-            block.quadtree.objects.remove(block)
-        elif x_change > block.quadtree.width and block.quadtree.east:
-            block.quadtree.east.objects.append(block)
-            block.quadtree = block.quadtree.east
-            block.quadtree.objects.remove(block)
-        elif y_change < 0 and block.quadtree.north:  # assign north
-            block.quadtree.north.objects.append(block)
-            block.quadtree = block.quadtree.north
-            block.quadtree.objects.remove(block)
+    # def update_block_quadtree(self, block) -> None:  # , y_count: int, x_count: int
+    #     # TODO: some blocks do not properly exit their quadtrees. The tree still has objects in its list
+    #     # slower :(   32 fps lowest vs 39 fps
+    #     # block.quadtree.objects.remove(block)
+    #     # x_index = math.floor(block.rect.centerx / x_count)
+    #     # y_index = math.floor(block.rect.centery / y_count)
+    #     # tree = self.tree_org[y_index][x_index]
+    #     # tree.objects.append(block)
+    #     # block.quadtree = tree
+    #     # return
+    #
+    #     try:
+    #         x_change = block.rect.centerx - block.quadtree.x
+    #         y_change = block.rect.centery - block.quadtree.y
+    #     except:
+    #         return
+    #
+    #     if y_change > block.quadtree.height and block.quadtree.south:
+    #         block.quadtree.south.objects.append(block)
+    #         block.quadtree = block.quadtree.south
+    #         block.quadtree.objects.remove(block)
+    #     elif x_change < 0 and block.quadtree.west:
+    #         block.quadtree.west.objects.append(block)
+    #         block.quadtree = block.quadtree.west
+    #         block.quadtree.objects.remove(block)
+    #     elif x_change > block.quadtree.width and block.quadtree.east:
+    #         block.quadtree.east.objects.append(block)
+    #         block.quadtree = block.quadtree.east
+    #         block.quadtree.objects.remove(block)
+    #     elif y_change < 0 and block.quadtree.north:  # assign north
+    #         block.quadtree.north.objects.append(block)
+    #         block.quadtree = block.quadtree.north
+    #         block.quadtree.objects.remove(block)
