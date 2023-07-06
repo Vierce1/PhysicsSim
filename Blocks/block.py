@@ -39,7 +39,6 @@ class Block:
 
         self.bottom_collide_block = None
         self.neighboring_blocks.clear()
-        print(f'qt len {len(self.leaves)}')
         for quadtree in self.leaves:
             self.neighboring_blocks.extend(self.t_m.get_neighbors(quadtree))
         collision = physics.check_down_collision(self, self.neighboring_blocks)

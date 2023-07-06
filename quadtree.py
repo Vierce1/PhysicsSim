@@ -7,13 +7,8 @@ class Quadtree:
         self.width = width
         self.height = height
         self.objects = []  # BLOCKS stored inside this cell
-        self.north = None
-        self.south = None
-        self.east = None
-        self.west = None
         self.branch_count = branch_count  # leaf at 6. 2*4^6 = 8192 leaves
-        self.neighbors = []
-        self.children = []  # 4 quad children
+        self.children = []  # 4 quadtree node children upon split
 
 
     def create_branches(self, branch_count: int):

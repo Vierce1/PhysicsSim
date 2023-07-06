@@ -57,7 +57,8 @@ class Terrain_Manager:
 
 
 #TODO: Now collision detection is very efficient, but creating nodes every frame slow
-# Need a way to skip this for grounded blocks
+# Need a way to skip this for grounded blocks.
+# For grounded blocks can I cache the position of their quadtree and then add them in after the other blocks finish?
     def insert_blocks(self, block, root_quadtree):
         block.leaves = []
         # block.quadtrees = []
@@ -85,48 +86,6 @@ class Terrain_Manager:
 
 
 
-    #
-    #
-    # def update_quadtrees(self):
-    #     # start with root nodes
-    #     for q in self.root_quads:
-    #         for child in q.children:  # start by deleting all children
-    #             del child
-    #             q.children.clear()
-    #
-    #         empty = True
-    #         for block in self.blocks:
-    #             if self.check_block_in_quad(block, q):
-    #                 self.recursive_update_quadtrees(quadtree=q)
-    #                 empty = False
-    #                 break  # found at least 1 block in quad, break for this quad
-    #         if empty: # quadtree does not contain any blocks. Delete children
-    #             for child in q.children:
-    #                 del child
-    #                 q.children.clear()
-
-#
-#     def update_quad_neighbors(self):
-# #TODO: To actually build the neighboring quads list, create a 2d list and access via index rather than
-# # iterating through all the nodes
-#
-#         for quadtree in self.all_quads:
-#             quadtree.north = \
-#                 next(iter([q for q in self.all_quads if q.y == quadtree.y - q.height and q.x == quadtree.x]),
-#                                   None)
-#             quadtree.south = \
-#                 next(iter([q for q in self.all_quads if q.y == quadtree.y + q.height and q.x == quadtree.x]),
-#                                   None)
-#             quadtree.east = \
-#                 next(iter([q for q in self.all_quads if q.x == quadtree.x + q.width and q.y == quadtree.y]),
-#                                  None)
-#             quadtree.west = \
-#                 next(iter([q for q in self.all_quads if q.x == quadtree.x - q.width and q.y == quadtree.y]),
-#                                  None)
-
-
-
-
     def get_neighbors(self, quadtree):
         return quadtree.get_neighbors()
 
@@ -139,8 +98,9 @@ class Terrain_Manager:
     #     return neighbors
 
 
-    def check_block_in_quad(self, block, quadtree):
+    def check_block_in_quad(self, block, quadtree) -> bool:
         # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
+        # FPS hit, but better than quadtrees keeping track of their neighbors
         right = block.rect.right + (1 * block.rect.width)
         left = block.rect.left - (1 * block.rect.width)
         top = block.rect.top + (1 * block.rect.height)
