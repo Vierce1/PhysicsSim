@@ -7,7 +7,7 @@ import pygame as pg
 gravity = 2
 terminal_velocity = 200
 display_res = []
-ground = 1400
+ground = 1000
 collision_width = 0.25  # how far offset two blocks can be to still collide
 frames_til_grounded = 80 # 100  # how many frames a block must be stationary before being grounded
 slide_factor = .20  # how fast blocks slide horizontally

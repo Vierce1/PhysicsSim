@@ -1,7 +1,7 @@
 import pygame as pg
 
 class Quadtree:
-    def __init__(self, x: int, y: int, width: int, height: int):
+    def __init__(self, x: int, y: int, width: int, height: int, branch_count: int):
         self.x = x
         self.y = y
         self.width = width
@@ -11,16 +11,22 @@ class Quadtree:
         self.south = None
         self.east = None
         self.west = None
-        # self.neighbors = []
-        # print(str(self.x) + " .  " + str(self.y))
+        self.branch_count = branch_count  # leaf at 4. 2*4^4 = 512 leaves
+        self.neighbors = []
+        self.children = []  # 4 quad children
+
+
+    def create_branches(self, branch_count: int):
+        for i in range(2):
+            for j in range(2):
+                child = Quadtree(x=self.x + j * self.width * 0.5, y=self.y - i * self.height * 0.5,
+                                 width=self.width * 0.5, height=self.height * 0.5,
+                                 branch_count=branch_count + 1)
+                self.children.append(child)
+
+
 
     def get_neighbors(self) -> list:  # list of blocks.
-#TODO  Increasing efficency here should help allow for more quadtrees, therefor better collision detection speeds
-#  because we iterate through every collision block & it's quadtrees objects + it's neighbors objects every frame
-#  What if I can only iterate through a quadtree once and save its neighbors list?
-        # Blocks already have their new tree (if applicable) so build neighbors only for first call on this tree
-        # if len(self.neighbors) > 0:  # already built this frame
-        #     return self.neighbors
         neighbors = []
         if self.north:
             neighbors.extend(self.north.objects)
