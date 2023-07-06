@@ -80,23 +80,19 @@ class Terrain_Manager:
         x_change = block.rect.centerx - block.quadtree.x
         y_change = block.rect.centery - block.quadtree.y
 
-        if x_change < 0 or x_change > block.quadtree.width \
-            or y_change < 0 or y_change > block.quadtree.height:
-            # no longer inside the quadtree. assign it to the new one
-                block.quadtree.objects.remove(block)
-            #     try:
-            #         block.quadtree.objects.remove(block)
-            #     except:
-            #         block.quadtree.objects = [b for b in block.quadtree.objects if b != block]
-                if y_change > 0 and block.quadtree.south:  # assign south
-                    block.quadtree.south.objects.append(block)
-                    block.quadtree = block.quadtree.south
-                elif x_change < 0 and block.quadtree.west:  # assign west
-                    block.quadtree.west.objects.append(block)
-                    block.quadtree = block.quadtree.west
-                elif x_change > 0 and block.quadtree.east:  # assign east
-                    block.quadtree.east.objects.append(block)
-                    block.quadtree = block.quadtree.east
-                elif y_change < 0 and block.quadtree.north:  # assign north
-                    block.quadtree.north.objects.append(block)
-                    block.quadtree = block.quadtree.north
+        if y_change > block.quadtree.height and block.quadtree.south:
+            block.quadtree.south.objects.append(block)
+            block.quadtree = block.quadtree.south
+            block.quadtree.objects.remove(block)
+        elif x_change < 0 and block.quadtree.west:
+            block.quadtree.west.objects.append(block)
+            block.quadtree = block.quadtree.west
+            block.quadtree.objects.remove(block)
+        elif x_change > block.quadtree.width and block.quadtree.east:
+            block.quadtree.east.objects.append(block)
+            block.quadtree = block.quadtree.east
+            block.quadtree.objects.remove(block)
+        elif y_change < 0 and block.quadtree.north:  # assign north
+            block.quadtree.north.objects.append(block)
+            block.quadtree = block.quadtree.north
+            block.quadtree.objects.remove(block)
