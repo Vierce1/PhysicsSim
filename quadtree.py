@@ -29,8 +29,7 @@ class Quadtree:
 
 
 
-# TODO: To actually build the neighboring quads list, create a 2d list and access via index rather than
-# iterating through all the nodes
+
     def get_neighbors(self) -> list:  # list of blocks.
         neighbors = []
         if self.north:

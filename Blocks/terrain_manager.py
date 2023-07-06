@@ -30,7 +30,7 @@ class Terrain_Manager:
 
 
     def update(self, screen) -> list:
-        # self.all_quads = set()  # just for drawing visually
+        self.all_quads = set()  # just for drawing visually
         # self.update_quadtrees()
 
         # blocks update to a new quadtree if they leave their current tree
@@ -56,10 +56,10 @@ class Terrain_Manager:
         self.add_rects_to_quadtree(block, [leaf])
 
 
-#TODO: We don't want to create nodes that already were created by other blocks
+
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
-        if quadtree.branch_count == 4:
-            # self.all_quads.add(quadtree)
+        if quadtree.branch_count == 6:
+            self.all_quads.add(quadtree)
             return quadtree
         children = quadtree.create_branches(quadtree.branch_count)
         # determine which child contains the block
@@ -92,6 +92,9 @@ class Terrain_Manager:
 
 
     def update_quad_neighbors(self):
+#TODO: To actually build the neighboring quads list, create a 2d list and access via index rather than
+# iterating through all the nodes
+
         for quadtree in self.all_quads:
             quadtree.north = \
                 next(iter([q for q in self.all_quads if q.y == quadtree.y - q.height and q.x == quadtree.x]),
