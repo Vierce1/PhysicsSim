@@ -15,16 +15,13 @@ class Terrain_Manager:
         self.node_count = 1  # for root node
         self.blocks = []
         self.block_rects = []
-        # 2d array representing the spatials organization of the quadtrees. Used to quickly assess block location
-        # self.tree_org = []
-        # New idea: first block that builds quadtree nieghbors sends the list here
-        self.q_neighbors = dict()
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.max_branches = 6
         self.capacity = 16
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
+        self.all_quads.add(self.root_quadtree)
         physics.t_m = self
 
 
@@ -43,8 +40,8 @@ class Terrain_Manager:
 
         self.cleanup_tree()
 
-        print(f'{len(self.all_quads)} all quads')
-        print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
+        # print(f'{len(self.all_quads)} all quads')
+        # print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
         return self.all_quads    # just for drawing visually
 
 
@@ -58,16 +55,13 @@ class Terrain_Manager:
             for child in node.children:
                 if child.count == 0:
                     empty_count += 1
-                    # self.all_quads.remove(child)
                     deletions.append(child)
-                    # [process_list.append(c) for c in child.children]
                 elif not child.leaf:  # .branch_count < self.max_branches:
                     process_list.append(child)
 
-        # deletions.reverse()
-        root_nodes = set()
-        for node in deletions:  # delete node and all children
-            # self.delete_children(node)
+
+        root_nodes = set() # 2 children can share same parent node, thus eliminate deleting a root twice
+        for node in deletions:
             root_nodes.add(self.get_root_parent_no_count(node))
         for root in root_nodes:
             self.del_children_recursive(root)
@@ -76,7 +70,7 @@ class Terrain_Manager:
 
     def get_root_parent_no_count(self, node):
         eval_node = node
-        while eval_node.parent.count == 0:
+        while eval_node.parent and eval_node.parent.count == 0:
             eval_node = eval_node.parent
         return eval_node  # found the node just under the parent node that has a count > 0
 
@@ -88,32 +82,8 @@ class Terrain_Manager:
         except: print("fail")
 
 
-    # def delete_children(self, node: Quadtree):  # passing in the list backwards should allow starting with leaves
-    #     if node not in self.all_quads:
-    #         print('not')
-    #         return
-    #     leaf = node
-    #     # while len(leaf.children) > 0:  # find a leaf to start from bottom
-    #     #     leaf = leaf.children[0]
-    #     # Found a leaf. Delete it plus it's siblings and move up to the parent (which becomes a leaf)
-    #     while leaf.parent.count == 0 and leaf in self.all_quads: # and leaf != node:
-    #         leaf = leaf.parent
-    #         for c in leaf.children:
-    #             if c in self.all_quads:
-    #                 self.all_quads.remove(c)
-    #             else:
-    #                 print('not in')
-    #         # try:
-    #         # [self.all_quads.remove(node) for node in leaf.children]
-    #         # except: pass
-    #         node.children.clear()
-    #     try:
-    #         self.all_quads.remove(node)  # shouldn't need this, it should be removed above
-    #     except: pass
 
-
-
-    #TODO: Now collision detection is very efficient, but creating nodes every frame slow
+#TODO: Now collision detection is very efficient, but creating nodes every frame slow
 # Need a way to skip this for grounded blocks.
 # For grounded blocks can I cache the position of their quadtree and then add them in after the other blocks finish?
     def insert_blocks(self, block, root_quadtree):
@@ -132,8 +102,7 @@ class Terrain_Manager:
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
             if not contained:
                 leaf.objects.remove(block.id)
-                if len(leaf.objects) == 0:
-                    self.set_count_tree(quadtree=leaf, value=-1)
+                self.set_count_tree(quadtree=leaf, value=-1)
 
             else:
                 leaves.append(leaf)
@@ -152,7 +121,6 @@ class Terrain_Manager:
             children = self.create_branches(quadtree)
             # determine which child contains the block
             for child in children:
-                self.all_quads.add(child)
                 contained = self.check_block_in_quad(block, child)
                 if contained:
                     # return self.find_leaf(block, child)
@@ -171,6 +139,7 @@ class Terrain_Manager:
                                  branch_count=quadtree.branch_count + 1)
                 child.parent = quadtree
                 quadtree.children.append(child)
+                self.all_quads.add(child)
         return quadtree.children
 
 
