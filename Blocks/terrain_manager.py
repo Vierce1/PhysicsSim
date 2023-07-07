@@ -72,11 +72,12 @@ class Terrain_Manager:
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
         if quadtree.branch_count == self.max_branches: # \
             # or (0 < len(quadtree.objects) < self.capacity and block entirely in 1 quadtree):
-            self.all_quads.add(quadtree)
+            # self.all_quads.add(quadtree)
             # return quadtree
             block.leaves.append(quadtree)
         else:
             children = quadtree.create_branches(quadtree.branch_count)
+            [self.all_quads.add(c) for c in children]
             # determine which child contains the block
             for child in children:
                 contained = self.check_block_in_quad(block, child)
