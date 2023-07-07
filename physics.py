@@ -11,11 +11,10 @@ ground = 1000
 collision_width = 0.25  # how far offset two blocks can be to still collide
 frames_til_grounded = 120 # 100  # how many frames a block must be stationary before being grounded
 slide_factor = .20  # how fast blocks slide horizontally
-terrain_manager = None
+
 
 # to improve processing efficiency, divide screen into quadtrees & only pass in blocks in same + neighboring quadtrees
 def check_down_collision(block, other_blocks: list):  # -> Block or bool
-    other_blocks = [terrain_manager.blocks[i] for i in other_blocks]
     for oth_block in other_blocks:
         if oth_block == block:
             continue
@@ -48,7 +47,6 @@ def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide
 
 
 def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
-    other_blocks = [terrain_manager.blocks[i] for i in other_blocks]
     for oth_block in other_blocks:
         if left_side:
             return oth_block.rect.right == block.rect.left

@@ -1,16 +1,12 @@
 class Quadtree:
-    def __init__(self, id: int, x: int, y: int,
-                 width: int, height: int,
-                 branch_count: int):
-        self.id = id
+    def __init__(self, x: int, y: int, width: int, height: int, branch_count: int):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.objects = []  # indices of QuadtreeElements stored inside this leaf (if it is a leaf)
+        self.objects = []  # BLOCKS stored inside this cell
         self.branch_count = branch_count  # leaf at 6. 2*4^6 = 8192 leaves
-        self.first_child = -1  # index of the first child node
-
+        self.children = []  # 4 quadtree node children upon split
 
 
 
