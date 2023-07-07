@@ -92,6 +92,7 @@ class Terrain_Manager:
         # Check if block is still contained in same leaf(s) as last frame
         block.leaves = self.check_remove_leaf(block)  # will either be blank (if no same leaves contain) or not
         self.find_leaf(block, root_quadtree)
+        # print(f'leaves: {len(block.leaves)}')
         for leaf in block.leaves:
             if block.id in leaf.objects:
                 continue

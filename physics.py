@@ -4,7 +4,7 @@ from Blocks import block
 import pygame as pg
 
 
-gravity = 1 # 2
+gravity = 10 # 2
 terminal_velocity = 200
 display_res = []
 ground = 1000
@@ -52,6 +52,7 @@ def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
             return oth_block.rect.right == block.rect.left
         else:
             return oth_block.rect.left == block.rect.right
+
 
 
 
