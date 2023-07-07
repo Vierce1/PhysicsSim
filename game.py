@@ -58,9 +58,9 @@ class Game:
         for q in self.quadtrees:
             color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
             pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.screen, color, (q.x + q.width, q.y), (q.x + q.width, q.y + q.height))
+            pg.draw.line(self.screen, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
             pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
-            pg.draw.line(self.screen, color, (q.x, q.y + q.height), (q.x + q.width, q.y + q.height))
+            pg.draw.line(self.screen, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
 
         # timed functions
         # if timer > 60:

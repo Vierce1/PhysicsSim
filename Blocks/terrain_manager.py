@@ -56,7 +56,7 @@ class Terrain_Manager:
                 if child.count == 0:
                     empty_count += 1
                     deletions.append(child)
-                elif not child.leaf:  # .branch_count < self.max_branches:
+                elif child.branch_count < self.max_branches:
                     process_list.append(child)
 
 
@@ -79,7 +79,9 @@ class Terrain_Manager:
             self.del_children_recursive(child)
         try:
             self.all_quads.remove(root)
-        except: print("fail")
+        except:
+            # print("fail")
+            pass
 
 
 
@@ -114,8 +116,6 @@ class Terrain_Manager:
             return
         elif quadtree.branch_count == self.max_branches:
             # or 0 < len(quadtree.objects) < self.capacity: # doesn't work does it? what about for later blocks
-            # return quadtree
-            quadtree.leaf = True
             block.leaves.append(quadtree)
         else:
             children = self.create_branches(quadtree)
@@ -123,7 +123,6 @@ class Terrain_Manager:
             for child in children:
                 contained = self.check_block_in_quad(block, child)
                 if contained:
-                    # return self.find_leaf(block, child)
                     self.find_leaf(block, child)
 
 
@@ -165,7 +164,6 @@ class Terrain_Manager:
 
     def add_rects_to_quadtree(self, block, quadtree: Quadtree):
         # Could just do the block id and not build a new object
-        # element = QuadtreeElement(x=block.rect.x, y=block.rect.y, id=block.index)
         id = block.id
         quadtree.objects.append(id)
         self.set_count_tree(quadtree=quadtree, value=1)
