@@ -46,39 +46,6 @@ class Game:
         self.terrain_manager.assign_block_indices()
 
 
-        # for y in range(self.y_count):
-        #     for x in range(self.x_count):
-        #         # Offset the tree by height to move it down to screen
-        #         self.quadtrees.append(Quadtree(x * self.quadtree_width,
-        #                                        self.quadtree_height + y * self.quadtree_height,
-        #                                        self.quadtree_width, self.quadtree_height,
-        #                                        branch_count=0))
-        #         # print(f'{self.quadtrees[-1].x} / {self.quadtrees[-1].y}')
-        #
-        # # arrange trees in 2d array such that indices can be used to quickly place blocks in their tree
-        # # self.terrain_manager.organize_trees(quadtrees=self.quadtrees)
-        #
-        # for quadtree in self.quadtrees:
-        #     quadtree.north = \
-        #         next(iter([q for q in self.quadtrees if q.y == quadtree.y - q.height and q.x == quadtree.x]),
-        #                           None)
-        #     quadtree.south = \
-        #         next(iter([q for q in self.quadtrees if q.y == quadtree.y + q.height and q.x == quadtree.x]),
-        #                           None)
-        #     quadtree.east = \
-        #         next(iter([q for q in self.quadtrees if q.x == quadtree.x + q.width and q.y == quadtree.y]),
-        #                          None)
-        #     quadtree.west = \
-        #         next(iter([q for q in self.quadtrees if q.x == quadtree.x - q.width and q.y == quadtree.y]),
-        #                          None)
-        #
-        # self.terrain_manager.root_quads = self.quadtrees
-        # [self.terrain_manager.add_rects_to_quadtree(block, self.quadtrees, self.y_count, self.x_count)
-        #         for block in self.blocks]
-
-        # self.player = Player(quadtrees=self.quadtrees)
-
-
     def update(self, timer: int, events: list[pg.event.Event]):
         # fill screen with black
         # render_image.fill((0, 0, 0))

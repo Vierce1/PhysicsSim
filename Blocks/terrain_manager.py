@@ -4,7 +4,7 @@ import Blocks.block_type
 import physics
 # import Blocks.block as block
 from Blocks import block
-from quadtree import Quadtree, QuadtreeElement
+from quadtree import Quadtree  #, QuadtreeElement
 import pygame as pg
 import math
 
@@ -101,8 +101,8 @@ class Terrain_Manager:
 
 
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
-        return [element.id for element in quadtree.objects]
-        # return quadtree.objects()
+        # return [element.id for element in quadtree.objects]
+        return quadtree.objects
 
 
     def check_block_in_quad(self, block, quadtree) -> bool:
@@ -124,5 +124,5 @@ class Terrain_Manager:
 
     def add_rects_to_quadtree(self, block, quadtree: Quadtree):
         # Could just do the block id and not build a new object
-        element = QuadtreeElement(x=block.rect.x, y=block.rect.y, id=block.index)
-        quadtree.objects.append(element)
+        # element = QuadtreeElement(x=block.rect.x, y=block.rect.y, id=block.index)
+        quadtree.objects.append(block.index)
