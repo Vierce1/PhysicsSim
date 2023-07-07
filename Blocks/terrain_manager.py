@@ -23,6 +23,10 @@ class Terrain_Manager:
         self.max_branches = 6
         self.capacity = 16
         physics.terrain_manager = self
+        self.root_quadtree = Quadtree(id=0, x=0, y=0 + self.screen_height,
+                                 width=self.screen_width, height=self.screen_height,
+                                 branch_count=0)
+        self.all_nodes.append(self.root_quadtree)
 
 
     def assign_block_indices(self):  # need new method for adding blocks after init
@@ -38,20 +42,15 @@ class Terrain_Manager:
 
     def update(self, screen) -> list:
         # self.all_nodes.clear()
-        self.node_count = 1
-
-        root_quadtree = Quadtree(id=0, x=0, y=0 + self.screen_height,
-                                 width=self.screen_width, height=self.screen_height,
-                                 branch_count=0)
-        self.all_nodes.append(root_quadtree)
-
-        [self.insert_blocks(block, root_quadtree) for block in self.blocks]
+        # self.node_count = 1
+        [q.objects.clear() for q in self.all_nodes]  # clear all objects
+        [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
             block.update(screen=screen)
 
-        # self.cleanup_tree()
-        # print(f'{len(self.all_nodes)} all quads')
+        self.cleanup_tree()
+        print(f'{len(self.all_nodes)} all quads')
         return self.all_nodes
 
 
@@ -61,16 +60,20 @@ class Terrain_Manager:
             node_index = to_process.pop(-1)  # take the last entry & remove it
             node = self.all_nodes[node_index]
             # iterate through children
+            print(f'processing index {node_index}')
             empty_leaf_count = 0
             for i in range(4):
                 child_index = node.first_child + i
                 child_node = self.all_nodes[child_index]
+                print(f'processing child index {child_index}')
                 if len(child_node.objects) == 0:  # need to remove objects from node as they leave
                     empty_leaf_count += 1
                 elif child_node.first_child != -1:
                     to_process.append(child_index)
 
             if empty_leaf_count == 4:  # all children empty, deallocate them
+                print('empty')
+                self.node_count -= 4
                 for i in range(4):
                     self.all_nodes.pop(node.first_child + i)
                     node.first_child = -1  # make the node a leaf since all children deleted
@@ -78,6 +81,9 @@ class Terrain_Manager:
 
 
     def insert_blocks(self, block, root_quadtree):
+        # for node in block.leaves:
+        #     # self.all_nodes[leaf].objects.remove(block.index)
+        #     node.objects = [o for o in node.objects if o != block.index]
         block.leaves = []
         # for
         # [quadtree]
@@ -91,7 +97,7 @@ class Terrain_Manager:
 
     def find_leaf(self, block, quadtree: Quadtree):  # recursively move out toward leaves
         if quadtree.branch_count == self.max_branches: # \
-            block.leaves.append(quadtree.id)
+            block.leaves.append(quadtree)
         else:
             first_child = self.create_branches(quadtree=quadtree, branch_count=quadtree.branch_count,
                                             next_id=self.node_count)
@@ -124,7 +130,7 @@ class Terrain_Manager:
 
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
         # return [element.id for element in quadtree.objects]
-        return self.all_nodes[quadtree].objects
+        return quadtree.objects
 
 
     def check_block_in_quad(self, block, quadtree) -> bool:
@@ -146,10 +152,10 @@ class Terrain_Manager:
         else: return False
 
 
-    def add_rects_to_quadtree(self, block, quadtree: int):
+    def add_rects_to_quadtree(self, block, quadtree):
         # Could just do the block id and not build a new object
         # element = QuadtreeElement(x=block.rect.x, y=block.rect.y, id=block.index)
-        self.all_nodes[quadtree].objects.append(block.index)
+        quadtree.objects.append(block.index)
 
 
     # def get_quadnode_dimensions(self, branch_count):
