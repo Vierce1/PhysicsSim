@@ -9,7 +9,7 @@ class Quadtree:
         self.height = height
         self.objects = []  # indices of QuadtreeElements stored inside this leaf (if it is a leaf)
         self.branch_count = branch_count  # leaf at 6. 2*4^6 = 8192 leaves
-        self.first_child = -1  # index of the first child node
+        self.first_child = -1  # index of the first child node. Remains -1 for a leaf
 
 
 
