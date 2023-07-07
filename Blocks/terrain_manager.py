@@ -165,3 +165,4 @@ class Terrain_Manager:
     #         block.quadtree.north.objects.append(block)
     #         block.quadtree = block.quadtree.north
     #         block.quadtree.objects.remove(block)
+
