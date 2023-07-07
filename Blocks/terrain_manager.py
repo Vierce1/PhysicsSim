@@ -24,9 +24,10 @@ class Terrain_Manager:
         self.capacity = 16
 
 
-#TODO: Instead of quadtrees keeping track of their neighbors, blocks that cross multiple quadtrees can
-# give themselves to both leaves, so they are detected in collisions for either leaf
-# this will be lower cost since many fewer blocks in collision detection
+    def assign_block_indices(self):  # need new method for adding blocks after init
+        [b.set_index(self.blocks.index(b)) for b in self.blocks]
+
+
 
     def update(self, screen) -> list:
         self.all_quads = set()  # just for drawing visually
@@ -83,8 +84,8 @@ class Terrain_Manager:
 
 
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
-        # return [element.id for element in quadtree.objects]
-        return quadtree.objects
+        return [self.blocks[id] for id in quadtree.objects]
+        # return quadtree.objects
 
 
     def check_block_in_quad(self, block, quadtree) -> bool:
@@ -109,7 +110,8 @@ class Terrain_Manager:
     def add_rects_to_quadtree(self, block, quadtree: Quadtree):
         # Could just do the block id and not build a new object
         # element = QuadtreeElement(x=block.rect.x, y=block.rect.y, id=block.index)
-        quadtree.objects.append(block)
+        id = block.id
+        quadtree.objects.append(id)
 
 
     # def get_quadnode_dimensions(self, branch_count):

@@ -11,8 +11,8 @@ class Quadtree:
 
 
 # Could use this if need to keep track of x/y of the agent contained
-# class QuadtreeElement:  # a block or whatever stored inside a leaf
-#     def __init__(self, x: int, y: int, id: int):
-#         self.x = x
-#         self.y = y
-#         self.id = id  # the id of the block in terrain_manager.blocks
+class QuadtreeElement:  # a block or whatever stored inside a leaf
+    def __init__(self, x: int, y: int, id: int):
+        self.x = x
+        self.y = y
+        self.id = id  # the id of the block in terrain_manager.blocks

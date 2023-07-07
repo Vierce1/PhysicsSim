@@ -9,7 +9,7 @@ import physics
 
 class Block:
     def __init__(self, type: block_type.Block_Type, position: (int, int) , terrain_manager: tm.Terrain_Manager):
-        self.index = 0  # index of the block in the terrain_manager list
+        self.id = -1
         self.type = type
         self.position = position
         self.move_speed = .03  # different blocks can fall different speeds
