@@ -41,7 +41,7 @@ class Terrain_Manager:
         self.node_count = 1
 
         root_quadtree = Quadtree(id=0, x=0, y=0 + self.screen_height,
-                                 # width=self.screen_width, height=self.screen_height,
+                                 width=self.screen_width, height=self.screen_height,
                                  branch_count=0)
         self.all_nodes.append(root_quadtree)
 
@@ -88,12 +88,11 @@ class Terrain_Manager:
 
         # node children not created yet. Make them.
         quadtree.first_child = next_id
-        q_width, q_height = self.get_quadnode_dimensions(quadtree.branch_count)
         for i in range(2):
             for j in range(2):
                 child = Quadtree(id=next_id,
-                                 x=quadtree.x + j * q_width * 0.5, y=quadtree.y - i * q_height * 0.5,
-                                 # width=quadtree.width * 0.5, height=quadtree.height * 0.5,
+                                 x=quadtree.x + j * quadtree.width * 0.5, y=quadtree.y - i * quadtree.height * 0.5,
+                                 width=quadtree.width * 0.5, height=quadtree.height * 0.5,
                                  branch_count=branch_count + 1)
                 self.all_nodes.append(child)
                 next_id += 1
@@ -114,9 +113,9 @@ class Terrain_Manager:
         top = block.rect.top + (1 * block.rect.height)
         bottom = block.rect.bottom - (1 * block.rect.height)
 
-        q_width, q_height = self.get_quadnode_dimensions(quadtree.branch_count)
-        if (right >= quadtree.x and left <= quadtree.x + q_width) \
-            and (bottom <= quadtree.y and top >= quadtree.y - q_height):
+        # q_width, q_height = self.get_quadnode_dimensions(quadtree.branch_count)
+        if (right >= quadtree.x and left <= quadtree.x + quadtree.width) \
+            and (bottom <= quadtree.y and top >= quadtree.y - quadtree.height):
                 return True
         # Single node method:
         # if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
@@ -131,13 +130,12 @@ class Terrain_Manager:
         quadtree.objects.append(block.index)
 
 
-    def get_quadnode_dimensions(self, branch_count):
-        divisor = 1
-        if branch_count > 0:
-            # divisor = math.pow(branch_count + 1, 2) / 2
-            divisor = (branch_count + 1) ** 2 / 2
-        # divisor = branch_count + 1
-        # divisor = 1 if divisor == 0 else divisor
-        q_width = self.screen_width / divisor
-        q_height = self.screen_height / divisor
-        return q_width, q_height
+    # def get_quadnode_dimensions(self, branch_count):
+    #     divisor = 1
+    #     if branch_count > 0:
+    #         # divisor = math.pow(branch_count + 1, 2) / 2
+    #         divisor = (2 ** (branch_count + 1)) / 2
+    #
+    #     q_width = self.screen_width / divisor
+    #     q_height = self.screen_height / divisor
+    #     return q_width, q_height
