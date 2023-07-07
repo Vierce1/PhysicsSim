@@ -15,12 +15,13 @@ class Block:
         self.vert_velocity = 0
         self.horiz_velocity = 0
         self.t_m = terrain_manager
-        self.rect = pg.Rect(position[0], position[1], 2,2)
+        self.rect = pg.Rect(position[0], position[1], 3,3)
         self.quadtree = None
         self.collision_detection = not type.rigid  # False for rigid=True blocks
         self.grounded_timer = 0
         self.neighboring_blocks = []
         self.bottom_collide_block = None
+        self.leaves = []
 
 
     def update(self, screen):
@@ -30,13 +31,16 @@ class Block:
         self.position = self.slide()
         pg.draw.rect(surface=screen, color=self.type.color, rect=self.rect)
 
+
     def move(self):
-        if not self.collision_detection or not self.quadtree:
+        if not self.collision_detection: # or len(self.quadtrees) == 0:  #not self.quadtree:
             self.horiz_velocity = 0
             return self.position
-        # self.neighboring_blocks = self.quadtree.get_neighbors()
+
         self.bottom_collide_block = None
-        self.neighboring_blocks = self.t_m.get_update_neighbors(self.quadtree)
+        self.neighboring_blocks.clear()
+        for id in self.leaves:
+            self.neighboring_blocks.extend(self.t_m.get_neighbors(id))
         collision = physics.check_down_collision(self, self.neighboring_blocks)
 
         if collision:  # collided. Check if it should slide to either side

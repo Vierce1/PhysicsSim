@@ -1,34 +1,40 @@
 import pygame as pg
 
 class Quadtree:
-    def __init__(self, x: int, y: int, width: int, height: int):
+    def __init__(self, x: int, y: int, width: int, height: int, branch_count: int):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.objects = []  # BLOCKS stored inside this cell
-        self.north = None
-        self.south = None
-        self.east = None
-        self.west = None
-        # self.neighbors = []
-        # print(str(self.x) + " .  " + str(self.y))
+        self.branch_count = branch_count  # leaf at 6. 2*4^6 = 8192 leaves
+        self.children = []  # 4 quadtree node children upon split
+
+
+    def create_branches(self, branch_count: int):
+        if len(self.children) > 0:
+            return self.children  # another block already created the children
+        for i in range(2):
+            for j in range(2):
+                child = Quadtree(x=self.x + j * self.width * 0.5, y=self.y - i * self.height * 0.5,
+                                 width=self.width * 0.5, height=self.height * 0.5,
+                                 branch_count=branch_count + 1)
+                self.children.append(child)
+        return self.children
+
+
+
 
     def get_neighbors(self) -> list:  # list of blocks.
-#TODO  Increasing efficency here should help allow for more quadtrees, therefor better collision detection speeds
-#  because we iterate through every collision block & it's quadtrees objects + it's neighbors objects every frame
-#  What if I can only iterate through a quadtree once and save its neighbors list?
-        # Blocks already have their new tree (if applicable) so build neighbors only for first call on this tree
-        # if len(self.neighbors) > 0:  # already built this frame
-        #     return self.neighbors
-        neighbors = []
-        if self.north:
-            neighbors.extend(self.north.objects)
-        if self.south:
-            neighbors.extend(self.south.objects)
-        if self.east:
-            neighbors.extend(self.east.objects)
-        if self.west:
-            neighbors.extend(self.west.objects)
-        neighbors.extend(self.objects)
-        return neighbors
+        return self.objects
+        # neighbors = []
+        # if self.north:
+        #     neighbors.extend(self.north.objects)
+        # if self.south:
+        #     neighbors.extend(self.south.objects)
+        # if self.east:
+        #     neighbors.extend(self.east.objects)
+        # if self.west:
+        #     neighbors.extend(self.west.objects)
+        # neighbors.extend(self.objects)
+        # return neighbors
