@@ -55,28 +55,32 @@ class Terrain_Manager:
 
 
     def cleanup_tree(self):
-        to_process = [0]  # root node
-        while len(to_process) > 0:
-            node_index = to_process.pop(-1)  # take the last entry & remove it
-            node = self.all_nodes[node_index]
-            # iterate through children
-            print(f'processing index {node_index}')
-            empty_leaf_count = 0
-            for i in range(4):
-                child_index = node.first_child + i
-                child_node = self.all_nodes[child_index]
-                print(f'processing child index {child_index}')
-                if len(child_node.objects) == 0:  # need to remove objects from node as they leave
-                    empty_leaf_count += 1
-                elif child_node.first_child != -1:
-                    to_process.append(child_index)
-
-            if empty_leaf_count == 4:  # all children empty, deallocate them
-                print('empty')
-                self.node_count -= 4
-                for i in range(4):
-                    self.all_nodes.pop(node.first_child + i)
-                    node.first_child = -1  # make the node a leaf since all children deleted
+        # to_process = [self.all_nodes[0]]
+        to_process = [n for n in self.all_nodes if len(n.objects) > 0]
+        for n in to_process:
+            del n
+        # while len(to_process) > 0:
+        #     node = to_process.pop(-1)  # take the last entry & remove it
+        #     # iterate through children
+        #     # print(f'processing index {node_index}')
+        #     empty_leaf_count = 0
+        #     for i in range(4):
+        #         child_node = node.children[i]
+        #         # child_node = self.all_nodes[child_index]
+        #         # print(f'processing child index {child_index}')
+        #         if len(child_node.objects) == 0:  # need to remove objects from node as they leave
+        #             empty_leaf_count += 1
+        #         # elif len(child_node.children > 0):
+        #         #     to_process.append(child_node)
+        #
+        #     if empty_leaf_count == 4:  # all children empty, deallocate them
+        #         print('empty')
+        #         self.node_count -= 4
+        #         [self.all_nodes.remove(c) for c in node.children]
+        #         node.children.clear()
+                # for i in range(4):
+                #     self.all_nodes.pop(node.children[i])
+                #     node.first_child = -1  # make the node a leaf since all children deleted
 
 
 
@@ -99,11 +103,11 @@ class Terrain_Manager:
         if quadtree.branch_count == self.max_branches: # \
             block.leaves.append(quadtree)
         else:
-            first_child = self.create_branches(quadtree=quadtree, branch_count=quadtree.branch_count,
+            children = self.create_branches(quadtree=quadtree, branch_count=quadtree.branch_count,
                                             next_id=self.node_count)
             # determine which child(s) contains the block
-            for i in range(first_child, first_child + 4):
-                node = self.all_nodes[i]
+            for i in range(4):
+                node = quadtree.children[i]
                 contained = self.check_block_in_quad(block, node)
                 if contained:
                     # return self.find_leaf(block, child)
@@ -111,21 +115,22 @@ class Terrain_Manager:
 
 
     def create_branches(self, quadtree: Quadtree, branch_count: int, next_id: int):
-        if quadtree.first_child != -1:
-            return quadtree.first_child  # another block already created the children
+        if len(quadtree.children) > 0:
+            return quadtree.children  # another block already created the children
 
         # node children not created yet. Make them.
-        quadtree.first_child = next_id
+        # quadtree.first_child = next_id
         for i in range(2):
             for j in range(2):
                 child = Quadtree(id=next_id,
                                  x=quadtree.x + j * quadtree.width * 0.5, y=quadtree.y - i * quadtree.height * 0.5,
                                  width=quadtree.width * 0.5, height=quadtree.height * 0.5,
                                  branch_count=branch_count + 1)
+                quadtree.children.append(child)
                 self.all_nodes.append(child)
                 next_id += 1
         self.node_count += 4
-        return quadtree.first_child
+        return quadtree.children
 
 
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
