@@ -11,7 +11,7 @@ import physics
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
-        self.all_nodes = []
+        self.all_quads = set()
         self.node_count = 1  # for root node
         self.blocks = []
         self.block_rects = []
@@ -23,44 +23,99 @@ class Terrain_Manager:
         self.screen_height = screen_height
         self.max_branches = 6
         self.capacity = 16
+        self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
+                                 width=self.screen_width, height=self.screen_height, branch_count=0)
         physics.t_m = self
 
 
     def assign_block_indices(self):  # need new method for adding blocks after init
         [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
-
     def set_index(self, block, index: int):
         block.id = index
 
 
-    def update(self, screen) -> list:
-        self.all_quads = set()  # just for drawing visually
 
-        root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
-                                 width=self.screen_width, height=self.screen_height, branch_count=0)
-        [self.insert_blocks(block, root_quadtree) for block in self.blocks]
+    def update(self, screen) -> list:
+        [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
             physics.update(block=block, screen=screen)
 
-        # print(f'{len(self.all_quads)} all quads')
-        return self.all_quads
+        self.cleanup_tree()
+
+        print(f'{len(self.all_quads)} all quads')
+        print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
+        return self.all_quads    # just for drawing visually
+
+
+
+    def cleanup_tree(self):  # remove empty quadtree nodes i/o deleting all of them every frame
+        process_list = [self.root_quadtree]
+        deletions = []
+        while len(process_list) > 0:
+            node = process_list.pop(0)
+            empty_count = 0
+            for child in node.children:
+                if child.count == 0:
+                    empty_count += 1
+                    # self.all_quads.remove(child)
+                    deletions.append(child)
+                elif not child.leaf:  # .branch_count < self.max_branches:
+                    process_list.append(child)
+
+        for node in deletions:  # delete node and all children
+            self.delete_children(node)
+
+    def delete_children(self, node: Quadtree):
+        leaf = node
+        while len(leaf.children) > 0:  # find a leaf to start from bottom
+            leaf = leaf.children[0]
+        # Found a leaf. Delete it plus it's siblings and move up to the parent (which becomes a leaf)
+        while leaf.count == 0 and leaf != node:
+            leaf = leaf.parent
+            try:
+                [self.all_quads.remove(node) for node in leaf.children]
+            except: pass
+            node.children.clear()
+
+        self.all_quads.remove(node)  # finally remove the original node marked for deletion
+
+
 
     #TODO: Now collision detection is very efficient, but creating nodes every frame slow
 # Need a way to skip this for grounded blocks.
 # For grounded blocks can I cache the position of their quadtree and then add them in after the other blocks finish?
     def insert_blocks(self, block, root_quadtree):
-        block.leaves = []
+        # Check if block is still contained in same leaf(s) as last frame
+        block.leaves = self.check_remove_leaf(block)  # will either be blank (if no same leaves contain) or not
         self.find_leaf(block, root_quadtree)
         for leaf in block.leaves:
+            if block.id in leaf.objects:
+                continue
             self.add_rects_to_quadtree(block, leaf)
 
 
+    def check_remove_leaf(self, block):
+        leaves = []
+        for leaf in block.leaves:
+            contained = self.check_block_in_quad(block=block, quadtree=leaf)
+            if not contained:
+                leaf.objects.remove(block.id)
+                if len(leaf.objects) == 0:
+                    self.set_count_tree(quadtree=leaf, value=-1)
+
+            else:
+                leaves.append(leaf)
+        return leaves
+
 
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
-        if quadtree.branch_count == self.max_branches:
+        if quadtree in block.leaves:  # block already has reference to this leaf
+            return
+        elif quadtree.branch_count == self.max_branches:
             # or 0 < len(quadtree.objects) < self.capacity: # doesn't work does it? what about for later blocks
             # return quadtree
+            quadtree.leaf = True
             block.leaves.append(quadtree)
         else:
             children = self.create_branches(quadtree)
@@ -83,6 +138,7 @@ class Terrain_Manager:
                 child = Quadtree(x=quadtree.x + j * quadtree.width * 0.5, y=quadtree.y - i * quadtree.height * 0.5,
                                  width=quadtree.width * 0.5, height=quadtree.height * 0.5,
                                  branch_count=quadtree.branch_count + 1)
+                child.parent = quadtree
                 quadtree.children.append(child)
         return quadtree.children
 
@@ -116,6 +172,15 @@ class Terrain_Manager:
         # element = QuadtreeElement(x=block.rect.x, y=block.rect.y, id=block.index)
         id = block.id
         quadtree.objects.append(id)
+        self.set_count_tree(quadtree=quadtree, value=1)
+
+
+    def set_count_tree(self, quadtree: Quadtree, value: int):
+        quadtree.count += value
+        node = quadtree
+        while node.parent is not None:
+            node.parent.count += value
+            node = node.parent
 
 
     # def get_quadnode_dimensions(self, branch_count):

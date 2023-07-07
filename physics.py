@@ -4,7 +4,7 @@ from Blocks import block
 import pygame as pg
 
 
-gravity = 2
+gravity = .01 # 2
 terminal_velocity = 200
 display_res = []
 ground = 1000
