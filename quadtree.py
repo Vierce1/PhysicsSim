@@ -1,10 +1,12 @@
 class Quadtree:
-    def __init__(self, id: int, x: int, y: int, width: int, height: int, branch_count: int):
+    def __init__(self, id: int, x: int, y: int,
+                 #width: int, height: int,  # update to just use a divisible calculation originating from the root
+                 branch_count: int):
         self.id = id
         self.x = x
         self.y = y
-        self.width = width
-        self.height = height
+        # self.width = width
+        # self.height = height
         self.objects = []  # indices of QuadtreeElements stored inside this leaf (if it is a leaf)
         self.branch_count = branch_count  # leaf at 6. 2*4^6 = 8192 leaves
         self.first_child = -1  # index of the first child node

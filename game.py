@@ -56,9 +56,10 @@ class Game:
         # # visualization
         pg.draw.line(self.screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
         for q in self.quadtrees:
+            q_width, q_height = self.terrain_manager.get_quadnode_dimensions(q.branch_count)
             color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
-            pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q_width, q.y))
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q_height))
 
         # timed functions
         # if timer > 60:
