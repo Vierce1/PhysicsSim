@@ -9,6 +9,7 @@ import physics
 
 class Block:
     def __init__(self, type: block_type.Block_Type, position: (int, int) , terrain_manager: tm.Terrain_Manager):
+        self.index = 0  # index of the block in the terrain_manager list
         self.type = type
         self.position = position
         self.move_speed = .03  # different blocks can fall different speeds
@@ -19,9 +20,12 @@ class Block:
         self.quadtree = None
         self.collision_detection = not type.rigid  # False for rigid=True blocks
         self.grounded_timer = 0
-        self.neighboring_blocks = []
+        self.neighboring_blocks = []  # now holds indices of blocks
         self.bottom_collide_block = None
         self.leaves = []
+
+    def set_index(self, index: int):
+        self.index = index
 
 
     def update(self, screen):

@@ -43,6 +43,7 @@ class Game:
         self.terrain_manager.blocks.extend(self.blocks)
         block_rects = [block.rect for block in self.blocks]
         self.terrain_manager.block_rects.extend(block_rects)
+        self.terrain_manager.assign_block_indices()
 
 
         # for y in range(self.y_count):
