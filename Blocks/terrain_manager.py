@@ -41,9 +41,9 @@ class Terrain_Manager:
         # self.cleanup_tree()
 
         # print(f'{len(self.all_quads)} all quads')
-        for i, q in enumerate(self.all_quads):
-            if q.count > 0:
-                print(f'node index {i}    count: {q.count}  branches: {q.branch_count}')
+        # for i, q in enumerate(self.all_quads):
+        #     if q.count > 0:
+        #         print(f'node index {i}    count: {q.count}  branches: {q.branch_count}')
 
         return self.all_quads    # return just for drawing visually
 
@@ -108,8 +108,10 @@ class Terrain_Manager:
         for leaf in block.leaves:
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
             if not contained:
+                # try:
                 leaf.objects.remove(block.id)
                 self.set_count_tree(quadtree=leaf, value=-1)
+                # except: pass
 
             else:
                 leaves.append(leaf)
@@ -121,15 +123,17 @@ class Terrain_Manager:
             if not block.id in quadtree.objects:  # need this?
                 quadtree.objects.append(block.id)
             return
-        elif quadtree.branch_count == self.max_branches or quadtree.count < self.capacity:
-            block.leaves.append(quadtree)
-        else:
-            children = self.create_branches(quadtree)
-            # determine which child contains the block
-            for child in children:
-                contained = self.check_block_in_quad(block, child)
-                if contained:
-                    self.find_leaf(block, child)
+#TODO: this needs to run through the quadtree's capactiy check every time we add a block to
+# take care of prev. added blocks when overflow capacity
+        # elif quadtree.branch_count == self.max_branches or quadtree.count <= self.capacity:
+        block.leaves.append(quadtree)
+        # else:
+        #     children = self.create_branches(quadtree)
+        #     # determine which child contains the block
+        #     for child in children:
+        #         contained = self.check_block_in_quad(block, child)
+        #         if contained:
+        #             self.find_leaf(block, child)
 
 
 
@@ -173,21 +177,26 @@ class Terrain_Manager:
         # check if reached capacity. If so, split and shuffle blocks to children
         children = []
         # print(quadtree.count >= self.capacity)
+        quadtree.count += 1
         if quadtree.count >= self.capacity and quadtree.branch_count < self.max_branches:
-            print('splitting)')
             children = self.create_branches(quadtree)
             for block_id in quadtree.objects:
-                # try:
-                self.blocks[block_id].leaves.remove(quadtree)
-                # except: pass
+                self.set_count_tree(quadtree, -1)  # decrement count, will increment it below
+                try:
+                    self.blocks[block_id].leaves.remove(quadtree)
+                except: pass
                 for child in children:
                     contained = self.check_block_in_quad(self.blocks[block_id], child)
                     if contained:
                         # self.find_leaf(block, child)
-                        self.blocks[block_id].leaves.append(child)
-                        child.count += 1
-        else:
-            # print(f'{quadtree.count}   {quadtree.branch_count}')
+                        # self.blocks[block_id].leaves.append(child)
+                        # child.count += 1
+                        self.add_rects_to_quadtree(block, child)
+                        return self.set_count_tree(child, 1)
+
+        else:  # found leaf w/ under capacity or max branches
+            print(f'{quadtree.count}   {quadtree.branch_count}')
+
             id = block.id
             quadtree.objects.append(id)
             self.set_count_tree(quadtree=quadtree, value=1)
