@@ -40,8 +40,8 @@ class Terrain_Manager:
 
         self.cleanup_tree()
 
-        # print(f'{len(self.all_quads)} all quads')
-        # print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
+        print(f'{len(self.all_quads)} all quads')
+        print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
         return self.all_quads    # just for drawing visually
 
 
@@ -160,10 +160,6 @@ class Terrain_Manager:
         if (right >= quadtree.x and left <= quadtree.x + quadtree.width) \
             and (bottom <= quadtree.y and top >= quadtree.y - quadtree.height):
                 return True
-        # Single node method:
-        # if quadtree.x <= block.rect.centerx <= quadtree.x + quadtree.width \
-        #     and quadtree.y >= block.rect.centery >= quadtree.y - quadtree.height:
-        #         return True
         else: return False
 
 
