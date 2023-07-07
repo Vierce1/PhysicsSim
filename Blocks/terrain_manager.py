@@ -103,7 +103,7 @@ class Terrain_Manager:
             self.add_rects_to_quadtree(block, leaf)
 
 
-    def check_remove_leaf(self, block):
+    def check_remove_leaf(self, block) -> list:
         leaves = []
         for leaf in block.leaves:
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
