@@ -7,6 +7,7 @@ from Blocks import block
 from quadtree import Quadtree  #, QuadtreeElement
 import pygame as pg
 import math
+import physics
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
@@ -22,11 +23,14 @@ class Terrain_Manager:
         self.screen_height = screen_height
         self.max_branches = 6
         self.capacity = 16
+        physics.t_m = self
 
 
     def assign_block_indices(self):  # need new method for adding blocks after init
-        [b.set_index(self.blocks.index(b)) for b in self.blocks]
+        [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
 
+    def set_index(self, block, index: int):
+        block.id = index
 
 
     def update(self, screen) -> list:
@@ -37,7 +41,7 @@ class Terrain_Manager:
         [self.insert_blocks(block, root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
-            block.update(screen=screen)
+            physics.update(block=block, screen=screen)
 
         # print(f'{len(self.all_quads)} all quads')
         return self.all_quads
@@ -56,13 +60,13 @@ class Terrain_Manager:
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
         if quadtree.branch_count == self.max_branches:
             # or 0 < len(quadtree.objects) < self.capacity: # doesn't work does it? what about for later blocks
-            self.all_quads.add(quadtree)
             # return quadtree
             block.leaves.append(quadtree)
         else:
             children = self.create_branches(quadtree)
             # determine which child contains the block
             for child in children:
+                self.all_quads.add(child)
                 contained = self.check_block_in_quad(block, child)
                 if contained:
                     # return self.find_leaf(block, child)

@@ -12,7 +12,7 @@ def gen_terrain(block_list: (int, Block_Type), bounds: (int, int, int, int),
         coord_x, coord_y = get_random_coords(x_bounds=(bounds[0], bounds[1]),   \
                                     y_bounds=(bounds[2], bounds[3]), prev_blocks=generated_blocks)
 
-        block = Block(block_list[1], (coord_x, coord_y), terrain_manager)
+        block = Block(block_list[1], (coord_x, coord_y))
         generated_blocks.append(block)
     return generated_blocks
 

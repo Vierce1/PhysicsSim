@@ -11,7 +11,7 @@ ground = 1000
 collision_width = 0.25  # how far offset two blocks can be to still collide
 frames_til_grounded = 120 # 100  # how many frames a block must be stationary before being grounded
 slide_factor = .20  # how fast blocks slide horizontally
-
+t_m = None
 
 # to improve processing efficiency, divide screen into quadtrees & only pass in blocks in same + neighboring quadtrees
 def check_down_collision(block, other_blocks: list):  # -> Block or bool
@@ -55,14 +55,55 @@ def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
 
 
 
+# Block functions
+
+def update(block, screen):
+    if block.grounded_timer == frames_til_grounded:
+        block.collision_detection = False
+    block.position = move(block)
+    block.position = slide(block)
+    pg.draw.rect(surface=screen, color=block.type.color, rect=block.rect)
 
 
+def move(block):
+    if not block.collision_detection: # or len(block.quadtrees) == 0:  #not block.quadtree:
+        block.horiz_velocity = 0
+        return block.position
 
+    block.bottom_collide_block = None
+    block.neighboring_blocks.clear()
+    for quadtree in block.leaves:
+        block.neighboring_blocks.extend(t_m.get_neighbors(quadtree))
+    collision = check_down_collision(block, block.neighboring_blocks)
 
+    if collision:  # collided. Check if it should slide to either side
+        block.vert_velocity = 0
+        if collision != True:  # true means ground
+            block.bottom_collide_block = collision
+#TODO: is this causing slowdowns?
+        if type(collision) is not bool and collision.vert_velocity == 0:
+            slide = check_slide(block, collision)
+            # check if there is a block in the way to stop sliding that direction
+            block.horiz_velocity = slide * block.rect.width * slide_factor
+        return block.position
+    if block.vert_velocity < terminal_velocity:
+        block.vert_velocity += (gravity * block.move_speed)
+    position = (block.position[0], block.position[1] + block.vert_velocity)
+    # block.rect = block.rect.move(position[0] - block.rect.x, position[1] - block.rect.y)
+#TODO: Which is more efficient?
+    block.rect.left = position[0]
+    block.rect.top = position[1]
+    return position
 
-# alternate methods:
-  # Every block seeds its position to a master list
-  # Run through the positions moving left->right, bottom->top
-  # if there is a block in the checked position, check if it has a block beneath it
-  # if so, flip a bool in the block
-
+def slide(block):
+    if block.vert_velocity > 0 or block.grounded_timer > frames_til_grounded \
+            or (block.bottom_collide_block and block.bottom_collide_block.vert_velocity > 0):
+        return block.position
+    if check_side_collision(block, block.neighboring_blocks, block.horiz_velocity < 0):
+        block.horiz_velocity = 0
+        return block.position
+    # not blocked to the side trying to slide
+    position = (block.position[0] + block.horiz_velocity, block.position[1])
+    block.rect.left = position[0]
+    block.rect.top = position[1]
+    return position
