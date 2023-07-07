@@ -165,7 +165,8 @@ class Terrain_Manager:
     def add_rects_to_quadtree(self, block, quadtree: Quadtree):
         # check if reached capacity. If so, split and shuffle blocks to children
         children = []
-        if quadtree.count == self.capacity and quadtree.branch_count < self.max_branches:
+        if quadtree.count >= self.capacity and quadtree.branch_count < self.max_branches:
+            print('splitting)')
             children = self.create_branches(quadtree)
             for block_id in quadtree.objects:
                 # try:
