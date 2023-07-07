@@ -16,7 +16,7 @@ class Terrain_Manager:
         # 2d array representing the spatials organization of the quadtrees. Used to quickly assess block location
         # self.tree_org = []
         # New idea: first block that builds quadtree nieghbors sends the list here
-        # self.q_neighbors = dict()
+        self.q_neighbors = dict()
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.max_branches = 6
@@ -42,9 +42,9 @@ class Terrain_Manager:
         # blocks update to a new quadtree if they leave their current tree
         # [self.update_block_quadtree(block=block)
         #  for block in self.blocks if block.collision_detection]
-
         root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
+
         [self.insert_blocks(block, root_quadtree) for block in self.blocks]
 
         # self.update_quad_neighbors()
@@ -70,8 +70,8 @@ class Terrain_Manager:
 
 
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
-        if quadtree.branch_count == self.max_branches:
-            # or 0 < len(quadtree.objects) < self.capacity: # doesn't work does it? what about for later blocks
+        if quadtree.branch_count == self.max_branches: # \
+            # or (0 < len(quadtree.objects) < self.capacity and block entirely in 1 quadtree):
             self.all_quads.add(quadtree)
             # return quadtree
             block.leaves.append(quadtree)

@@ -39,8 +39,8 @@ class Block:
 
         self.bottom_collide_block = None
         self.neighboring_blocks.clear()
-        for quadtree in self.leaves:
-            self.neighboring_blocks.extend(self.t_m.get_neighbors(quadtree))
+        for id in self.leaves:
+            self.neighboring_blocks.extend(self.t_m.get_neighbors(id))
         collision = physics.check_down_collision(self, self.neighboring_blocks)
 
         if collision:  # collided. Check if it should slide to either side
