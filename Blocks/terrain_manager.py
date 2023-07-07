@@ -17,7 +17,7 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 6
+        self.max_branches = 8
         self.capacity = 5
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
@@ -98,8 +98,8 @@ class Terrain_Manager:
         block.leaves = self.check_remove_leaf(block)  # will either be blank (if no same leaves contain) or not
         self.find_leaf(block, root_quadtree)
         for leaf in block.leaves:
-            if block.id in leaf.objects:
-                continue
+            # if block.id in leaf.objects:
+            #     continue
             self.add_rects_to_quadtree(block, leaf)
 
 
@@ -196,10 +196,11 @@ class Terrain_Manager:
 
         else:  # found leaf w/ under capacity or max branches
             print(f'{quadtree.count}   {quadtree.branch_count}')
-
             id = block.id
-            quadtree.objects.append(id)
-            self.set_count_tree(quadtree=quadtree, value=1)
+            if id not in quadtree.objects:
+                quadtree.objects.append(id)
+                self.set_count_tree(quadtree=quadtree, value=1)
+                block.leaves.append(quadtree)
 
 
     def set_count_tree(self, quadtree: Quadtree, value: int):
