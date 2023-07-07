@@ -60,25 +60,56 @@ class Terrain_Manager:
                     empty_count += 1
                     # self.all_quads.remove(child)
                     deletions.append(child)
+                    # [process_list.append(c) for c in child.children]
                 elif not child.leaf:  # .branch_count < self.max_branches:
                     process_list.append(child)
 
+        # deletions.reverse()
+        root_nodes = set()
         for node in deletions:  # delete node and all children
-            self.delete_children(node)
+            # self.delete_children(node)
+            root_nodes.add(self.get_root_parent_no_count(node))
+        for root in root_nodes:
+            self.del_children_recursive(root)
 
-    def delete_children(self, node: Quadtree):
-        leaf = node
-        while len(leaf.children) > 0:  # find a leaf to start from bottom
-            leaf = leaf.children[0]
-        # Found a leaf. Delete it plus it's siblings and move up to the parent (which becomes a leaf)
-        while leaf.count == 0 and leaf != node:
-            leaf = leaf.parent
-            try:
-                [self.all_quads.remove(node) for node in leaf.children]
-            except: pass
-            node.children.clear()
 
-        self.all_quads.remove(node)  # finally remove the original node marked for deletion
+
+    def get_root_parent_no_count(self, node):
+        eval_node = node
+        while eval_node.parent.count == 0:
+            eval_node = eval_node.parent
+        return eval_node  # found the node just under the parent node that has a count > 0
+
+    def del_children_recursive(self, root):
+        for child in root.children:
+            self.del_children_recursive(child)
+        try:
+            self.all_quads.remove(root)
+        except: print("fail")
+
+
+    # def delete_children(self, node: Quadtree):  # passing in the list backwards should allow starting with leaves
+    #     if node not in self.all_quads:
+    #         print('not')
+    #         return
+    #     leaf = node
+    #     # while len(leaf.children) > 0:  # find a leaf to start from bottom
+    #     #     leaf = leaf.children[0]
+    #     # Found a leaf. Delete it plus it's siblings and move up to the parent (which becomes a leaf)
+    #     while leaf.parent.count == 0 and leaf in self.all_quads: # and leaf != node:
+    #         leaf = leaf.parent
+    #         for c in leaf.children:
+    #             if c in self.all_quads:
+    #                 self.all_quads.remove(c)
+    #             else:
+    #                 print('not in')
+    #         # try:
+    #         # [self.all_quads.remove(node) for node in leaf.children]
+    #         # except: pass
+    #         node.children.clear()
+    #     try:
+    #         self.all_quads.remove(node)  # shouldn't need this, it should be removed above
+    #     except: pass
 
 
 
