@@ -114,8 +114,7 @@ class Terrain_Manager:
     def find_leaf(self, block, quadtree):  # recursively move out toward leaves
         if quadtree in block.leaves:  # block already has reference to this leaf
             return
-        elif quadtree.branch_count == self.max_branches:
-            # or 0 < len(quadtree.objects) < self.capacity: # doesn't work does it? what about for later blocks
+        elif quadtree.branch_count == self.max_branches or quadtree.count < self.capacity:
             block.leaves.append(quadtree)
         else:
             children = self.create_branches(quadtree)
@@ -124,6 +123,7 @@ class Terrain_Manager:
                 contained = self.check_block_in_quad(block, child)
                 if contained:
                     self.find_leaf(block, child)
+
 
 
     def create_branches(self, quadtree: Quadtree):
@@ -163,10 +163,24 @@ class Terrain_Manager:
 
 
     def add_rects_to_quadtree(self, block, quadtree: Quadtree):
-        # Could just do the block id and not build a new object
-        id = block.id
-        quadtree.objects.append(id)
-        self.set_count_tree(quadtree=quadtree, value=1)
+        # check if reached capacity. If so, split and shuffle blocks to children
+        children = []
+        if quadtree.count == self.capacity and quadtree.branch_count < self.max_branches:
+            children = self.create_branches(quadtree)
+            for block_id in quadtree.objects:
+                # try:
+                self.blocks[block_id].leaves.remove(quadtree)
+                # except: pass
+                for child in children:
+                    contained = self.check_block_in_quad(self.blocks[block_id], child)
+                    if contained:
+                        # self.find_leaf(block, child)
+                        self.blocks[block_id].leaves.append(child)
+                        child.count += 1
+        else:
+            id = block.id
+            quadtree.objects.append(id)
+            self.set_count_tree(quadtree=quadtree, value=1)
 
 
     def set_count_tree(self, quadtree: Quadtree, value: int):
