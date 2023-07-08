@@ -96,12 +96,6 @@ class Terrain_Manager:
     def insert_blocks(self, block, root_quadtree):
         # Check if block is still contained in same leaf(s) as last frame
         block.leaves = self.check_remove_leaf(block)  # will either be blank (if no same leaves contain) or not
-        # self.find_leaf(block, root_quadtree)
-        # for leaf in block.leaves:
-            # if block.id in leaf.objects:
-            #     continue
-        # if root_quadtree not in block.leaves:
-        #     block.leaves.append(root_quadtree)
         self.add_rects_to_quadtree(block, root_quadtree)
 
 

@@ -23,6 +23,7 @@ class Game:
         self.quadtree_width = 1000
         self.y_count = 1
         self.x_count = 2
+        self.delay = 2
         # self.y_count = round(self.display_resolution[1] / self.quadtree_height)
         # self.x_count = round(self.display_resolution[0] / self.quadtree_width)
 
@@ -80,6 +81,11 @@ class Game:
         # screen.blit(render_image, draw_area)  # blitting was slower
 
         # self.player.update(events, self.screen)
+
+        # tick = pg.time.get_ticks()
+        # now = pg.time.get_ticks()
+        # while now - tick < self.delay:
+        #     now = pg.time.get_ticks()
 
         pg.event.pump()
         pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
