@@ -18,7 +18,7 @@ class Terrain_Manager:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.max_branches = 7
-        self.capacity = 20
+        self.capacity = 5
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
@@ -187,6 +187,7 @@ class Terrain_Manager:
         # reached a leaf. proceed
 
         # check if reached capacity. If so, split and shuffle blocks to children
+        print(f'{round(quadtree.x)} {round(quadtree.y)}   :  count:{quadtree.count}   {quadtree.branch_count}')
         if quadtree.count >= self.capacity and quadtree.branch_count < self.max_branches:
             # split
             children = self.create_branches(quadtree)
@@ -207,7 +208,6 @@ class Terrain_Manager:
                         # self.set_count_tree(child, 1) # No need, count will be added when we hit a leaf
 
         else:  # found leaf w/ under capacity or max branches
-            # print(f'{quadtree.count}   {quadtree.branch_count}')
             id = block.id
             if id not in quadtree.objects:
                 quadtree.objects.append(id)
