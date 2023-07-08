@@ -40,8 +40,8 @@ class Terrain_Manager:
 
         self.cleanup_tree()
 
-        print(f'{len(self.all_quads)} all quads')
-        print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
+        # print(f'{len(self.all_quads)} all quads')
+        # print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
         return self.all_quads    # just for drawing visually
 
 
