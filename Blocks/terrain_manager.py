@@ -23,6 +23,8 @@ class Terrain_Manager:
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
         physics.t_m = self
+        self.collision_leaves = []  # blocks add their containing leaves to this every frame
+        # and it is processed to detect collisions, which are then passed back to the blocks
 
 
     def assign_block_indices(self):  # need new method for adding blocks after init
@@ -34,6 +36,15 @@ class Terrain_Manager:
 
     def update(self, screen) -> list:
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
+
+        # collect the leaves we need to do collision detection inside
+        self.collision_leaves.clear()
+        # print([leaves for leaves in [block.leaves for block in self.blocks]])
+        for block in self.blocks:
+            for leaf in block.leaves:
+                self.collision_leaves.append(leaf)
+        # [self.collision_leaves.append(leaf) for leaf in [leaves for leaves in [block.leaves for block in self.blocks]]]
+        [physics.check_leaf_collisions(leaf) for leaf in self.collision_leaves]
 
         for block in self.blocks:
             physics.update(block=block, screen=screen)

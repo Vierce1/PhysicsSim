@@ -19,4 +19,4 @@ class Block:
         # self.neighboring_blocks = []
         self.bottom_collide_block = None
         self.leaves = []  #TODO: Remove this somehow
-
+        self.collision = False # either a block or True (ground) or False (no collision)
