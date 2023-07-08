@@ -52,20 +52,19 @@ def check_single_down_collision(block, other_block):  # -> Block or bool
 
 
 def check_leaf_collisions(leaf: Quadtree):  # Needs
-    for i, block_id in enumerate(leaf.objects):
-        block = t_m.blocks[block_id]
-        # if not block.collision_detection:
-        #     continue
-        for j in range(i + 1, len(leaf.objects)):
-            other_block = t_m.blocks[leaf.objects[j]]
+    non_grounded = [id for id in leaf.objects if t_m.blocks[id].collision_detection]
+    remaining_ids = []
+    remaining_ids.extend(leaf.objects)
+    for i, block_id in enumerate(non_grounded):
+        remaining_ids.remove(block_id)
+        for j, other_id in enumerate(remaining_ids):
+            block = t_m.blocks[block_id]
+            other_block = t_m.blocks[other_id]
             collision = check_single_down_collision(block, other_block)
             t_m.total_col_dets += 1
-            if collision:
+            if collision:  # pass collision to the non-grounded block and remove
                 block.collision = collision
-                if type(block.collision) is not bool:
-                    collision.collision = block
                 break
-
 
 
 
