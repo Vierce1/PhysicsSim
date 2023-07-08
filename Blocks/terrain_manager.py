@@ -18,7 +18,7 @@ class Terrain_Manager:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.max_branches = 7
-        self.capacity = 1
+        self.capacity = 2
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
@@ -41,13 +41,6 @@ class Terrain_Manager:
             physics.update(block=block, screen=screen)
 
         self.cleanup_tree()
-
-        for block in self.blocks:  #TODO: This should not be printing. All blocks should be contained in leaves.
-            for leaf in block.leaves:
-                if len(leaf.children) > 0:
-                    print("Has children")
-
-
 
         print(f'total collision detections: {self.total_col_dets}')
         # print(f'{len(self.all_quads)} all quads')
@@ -114,32 +107,13 @@ class Terrain_Manager:
         leaves = []
         for leaf in block.leaves:
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
-            if not contained and block.id in leaf.objects:
+            if not contained: # not needed and block.id in leaf.objects:
                 leaf.objects.remove(block.id)
                 self.set_count_tree(quadtree=leaf, value=-1)
 
             else:
                 leaves.append(leaf)
         return leaves
-
-
-    def find_leaf(self, block, quadtree):  # recursively move out toward leaves
-        if quadtree in block.leaves:  # block already has reference to this leaf
-            # if not block.id in quadtree.objects:  # need this?
-            #     quadtree.objects.append(block.id)
-            return
-#TODO: this needs to run through the quadtree's capactiy check every time we add a block to
-# take care of prev. added blocks when overflow capacity
-        # elif quadtree.branch_count == self.max_branches or quadtree.count <= self.capacity:
-        block.leaves.append(quadtree)
-        # else:
-        #     children = self.create_branches(quadtree)
-        #     # determine which child contains the block
-        #     for child in children:
-        #         contained = self.check_block_in_quad(block, child)
-        #         if contained:
-        #             self.find_leaf(block, child)
-
 
 
     def create_branches(self, quadtree: Quadtree):
@@ -188,13 +162,13 @@ class Terrain_Manager:
             contained = self.check_block_in_quad(block, child)
             if contained:
                 self.add_rects_to_quadtree(block, child)
+                # break
 
         # reached a leaf. proceed
-        # quadtree.objects.append(block.id)
         # check if reached capacity. If so, split and shuffle blocks to children
         if quadtree.count >= self.capacity and quadtree.branch_count < self.max_branches:
             print(f'split at {quadtree.count}')
-            print(f'{quadtree.count}   {quadtree.branch_count}')
+            print(f'count: {quadtree.count}   branches: {quadtree.branch_count}')
             # split
             children = self.create_branches(quadtree)
 #TODO: Slowdown and errors in this function below:
@@ -202,6 +176,7 @@ class Terrain_Manager:
             # objects.extend(quadtree.objects)
             # quadtree.objects.clear()  # WHY IS THIS SO SLOW?? Stuck in a loop?
             for block_id in quadtree.objects:
+                refind_block = self.blocks[block_id]
                 quadtree.objects.remove(block_id)
                 # if block_id != block.id:
                 self.set_count_tree(quadtree=quadtree, value=-1)  # decrement count, will increment it below
@@ -214,8 +189,9 @@ class Terrain_Manager:
                         # self.find_leaf(block, child)
                         # self.blocks[block_id].leaves.append(child)
                         # child.count += 1
-                        self.add_rects_to_quadtree(block, child)
+                        self.add_rects_to_quadtree(refind_block, child)
                         # self.set_count_tree(child, 1) # No need, count will be added when we hit a leaf
+
             for child in children:
                 contained = self.check_block_in_quad(block, child)
                 if contained:
