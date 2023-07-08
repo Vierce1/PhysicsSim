@@ -17,6 +17,7 @@ t_m = None
 # to improve processing efficiency, divide screen into quadtrees & only pass in blocks in same + neighboring quadtrees
 def check_down_collision(block, other_blocks: list):  # -> Block or bool
     for oth_block in other_blocks:
+        t_m.total_col_dets += 1
         if oth_block == block:
             continue
         if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
@@ -56,6 +57,7 @@ def check_leaf_collisions(leaf: Quadtree):  # Needs
             other_block = t_m.blocks[leaf.objects[j]]
             collision = check_single_down_collision(block, other_block)
             block.collision = collision
+            t_m.total_col_dets += 1
 
 
 
