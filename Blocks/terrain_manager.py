@@ -11,7 +11,7 @@ import physics
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
-        self.all_quads = set()
+        self.all_quads = []# set()
         self.node_count = 1  # for root node
         self.blocks = []
         self.block_rects = []
@@ -21,7 +21,7 @@ class Terrain_Manager:
         self.capacity = 2
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
-        self.all_quads.add(self.root_quadtree)
+        self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
         physics.t_m = self
         self.total_col_dets = 0
 
@@ -70,26 +70,35 @@ class Terrain_Manager:
 
         root_nodes = set() # 2 children can share same parent node, thus eliminate deleting a root twice
         for node in deletions:
-            root_nodes.add(self.get_root_parent_no_count(node))
+            # root_nodes.add(self.get_root_parent_no_count(node))
+            # Purpose of below is so not to delete a child of a node that has a count
+            # we just want to delete the children (recursively) of a node with 0 count
+            # otherwise end up with a node containing 3 children
+            root_nodes.update([child for child in node.children if child.count == 0])
+            node.children.clear()
+        # root_nodes = set(deletions)
         for root in root_nodes:
             self.del_children_recursive(root)
 
 
 
-    def get_root_parent_no_count(self, node):
-        eval_node = node
-        while eval_node.parent and eval_node.parent.count == 0 and eval_node.parent.parent is not None:
-            eval_node = eval_node.parent
-        return eval_node  # found the node just under the parent node that has a count > 0
+#DON"T THINK I NEED THIS. I work from the root down. Should stop on the first empty node containing all empty children
+    # def get_root_parent_no_count(self, node):
+    #     eval_node = node
+    #     while eval_node.parent and eval_node.parent.count == 0 and eval_node.parent.parent is not None:
+    #         eval_node = eval_node.parent
+    #     return eval_node  # found the node just under the parent node that has a count > 0
 
     def del_children_recursive(self, root):
+        print(f'deleing {round(root.x)}  {round(root.y)}')
         for child in root.children:
             self.del_children_recursive(child)
-        try:
-            self.all_quads.remove(root)
-        except:
+        # try:
+        self.all_quads.remove(root)
+        # except:
             # print("fail")
-            pass
+            # pass
+        # del root
 
 
 
@@ -128,7 +137,8 @@ class Terrain_Manager:
                                  branch_count=quadtree.branch_count + 1)
                 child.parent = quadtree
                 quadtree.children.append(child)
-                self.all_quads.add(child)
+                # self.all_quads.add(child)
+                self.all_quads.append(child)
         return quadtree.children
 
 
@@ -211,6 +221,7 @@ class Terrain_Manager:
         quadtree.count += value
         node = quadtree
         while node.parent is not None:
+            print(f'adding {value} to node index {self.all_quads.index(quadtree)}')
             node.parent.count += value
             node = node.parent
 
