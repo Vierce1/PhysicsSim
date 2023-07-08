@@ -37,15 +37,16 @@ def check_down_collision(block, other_blocks: list):  # -> Block or bool
 
 
 def check_single_down_collision(block, other_block):  # -> Block or bool
+    if block.rect.y + block.rect.height >= ground:  # block is at ground level, stop detecting collision
+        block.collision_detection = None
+        return True
+
     if block.rect.bottom - other_block.rect.top >= 0 and block.rect.centery < other_block.rect.centery \
         and -1 * (other_block.rect.width + block.rect.width) * collision_width <= \
                 other_block.rect.centerx - block.rect.centerx \
                 <= (other_block.rect.width + block.rect.width) * collision_width:
             block.grounded_timer += 1
             return other_block
-    if block.rect.y + block.rect.height >= ground:  # block is at ground level, stop detecting collision
-        block.collision_detection = None
-        return True
 
     return None
 
@@ -53,13 +54,18 @@ def check_single_down_collision(block, other_block):  # -> Block or bool
 def check_leaf_collisions(leaf: Quadtree):  # Needs
     for i, block_id in enumerate(leaf.objects):
         block = t_m.blocks[block_id]
-        if not block.collision_detection:
-            continue
+        # if not block.collision_detection:
+        #     continue
         for j in range(i + 1, len(leaf.objects)):
             other_block = t_m.blocks[leaf.objects[j]]
             collision = check_single_down_collision(block, other_block)
-            block.collision = collision
             t_m.total_col_dets += 1
+            if collision:
+                block.collision = collision
+                if type(block.collision) is not bool:
+                    collision.collision = block
+                break
+
 
 
 
@@ -89,7 +95,7 @@ def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
 def update(block, screen):
     if block.grounded_timer == frames_til_grounded:
         block.collision_detection = False
-    neighboring_blocks = move(block)
+    move(block)
     # slide(block, neighboring_blocks)
     pg.draw.rect(surface=screen, color=block.type.color, rect=block.rect)
 
@@ -97,7 +103,7 @@ def update(block, screen):
 def move(block) -> list:
     if not block.collision_detection: # or len(block.quadtrees) == 0:  #not block.quadtree:
         block.horiz_velocity = 0
-        return []
+        return
 
     # old collision detection
     # block.bottom_collide_block = None
