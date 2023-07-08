@@ -40,8 +40,8 @@ class Terrain_Manager:
 
         self.cleanup_tree()
 
-        print(f'{len(self.all_quads)} all quads')
-        print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
+        # print(f'{len(self.all_quads)} all quads')
+        # print(f'{len([q for q in self.all_quads if q.count > 0])} count>0 quads')
         return self.all_quads    # just for drawing visually
 
 
@@ -52,12 +52,21 @@ class Terrain_Manager:
         while len(process_list) > 0:
             node = process_list.pop(0)
             empty_count = 0
-            for child in node.children:
-                if child.count == 0:
-                    empty_count += 1
-                    deletions.append(child)
-                elif child.branch_count < self.max_branches:
-                    process_list.append(child)
+            empty_count = node.child_tl.count + node.child_tr.count + node.child_bl.count + node.child_br.count
+            # for child in node.children:
+            #     if child.count == 0:
+            #         empty_count += 1
+            if node.child_tl.count == 0:
+                deletions.append(node.child_tl)
+            if node.child_tr.count == 0:
+                deletions.append(node.child_tr)
+            if node.child_bl.count == 0:
+                deletions.append(node.child_bl)
+            if node.child_br.count == 0:
+                deletions.append(node.child_br)
+
+            if empty_count < 4 and child.branch_count < self.max_branches:
+                process_list.append(child)
 
 
         root_nodes = set() # 2 children can share same parent node, thus eliminate deleting a root twice
@@ -68,15 +77,20 @@ class Terrain_Manager:
 
 
 
-    def get_root_parent_no_count(self, node):
+    def get_root_parent_no_count(self, node: Quadtree):
         eval_node = node
         while eval_node.parent and eval_node.parent.count == 0:
             eval_node = eval_node.parent
         return eval_node  # found the node just under the parent node that has a count > 0
 
-    def del_children_recursive(self, root):
-        for child in root.children:
-            self.del_children_recursive(child)
+    def del_children_recursive(self, root: Quadtree):
+        if root.child_tl:
+            self.del_children_recursive(root.child_tl)
+            self.del_children_recursive(root.child_tr)
+            self.del_children_recursive(root.child_bl)
+            self.del_children_recursive(root.child_br)
+        # for child in root.children:
+        #     self.del_children_recursive(child)
         try:
             self.all_quads.remove(root)
         except:
@@ -128,8 +142,10 @@ class Terrain_Manager:
 
 
     def create_branches(self, quadtree: Quadtree):
-        if len(quadtree.children) > 0:
-            return quadtree.children  # another block already created the children
+        children = []
+        if quadtree.child_tl:
+            children.extend([quadtree.child_tl, quadtree.child_tr, quadtree.child_bl, quadtree.child_br])
+            return children  # another block already created the children
 
         # node children not created yet. Make them.
         for i in range(2):
@@ -137,10 +153,19 @@ class Terrain_Manager:
                 child = Quadtree(x=quadtree.x + j * quadtree.width * 0.5, y=quadtree.y - i * quadtree.height * 0.5,
                                  width=quadtree.width * 0.5, height=quadtree.height * 0.5,
                                  branch_count=quadtree.branch_count + 1)
+                if i + j == 0:
+                    quadtree.child_tl = child
+                elif i == 1 and j == 0:
+                    quadtree.child_tr = child
+                elif i == 0 and j == 1:
+                    quadtree.child_bl = child
+                else:
+                    quadtree.child_br = child
                 child.parent = quadtree
-                quadtree.children.append(child)
+                # quadtree.children.append(child)
                 self.all_quads.add(child)
-        return quadtree.children
+                children.append(child)
+        return children
 
 
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
