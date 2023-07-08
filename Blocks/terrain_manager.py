@@ -23,6 +23,7 @@ class Terrain_Manager:
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
         physics.t_m = self
+        self.total_col_dets = 0
 
 
     def assign_block_indices(self):  # need new method for adding blocks after init
@@ -33,13 +34,14 @@ class Terrain_Manager:
 
 
     def update(self, screen) -> list:
+        self.total_col_dets = 0
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
             physics.update(block=block, screen=screen)
 
         self.cleanup_tree()
-
+        print(f'total collision detections: {self.total_col_dets}')
         # print(f'{len(self.all_quads)} all quads')
         # for i, q in enumerate(self.all_quads):
         #     if q.count > 0:

@@ -18,6 +18,7 @@ def check_down_collision(block, other_blocks: list):  # -> Block or bool
     for oth_block in other_blocks:
         if oth_block == block:
             continue
+        t_m.total_col_dets += 1
         if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
             and -1 * (oth_block.rect.width + block.rect.width) * collision_width <= \
                 oth_block.rect.centerx - block.rect.centerx \
