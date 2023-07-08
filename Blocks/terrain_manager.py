@@ -167,6 +167,10 @@ class Terrain_Manager:
         else: return False
 
 
+
+
+# TODO:  Don't i need to add the block to the node BEFORE checking capacity? Otherwise the block will not
+# be added to the quad ever
     def add_rects_to_quadtree(self, block, quadtree: Quadtree):
         # first check if the node is already split
         for child in quadtree.children:
