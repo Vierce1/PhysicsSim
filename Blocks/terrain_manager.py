@@ -17,8 +17,8 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 8
-        self.capacity = 20
+        self.max_branches = 10
+        self.capacity = 35
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
