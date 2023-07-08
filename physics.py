@@ -62,7 +62,7 @@ def update(block, screen):
     if block.grounded_timer == frames_til_grounded:
         block.collision_detection = False
     neighboring_blocks = move(block)
-    block.position = slide(block, neighboring_blocks)
+    slide(block, neighboring_blocks)
     pg.draw.rect(surface=screen, color=block.type.color, rect=block.rect)
 
 
@@ -89,12 +89,12 @@ def move(block) -> list:
         return neighboring_blocks
     if block.vert_velocity < terminal_velocity:
         block.vert_velocity += (gravity * block.move_speed)
-    position = (block.position[0], block.position[1] + block.vert_velocity)
+    position = (block.rect.x, block.rect.y + block.vert_velocity)
     # block.rect = block.rect.move(position[0] - block.rect.x, position[1] - block.rect.y)
 #TODO: Which is more efficient?
     block.rect.left = position[0]
     block.rect.top = position[1]
-    block.position = position
+    # block.position = position
     return neighboring_blocks
 
 def slide(block, neighboring_blocks) -> None:
@@ -105,8 +105,8 @@ def slide(block, neighboring_blocks) -> None:
         block.horiz_velocity = 0
         return
     # not blocked to the side trying to slide
-    position = (block.position[0] + block.horiz_velocity, block.position[1])
+    position = (block.rect.x + block.horiz_velocity, block.rect.y)
     block.rect.left = position[0]
     block.rect.top = position[1]
-    block.position = position
+    # block.position = position
     return
