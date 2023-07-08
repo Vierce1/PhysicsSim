@@ -17,8 +17,8 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 6
-        self.capacity = 2
+        self.max_branches = 8
+        self.capacity = 20
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
@@ -41,9 +41,9 @@ class Terrain_Manager:
         self.cleanup_tree()
 
         # print(f'{len(self.all_quads)} all quads')
-        for i, q in enumerate(self.all_quads):
-            if q.count > 0:
-                print(f'node index {i}    count: {q.count}  branches: {q.branch_count}')
+        # for i, q in enumerate(self.all_quads):
+        #     if q.count > 0:
+        #         print(f'node index {i}    count: {q.count}  branches: {q.branch_count}')
 
         return self.all_quads    # return just for drawing visually
 
@@ -110,11 +110,8 @@ class Terrain_Manager:
         for leaf in block.leaves:
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
             if not contained:
-                # try:
-                print("not contained")
                 leaf.objects.remove(block.id)
                 self.set_count_tree(quadtree=leaf, value=-1)
-                # except: pass
 
             else:
                 leaves.append(leaf)
@@ -207,7 +204,7 @@ class Terrain_Manager:
                         # self.blocks[block_id].leaves.append(child)
                         # child.count += 1
                         self.add_rects_to_quadtree(block, child)
-                        self.set_count_tree(child, 1)
+                        # self.set_count_tree(child, 1) # No need, count will be added when we hit a leaf
 
         else:  # found leaf w/ under capacity or max branches
             # print(f'{quadtree.count}   {quadtree.branch_count}')

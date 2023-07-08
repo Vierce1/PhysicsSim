@@ -29,7 +29,7 @@ class Game:
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
-        self.blocks = tg.gen_terrain(block_list=(3, Sand()), bounds=(620, 780, 100, 600),
+        self.blocks = tg.gen_terrain(block_list=(2000, Sand()), bounds=(620, 780, 100, 600),
                                          terrain_manager=self.terrain_manager)
         # rocks = tg.gen_terrain(block_list=(1000, Rock()), bounds=(600, 800, 800, 900),
         #                                 terrain_manager=self.terrain_manager)
