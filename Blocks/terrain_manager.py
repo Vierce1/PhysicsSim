@@ -18,7 +18,7 @@ class Terrain_Manager:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.max_branches = 7
-        self.capacity = 18
+        self.capacity = 35
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
@@ -46,6 +46,7 @@ class Terrain_Manager:
             for leaf in block.leaves:
                 self.collision_leaves.add(leaf)
         # [self.collision_leaves.append(leaf) for leaf in [leaves for leaves in [block.leaves for block in self.blocks]]]
+        # print(f'leaves to check: {len(self.collision_leaves)}')
         [physics.check_leaf_collisions(leaf) for leaf in self.collision_leaves]
 
         for block in self.blocks:

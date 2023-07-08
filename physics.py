@@ -52,6 +52,7 @@ def check_single_down_collision(block, other_block):  # -> Block or bool
 
 
 def check_leaf_collisions(leaf: Quadtree):  # Needs
+    # print(f' leaf has child: {len(leaf.children) > 0}')
     non_grounded = [id for id in leaf.objects if t_m.blocks[id].collision_detection]
     remaining_ids = []
     remaining_ids.extend(leaf.objects)
