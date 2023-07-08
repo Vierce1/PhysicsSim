@@ -211,6 +211,7 @@ class Terrain_Manager:
             quadtree.objects.append(id)
             self.set_count_tree(quadtree=quadtree, value=1)
             block.leaves.append(quadtree)
+            print(len(block.leaves))
 
 
     def set_count_tree(self, quadtree: Quadtree, value: int):
