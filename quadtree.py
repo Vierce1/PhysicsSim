@@ -4,7 +4,7 @@ class Quadtree:
         self.y = y
         self.width = width
         self.height = height
-        self.objects = []  # indices of blocks stored inside this cell
+        self.objects =  []  # indices of blocks stored inside this cell
         self.branch_count = branch_count  # leaf at 6. 2*4^6 = 8192 leaves
         self.children = []  # 4 quadtree node children upon split
 
