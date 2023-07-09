@@ -17,8 +17,8 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 6
-        self.capacity = 15
+        self.max_branches = 2
+        self.capacity = 0
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
@@ -119,6 +119,7 @@ class Terrain_Manager:
         leaves = []
         change = False
         for leaf in block.leaves:
+            # print(f'inside  leaf = {round(leaf.x)} {round(leaf.y)}    block_bottom= {block.rect.bottom - block.rect.height}')
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
             if not contained:
                 # This is stopping blocks that stack up inside a leaf to spill over into the next leaf
@@ -152,19 +153,27 @@ class Terrain_Manager:
         # return quadtree.objects
 
 
-    def check_block_in_quad(self, block, quadtree) -> bool:
+    def check_block_in_quad(self, block, quadtree) -> int: # return: outside=-1 , inside=1, on_edge=0
         # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
-        # FPS hit, but better than quadtrees keeping track of their neighbors
+        # This allows inter-leaf collision
         right = block.rect.right + (1 * block.rect.width)
         left = block.rect.left - (1 * block.rect.width)
         top = block.rect.top + (1 * block.rect.height)
         bottom = block.rect.bottom - (1 * block.rect.height)
 
+
+        # if quadtree.y >= bottom <= (quadtree.y + quadtree.height + block.rect.height) \
+        #         and (right >= quadtree.x and left <= quadtree.x + quadtree.width):
+        #     return True
+        # return False  # Slightly slower
+
         # q_width, q_height = self.get_quadnode_dimensions(quadtree.branch_count)
+        horiz = right - quadtree.x
         if (right >= quadtree.x and left <= quadtree.x + quadtree.width) \
             and (bottom <= quadtree.y and top >= quadtree.y - quadtree.height):
                 return True
         else: return False
+
 
 
 
