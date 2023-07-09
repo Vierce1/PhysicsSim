@@ -17,8 +17,8 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 7
-        self.capacity = 5
+        self.max_branches = 6
+        self.capacity = 15
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.add(self.root_quadtree)
@@ -41,7 +41,7 @@ class Terrain_Manager:
             physics.update(block=block, screen=screen)
 
         self.cleanup_tree()
-        print(f'total collision detections: {self.total_col_dets}')
+        # print(f'total collision detections: {self.total_col_dets}')
         # print(f'{len(self.all_quads)} all quads')
         # for i, q in enumerate(self.all_quads):
         #     if q.count > 0:
@@ -187,7 +187,7 @@ class Terrain_Manager:
         # reached a leaf. proceed
 
         # check if reached capacity. If so, split and shuffle blocks to children
-        print(f'{round(quadtree.x)} {round(quadtree.y)}   :  count:{quadtree.count}   {quadtree.branch_count}')
+        # print(f'{round(quadtree.x)} {round(quadtree.y)}   :  count:{quadtree.count}   {quadtree.branch_count}')
         if quadtree.count >= self.capacity and quadtree.branch_count < self.max_branches:
             # split
             children = self.create_branches(quadtree)
