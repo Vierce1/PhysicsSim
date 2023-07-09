@@ -82,7 +82,6 @@ def move(block) -> list:
         block.vert_velocity = 0
         if collision != True:  # true means ground
             block.bottom_collide_block = collision
-            block.rect.top = block.rect.top - (0.25 * block.rect.height)
 #TODO: is this causing slowdowns?
         if type(collision) is not bool and collision.vert_velocity == 0:
             slide = check_slide(block, collision)

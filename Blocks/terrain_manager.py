@@ -112,6 +112,7 @@ class Terrain_Manager:
         if len(block.leaves) == 0 or change is True:
                 #leaf_count[0] != len(block.leaves):  # Only search for new leaf if it left one of its previous ones
             self.add_rects_to_quadtree(block, root_quadtree)
+#TODO: Need to allow blocks which stack up to spill over into new leaves. They need to check somehow.
 
 
     def check_remove_leaf(self, block) -> list:
