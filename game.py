@@ -39,7 +39,7 @@ class Game:
                                               terrain_manager=self.terrain_manager))
         self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(801, 820, 760, 800),
                                               terrain_manager=self.terrain_manager))
-        print(f'length of blocks = {str(len(self.blocks))}')
+        # print(f'length of blocks = {str(len(self.blocks))}')
 
         self.terrain_manager.blocks.extend(self.blocks)
         block_rects = [block.rect for block in self.blocks]
