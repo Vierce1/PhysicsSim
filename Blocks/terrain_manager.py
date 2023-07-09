@@ -119,7 +119,8 @@ class Terrain_Manager:
         change = False
         for leaf in block.leaves:
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
-            if not contained: # not needed and block.id in leaf.objects:
+            if not contained:
+                # This is stopping blocks that stack up inside a leaf to spill over into the next leaf
                 leaf.objects.remove(block.id)
                 self.set_count_tree(quadtree=leaf, value=-1)
                 change = True
@@ -211,7 +212,8 @@ class Terrain_Manager:
             quadtree.objects.append(id)
             self.set_count_tree(quadtree=quadtree, value=1)
             block.leaves.append(quadtree)
-            print(len(block.leaves))
+#TODO: Blocks not getting multiple leaves
+            # print(len(block.leaves))
 
 
     def set_count_tree(self, quadtree: Quadtree, value: int):
