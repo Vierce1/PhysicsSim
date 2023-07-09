@@ -17,8 +17,8 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 2
-        self.capacity = 0
+        self.max_branches = 6
+        self.capacity = 22
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
@@ -168,7 +168,7 @@ class Terrain_Manager:
         # return False  # Slightly slower
 
         # q_width, q_height = self.get_quadnode_dimensions(quadtree.branch_count)
-        horiz = right - quadtree.x
+        # horiz = right - quadtree.x
         if (right >= quadtree.x and left <= quadtree.x + quadtree.width) \
             and (bottom <= quadtree.y and top >= quadtree.y - quadtree.height):
                 return True

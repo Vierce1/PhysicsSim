@@ -5,7 +5,7 @@ import pygame as pg
 
 
 gravity = 1 # 2
-terminal_velocity = 1 #200
+terminal_velocity = 200
 display_res = []
 ground = 1008
 collision_width = 0.25  # how far offset two blocks can be to still collide

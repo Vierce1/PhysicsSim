@@ -23,22 +23,22 @@ class Game:
         self.quadtree_width = 1000
         self.y_count = 1
         self.x_count = 2
-        self.delay = 20
+        self.delay = 2
         # self.y_count = round(self.display_resolution[1] / self.quadtree_height)
         # self.x_count = round(self.display_resolution[0] / self.quadtree_width)
 
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
-        self.blocks = tg.gen_terrain(block_list=(1, Sand()), bounds=(620, 780, 100, 600),
+        self.blocks = tg.gen_terrain(block_list=(1000, Sand()), bounds=(620, 780, 100, 600),
                                          terrain_manager=self.terrain_manager)
-        # rocks = tg.gen_terrain(block_list=(1000, Rock()), bounds=(600, 800, 800, 900),
-        #                                 terrain_manager=self.terrain_manager)
-        # self.blocks.extend(rocks)
-        # self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(580, 599, 760, 800),
-        #                                       terrain_manager=self.terrain_manager))
-        # self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(801, 820, 760, 800),
-        #                                       terrain_manager=self.terrain_manager))
+        rocks = tg.gen_terrain(block_list=(1000, Rock()), bounds=(600, 800, 800, 900),
+                                        terrain_manager=self.terrain_manager)
+        self.blocks.extend(rocks)
+        self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(580, 599, 760, 800),
+                                              terrain_manager=self.terrain_manager))
+        self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(801, 820, 760, 800),
+                                              terrain_manager=self.terrain_manager))
         # print(f'length of blocks = {str(len(self.blocks))}')
 
         self.terrain_manager.blocks.extend(self.blocks)
@@ -82,10 +82,10 @@ class Game:
 
         # self.player.update(events, self.screen)
 
-        tick = pg.time.get_ticks()
-        now = pg.time.get_ticks()
-        while now - tick < self.delay:
-            now = pg.time.get_ticks()
+        # tick = pg.time.get_ticks()
+        # now = pg.time.get_ticks()
+        # while now - tick < self.delay:
+        #     now = pg.time.get_ticks()
 
         pg.event.pump()
         pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
