@@ -9,7 +9,6 @@ from Blocks import terrain_gen as tg, terrain_manager as tm
 import physics
 from quadtree import Quadtree
 import psutil
-import gc
 
 
 class Game:
@@ -88,10 +87,11 @@ class Game:
         # while now - tick < self.delay:
         #     now = pg.time.get_ticks()
 
-        print(psutil.virtual_memory())
+        print(f'memory % usage: {psutil.virtual_memory().percent}')
+        print(f'cpu % usage: {psutil.cpu_percent()}')
 
         pg.event.pump()
         pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
-        gc.collect() # possible performance improvement by removing unreferenced memory
+        # gc.collect() # possible performance improvement by removing unreferenced memory
         # blocks_update = [block.rect for block in self.blocks]  # slower and would need to also clear the prev. space
         # pg.display.update(blocks_update)
