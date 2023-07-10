@@ -152,7 +152,7 @@ class Terrain_Manager:
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
             if contained == -1:
                 # block completely outside leaf
-                leaf.objects.remove(block.id)
+                leaf.objects.remove(block)
                 block.leaves.remove(leaf)
                 self.set_count_tree(quadtree=leaf, value=-1)
                 change = True
@@ -181,7 +181,12 @@ class Terrain_Manager:
 
     # @profile  # large memory cost Every non-grounded block calls this every frame
     def get_neighbors(self, block, quadtree):  # Now returns indices of blocks
-        all_neighbors = [self.blocks[id] for id in quadtree.objects if id != block.id]
+        # all_neighbors = [self.blocks[id] for id in quadtree.objects if id != block.id]
+        all_neighbors =[]
+        all_neighbors.extend( quadtree.objects)
+        if block in all_neighbors:
+            all_neighbors.remove(block)
+        # all_neighbors = [b for b in quadtree.objects if b != block] # SLower
         return all_neighbors
         # print(len(all_neighbors))
         # close_neighbors = self.exclude_far_blocks(block, all_neighbors)
@@ -257,12 +262,12 @@ class Terrain_Manager:
             objs = []
             objs.extend(quadtree.objects)
             quadtree.objects.clear()
-            for block_id in objs:
-                refind_block = self.blocks[block_id]
+            for b in objs:
+                refind_block = b
                 # quadtree.objects.remove(block_id)
                 # if block_id != block.id:
                 self.set_count_tree(quadtree=quadtree, value=-1)  # decrement count, will increment it below
-                self.blocks[block_id].leaves.remove(quadtree)
+                b.leaves.remove(quadtree)
 
                 for child in children:
                     contained = self.check_block_in_quad(refind_block, child)
@@ -274,11 +279,11 @@ class Terrain_Manager:
                 contained = self.check_block_in_quad(block, child)
                 if contained != -1:
                     self.add_rects_to_quadtree(block, child)
-        elif block.id not in quadtree.objects:  # found leaf w/ under capacity or max branches
-            id = block.id
+        elif block not in quadtree.objects:  # found leaf w/ under capacity or max branches
+            # id = block.id
             # print(f'count: {quadtree.count}   branches: {quadtree.branch_count}')
             # if id not in quadtree.objects:
-            quadtree.objects.append(id)
+            quadtree.objects.append(block)
             self.set_count_tree(quadtree=quadtree, value=1)
             block.leaves.append(quadtree)
 #TODO: Blocks not getting multiple leaves
