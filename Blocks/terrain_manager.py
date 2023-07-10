@@ -211,13 +211,14 @@ class Terrain_Manager:
         elif quadtree.count >= self.capacity and quadtree.branch_count < self.max_branches:
             # split
             children = self.create_branches(quadtree)
-            # quadtree.objects.clear()  # WHY IS THIS SO SLOW?? Stuck in a loop?
-            for block_id in quadtree.objects:
+            objs = []
+            objs.extend(quadtree.objects)
+            quadtree.objects.clear()
+            for block_id in objs:
                 refind_block = self.blocks[block_id]
-                quadtree.objects.remove(block_id)
+                # quadtree.objects.remove(block_id)
                 # if block_id != block.id:
                 self.set_count_tree(quadtree=quadtree, value=-1)  # decrement count, will increment it below
-                # if quadtree in self.blocks[block_id].leaves:  # THIS SHOULD NOT BE NEEDED
                 self.blocks[block_id].leaves.remove(quadtree)
 
                 for child in children:
