@@ -8,6 +8,7 @@ from quadtree import Quadtree  #, QuadtreeElement
 import pygame as pg
 import math
 import physics
+from morton import Morton
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
@@ -17,12 +18,13 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 6
-        self.capacity = 3
+        self.max_branches = 10
+        self.capacity = 30
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
         physics.t_m = self
+        self.morton = Morton(dimensions=2, bits=32)
         self.total_col_dets = 0
 
 
@@ -35,6 +37,7 @@ class Terrain_Manager:
 
     def update(self, screen) -> list:
         # self.total_col_dets = 0
+        # print(len(self.blocks))
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
@@ -127,10 +130,11 @@ class Terrain_Manager:
             return False  # block is grounded. If block has not been added to any leaves yet it will still proces
         change = False
         for leaf in block.leaves:
-            # this check happens large number of times. Reducing would help.
+            # this check happens large number of times.
+            # Reducing would help.
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
             if contained == -1:
-                # This is stopping blocks that stack up inside a leaf to spill over into the next leaf
+                # block completely outside leaf
                 leaf.objects.remove(block.id)
                 block.leaves.remove(leaf)
                 self.set_count_tree(quadtree=leaf, value=-1)
@@ -159,9 +163,17 @@ class Terrain_Manager:
 
 
     # @profile  # large memory cost Every non-grounded block calls this every frame
-    def get_neighbors(self, quadtree):  # Now returns indices of blocks
-        return [self.blocks[id] for id in quadtree.objects]
-        # return quadtree.objects
+    def get_neighbors(self, block, quadtree):  # Now returns indices of blocks
+        all_neighbors = [self.blocks[id] for id in quadtree.objects if id != block.id]
+        # self.exclude_far_blocks(block, all_neighbors)
+        return all_neighbors
+
+
+    # def exclude_far_blocks(self, block, other_blocks: list):
+    #     block_mcode = self.morton.pack(block.rect.x, block.rect.y)
+    #     print(block_mcode)
+
+
 
     # @profile  # Massive memory consumption because it is called many times (from check_remove_leaf)
     def check_block_in_quad(self, block, quadtree) -> int: # return: outside=-1 , inside=1, on_edge=0

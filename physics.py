@@ -16,7 +16,6 @@ t_m = None
 
 # @profile  # Massive memory hit
 def check_down_collision(block, other_blocks: list):  # -> Block or bool
-    other_blocks.remove(block)  # faster than checking block==other_block every iteration
     for oth_block in other_blocks:
         # t_m.total_col_dets += 1
         if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
@@ -76,7 +75,7 @@ def move(block) -> list:
     block.bottom_collide_block = None
     neighboring_blocks = []
     for quadtree in block.leaves:
-        neighboring_blocks = t_m.get_neighbors(quadtree)
+        neighboring_blocks.extend(t_m.get_neighbors(block, quadtree))
     collision = check_down_collision(block, neighboring_blocks)
 
     if collision:  # collided. Check if it should slide to either side

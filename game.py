@@ -39,7 +39,7 @@ class Game:
                                               terrain_manager=self.terrain_manager))
         self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(801, 820, 760, 800),
                                               terrain_manager=self.terrain_manager))
-        print(f'length of blocks = {str(len(self.blocks))}')
+        # print(f'length of blocks = {str(len(self.blocks))}')
 
         self.terrain_manager.blocks.extend(self.blocks)
         block_rects = [block.rect for block in self.blocks]
@@ -56,12 +56,12 @@ class Game:
 
         # # visualization
         pg.draw.line(self.screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
-        for q in self.quadtrees:
-            color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
-            pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.screen, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
-            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
-            pg.draw.line(self.screen, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
+        # for q in self.quadtrees:
+        #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
+        #     pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
+        #     pg.draw.line(self.screen, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
+        #     pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
+        #     pg.draw.line(self.screen, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
 
         # timed functions
         # if timer > 60:
