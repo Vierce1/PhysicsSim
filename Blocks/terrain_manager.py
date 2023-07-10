@@ -18,7 +18,7 @@ class Terrain_Manager:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.max_branches = 6
-        self.capacity = 22
+        self.capacity = 45
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
@@ -105,18 +105,20 @@ class Terrain_Manager:
 #TODO: Now collision detection is very efficient, but creating nodes every frame slow
 # Need a way to skip this for grounded blocks.
 # For grounded blocks can I cache the position of their quadtree and then add them in after the other blocks finish?
+#     @profile
     def insert_blocks(self, block, root_quadtree):
         # Check if block is still contained in same leaf(s) as last frame
         # leaf_count = [len(block.leaves)]
-        change, block.leaves = self.check_remove_leaf(block)  # will either be blank (if no same leaves contain) or not
+        change = self.check_remove_leaf(block)  # will either be blank (if no same leaves contain) or not
         if len(block.leaves) == 0 or change is True:
                 #leaf_count[0] != len(block.leaves):  # Only search for new leaf if it left one of its previous ones
             self.add_rects_to_quadtree(block, root_quadtree)
 #TODO: Need to allow blocks which stack up to spill over into new leaves. They need to check somehow.
 
 
-    def check_remove_leaf(self, block) -> list:
-        leaves = []
+    # @profile
+    def check_remove_leaf(self, block) -> bool:  # .145MB memory per call  22 fps
+        # leaves = []  # large memory consumption
         change = False
         for leaf in block.leaves:
             # print(f'inside  leaf = {round(leaf.x)} {round(leaf.y)}    block_bottom= {block.rect.bottom - block.rect.height}')
@@ -124,13 +126,14 @@ class Terrain_Manager:
             if not contained:
                 # This is stopping blocks that stack up inside a leaf to spill over into the next leaf
                 leaf.objects.remove(block.id)
+                block.leaves.remove(leaf)
                 self.set_count_tree(quadtree=leaf, value=-1)
                 change = True
-            else:
-                leaves.append(leaf)
-        return change, leaves
+            # else:
+            #     leaves.append(leaf)
+        return change #, leaves
 
-
+    # @profile
     def create_branches(self, quadtree: Quadtree):
         if len(quadtree.children) > 0:
             return quadtree.children  # another block already created the children
@@ -147,7 +150,7 @@ class Terrain_Manager:
                 self.all_quads.append(child)
         return quadtree.children
 
-
+    # @profile  # large memory cost
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
         return [self.blocks[id] for id in quadtree.objects]
         # return quadtree.objects
