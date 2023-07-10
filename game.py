@@ -8,6 +8,7 @@ from Blocks.block_type import *
 from Blocks import terrain_gen as tg, terrain_manager as tm
 import physics
 from quadtree import Quadtree
+import psutil
 import gc
 
 
@@ -30,7 +31,7 @@ class Game:
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
-        self.blocks = tg.gen_terrain(block_list=(2000, Sand()), bounds=(620, 780, 100, 600),
+        self.blocks = tg.gen_terrain(block_list=(1000, Sand()), bounds=(620, 780, 100, 600),
                                          terrain_manager=self.terrain_manager)
         rocks = tg.gen_terrain(block_list=(1000, Rock()), bounds=(600, 800, 800, 900),
                                         terrain_manager=self.terrain_manager)
@@ -44,7 +45,7 @@ class Game:
         self.terrain_manager.blocks.extend(self.blocks)
         block_rects = [block.rect for block in self.blocks]
         self.terrain_manager.block_rects.extend(block_rects)
-        self.terrain_manager.assign_block_indices()
+        self.terrain_manager.setup()
 
 
     def update(self, timer: int, events: list[pg.event.Event]):
@@ -56,12 +57,12 @@ class Game:
 
         # # visualization
         pg.draw.line(self.screen, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
-        # for q in self.quadtrees:
-        #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
-        #     pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
-        #     pg.draw.line(self.screen, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
-        #     pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
-        #     pg.draw.line(self.screen, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
+        for q in self.quadtrees:
+            color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x + q.width, q.y))
+            pg.draw.line(self.screen, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
+            pg.draw.line(self.screen, color, (q.x, q.y), (q.x, q.y - q.height))
+            pg.draw.line(self.screen, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
 
         # timed functions
         # if timer > 60:
@@ -86,6 +87,8 @@ class Game:
         # now = pg.time.get_ticks()
         # while now - tick < self.delay:
         #     now = pg.time.get_ticks()
+
+        print(psutil.virtual_memory())
 
         pg.event.pump()
         pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update

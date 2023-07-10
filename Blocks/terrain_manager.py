@@ -25,11 +25,15 @@ class Terrain_Manager:
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
         physics.t_m = self
         self.morton = Morton(dimensions=2, bits=32)
+        self.max_collision_dist = 0 # should be about 1.5x diameter of block
         self.total_col_dets = 0
 
 
-    def assign_block_indices(self):  # need new method for adding blocks after init
+
+    def setup(self):  # need new method for adding blocks after init
         [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
+        self.max_collision_dist = 1.5 * self.blocks[0].rect.width
+
     def set_index(self, block, index: int):
         block.id = index
 
@@ -37,7 +41,7 @@ class Terrain_Manager:
 
     def update(self, screen) -> list:
         # self.total_col_dets = 0
-        # print(len(self.blocks))
+
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
@@ -165,13 +169,33 @@ class Terrain_Manager:
     # @profile  # large memory cost Every non-grounded block calls this every frame
     def get_neighbors(self, block, quadtree):  # Now returns indices of blocks
         all_neighbors = [self.blocks[id] for id in quadtree.objects if id != block.id]
-        # self.exclude_far_blocks(block, all_neighbors)
-        return all_neighbors
+        # return all_neighbors
+        # print(len(all_neighbors))
+        close_neighbors = self.exclude_far_blocks(block, all_neighbors)
+        # print(len(close_neighbors))
+        # print('\n\n')
+        return close_neighbors
 
 
-    # def exclude_far_blocks(self, block, other_blocks: list):
-    #     block_mcode = self.morton.pack(block.rect.x, block.rect.y)
-    #     print(block_mcode)
+    # @profile
+    def exclude_far_blocks(self, block, other_blocks: list):
+        min_mort = self.morton.pack(block.rect.x - self.max_collision_dist, block.rect.y - self.max_collision_dist)
+        max_mort = self.morton.pack(block.rect.x + self.max_collision_dist, block.rect.y + self.max_collision_dist)
+        # print(min_mort)
+        mort_codes = [(b, self.morton.pack(b.rect.x, b.rect.y)) for b in other_blocks]
+        # mort_codes.sort(key=lambda: [a[1] for a])
+        mort_codes = sorted(mort_codes, key=lambda x: x[1])
+        # print(mort_codes)
+        close_neighbors = []
+#TODO: Limit the # of blocks to go through. Can stop at max, but what about min?
+        for oth_block, m_code in mort_codes:
+            # m_code = self.morton.pack(oth_block.rect.x, oth_block.rect.y)
+            if min_mort < m_code < max_mort:
+                close_neighbors.append(oth_block)
+            elif m_code > max_mort:
+                break
+        return close_neighbors
+
 
 
 

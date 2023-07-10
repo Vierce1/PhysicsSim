@@ -34,6 +34,7 @@ def check_down_collision(block, other_blocks: list):  # -> Block or bool
     return None
 
 
+#TODO: Should I restrict blocks to landing on an int position ?
 def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
     # get relative x position of block against the collided block
     x_diff = block.rect.centerx - collided_block.rect.centerx

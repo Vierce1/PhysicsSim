@@ -9,12 +9,15 @@ from Blocks.block_type import *
 from Blocks import terrain_gen, terrain_manager
 import physics
 from quadtree import Quadtree
+# import gc
+
 
 
 pg.init()
 display_resolution = [1920,1080]
 flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
 screen = pg.display.set_mode(display_resolution)
+# gc.disable()
 
 physics.display_res = display_resolution
 game_running = True
