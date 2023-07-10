@@ -7,7 +7,7 @@ class Block:
     def __init__(self, type: block_type.Block_Type, position: (int, int)):
         self.id = -1
         self.type = type
-        # self.position = position
+        self.position = position
         self.move_speed = .03  # different blocks can fall different speeds
         self.vert_velocity = 0
         self.horiz_velocity = 0
@@ -19,4 +19,3 @@ class Block:
         # self.neighboring_blocks = []
         self.bottom_collide_block = None
         self.leaves = []  #TODO: Remove this somehow
-

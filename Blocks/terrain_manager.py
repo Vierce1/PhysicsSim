@@ -2,13 +2,17 @@
 # from Blocks.block_type import *
 import Blocks.block_type
 import physics
+import pymorton
 # import Blocks.block as block
 from Blocks import block
 from quadtree import Quadtree  #, QuadtreeElement
 import pygame as pg
 import math
 import physics
-from morton import Morton
+from pymorton import *
+import sys
+import size_checker
+
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
@@ -18,34 +22,43 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 10
-        self.capacity = 30
+        self.max_branches = 8
+        self.capacity = 25
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
         physics.t_m = self
-        self.morton = Morton(dimensions=2, bits=32)
         self.max_collision_dist = 0 # should be about 1.5x diameter of block
         self.total_col_dets = 0
+        self.render_image = None
+        # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
 
 
 
-    def setup(self):  # need new method for adding blocks after init
+
+    def setup(self, render_image):  # need new method for adding blocks after init
         [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
         self.max_collision_dist = 1.5 * self.blocks[0].rect.width
+        self.render_image = render_image
+
 
     def set_index(self, block, index: int):
         block.id = index
 
 
 
+    # @profile
     def update(self, screen) -> list:
         # self.total_col_dets = 0
+
+        # print(f'quadtrees size = {size_checker.total_size(self.all_quads, verbose=False)}')
+        # print(f'quadtree size: {sys.getsizeof(self.root_quadtree)}')
+        # print(f'blocks size: {sys.getsizeof(self.blocks)}')
 
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
-            physics.update(block=block, screen=screen)
+            physics.update(block=block, screen=self.render_image)
 
         self.cleanup_tree()
 
@@ -169,29 +182,24 @@ class Terrain_Manager:
     # @profile  # large memory cost Every non-grounded block calls this every frame
     def get_neighbors(self, block, quadtree):  # Now returns indices of blocks
         all_neighbors = [self.blocks[id] for id in quadtree.objects if id != block.id]
-        # return all_neighbors
+        return all_neighbors
         # print(len(all_neighbors))
-        close_neighbors = self.exclude_far_blocks(block, all_neighbors)
+        # close_neighbors = self.exclude_far_blocks(block, all_neighbors)
         # print(len(close_neighbors))
-        # print('\n\n')
-        return close_neighbors
-
+        # print('\n')
+        # return close_neighbors
 
     # @profile
-    def exclude_far_blocks(self, block, other_blocks: list):
-        min_mort = self.morton.pack(block.rect.x - self.max_collision_dist, block.rect.y - self.max_collision_dist)
-        max_mort = self.morton.pack(block.rect.x + self.max_collision_dist, block.rect.y + self.max_collision_dist)
-        # print(min_mort)
-
-        other_blocks = sorted(other_blocks, key=lambda b: (b.rect.x - block.rect.x)**2 + (b.rect.y - block.rect.y)**2)
-        #TODO: Limit the # of blocks to go through. Can stop at max, but what about min?
+    def exclude_far_blocks(self, block, otherblocks: list):
+        min = pymorton.interleave2(round(block.rect.x) - round(self.max_collision_dist),
+                                   round(block.rect.y) - round(self.max_collision_dist))
+        max = pymorton.interleave2(round(block.rect.x) + round(self.max_collision_dist),
+                                         round(block.rect.y) + round(self.max_collision_dist))
         neighbors = []
-        for oth_block in other_blocks:
-            code = self.morton.pack(oth_block.rect.x, oth_block.rect.y)
-            if min_mort < code < max_mort:
-                neighbors.append(oth_block)
-            elif code > max_mort:
-                break
+        for b in otherblocks:
+            code = pymorton.interleave2(round(b.rect.x), round(b.rect.y))
+            if min < code < max:
+                neighbors.append(b)
         return neighbors
 
 

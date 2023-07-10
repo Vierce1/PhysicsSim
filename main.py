@@ -28,7 +28,6 @@ game.setup()
 clock = time.Clock()
 timer = 0
 # bliting slowed down by 30%+. Drawing directly on screen faster
-# render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
 pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.KEYUP]) # limit allowed events we have to check for every frame
 
 print('\n\nGame Loaded')
