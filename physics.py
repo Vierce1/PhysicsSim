@@ -59,7 +59,7 @@ def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
 
 # Block functions
 def update(block, screen):
-    # print(f'# of leaves: {block.leaves}')
+    print(f'# of leaves: {block.leaves}')
     if block.grounded_timer == frames_til_grounded:
         block.collision_detection = False
     neighboring_blocks = move(block)
