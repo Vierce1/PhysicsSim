@@ -182,20 +182,17 @@ class Terrain_Manager:
         min_mort = self.morton.pack(block.rect.x - self.max_collision_dist, block.rect.y - self.max_collision_dist)
         max_mort = self.morton.pack(block.rect.x + self.max_collision_dist, block.rect.y + self.max_collision_dist)
         # print(min_mort)
-        mort_codes = [(b, self.morton.pack(b.rect.x, b.rect.y)) for b in other_blocks]
-        # mort_codes.sort(key=lambda: [a[1] for a])
-        mort_codes = sorted(mort_codes, key=lambda x: x[1])
-        # print(mort_codes)
-        close_neighbors = []
-#TODO: Limit the # of blocks to go through. Can stop at max, but what about min?
-        for oth_block, m_code in mort_codes:
-            # m_code = self.morton.pack(oth_block.rect.x, oth_block.rect.y)
-            if min_mort < m_code < max_mort:
-                close_neighbors.append(oth_block)
-            elif m_code > max_mort:
-                break
-        return close_neighbors
 
+        other_blocks = sorted(other_blocks, key=lambda b: (b.rect.x - block.rect.x)**2 + (b.rect.y - block.rect.y)**2)
+        #TODO: Limit the # of blocks to go through. Can stop at max, but what about min?
+        neighbors = []
+        for oth_block in other_blocks:
+            code = self.morton.pack(oth_block.rect.x, oth_block.rect.y)
+            if min_mort < code < max_mort:
+                neighbors.append(oth_block)
+            elif code > max_mort:
+                break
+        return neighbors
 
 
 

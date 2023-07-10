@@ -87,8 +87,8 @@ class Game:
         # while now - tick < self.delay:
         #     now = pg.time.get_ticks()
 
-        print(f'memory % usage: {psutil.virtual_memory().percent}')
-        print(f'cpu % usage: {psutil.cpu_percent()}')
+        # print(f'memory % usage: {psutil.virtual_memory().percent}')
+        # print(f'cpu % usage: {psutil.cpu_percent()}')
 
         pg.event.pump()
         pg.display.flip()  # updates the display. Could use display.update() and pass in PARTS of the screen to update
