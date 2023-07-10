@@ -221,7 +221,8 @@ class Terrain_Manager:
         top_dist = quadtree.y - (block.rect.top + block.rect.height)
 
         if quadtree.y >= top >= (quadtree.y - quadtree.height - block.rect.height) \
-                and (right >= quadtree.x and left <= quadtree.x + quadtree.width):
+                and quadtree.x <= right <= quadtree.x + quadtree.width:
+                # and (right >= quadtree.x and left <= quadtree.x + quadtree.width):
             if top_dist < block.rect.height:  # in multiple leaves
                 return 0
             return 1
