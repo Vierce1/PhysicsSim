@@ -18,7 +18,7 @@ class Terrain_Manager:
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.max_branches = 6
-        self.capacity = 45
+        self.capacity = 3
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
@@ -105,7 +105,7 @@ class Terrain_Manager:
 
 
 #TODO: Major memory usage functions:
-    # get_neighbors, check_down_collisions, check_block_in_quad
+    # get_neighbors, check_down_collisions, check_block_in_quad (called from check_remove_leaf)
 
 
 
@@ -119,25 +119,23 @@ class Terrain_Manager:
         if len(block.leaves) == 0 or change is True:
                 #leaf_count[0] != len(block.leaves):  # Only search for new leaf if it left one of its previous ones
             self.add_rects_to_quadtree(block, root_quadtree)
-#TODO: Need to allow blocks which stack up to spill over into new leaves. They need to check somehow.
 
 
     # @profile
-    def check_remove_leaf(self, block) -> bool:  # .145MB memory per call  22 fps
-        # leaves = []  # large memory consumption
+    def check_remove_leaf(self, block) -> bool:
         change = False
         for leaf in block.leaves:
-            # print(f'inside  leaf = {round(leaf.x)} {round(leaf.y)}    block_bottom= {block.rect.bottom - block.rect.height}')
+            # this check happens large number of times. Reducing would help.
             contained = self.check_block_in_quad(block=block, quadtree=leaf)
-            if not contained:
+            if contained == -1:
                 # This is stopping blocks that stack up inside a leaf to spill over into the next leaf
                 leaf.objects.remove(block.id)
                 block.leaves.remove(leaf)
                 self.set_count_tree(quadtree=leaf, value=-1)
                 change = True
-            # else:
-            #     leaves.append(leaf)
-        return change #, leaves
+            elif contained == 0:  # on the edge of the leaf. Process change but don't remove it
+                change = True
+        return change
 
 
     # @profile
@@ -158,32 +156,41 @@ class Terrain_Manager:
         return quadtree.children
 
 
-    # @profile  # large memory cost: 30MB for about 8 frames. Every non-grounded block calls this every frame
+    # @profile  # large memory cost Every non-grounded block calls this every frame
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
         return [self.blocks[id] for id in quadtree.objects]
         # return quadtree.objects
 
-    @profile  # Massive memory consumption. 10 frames: ~ 20MB
+    # @profile  # Massive memory consumption because it is called many times (from check_remove_leaf)
     def check_block_in_quad(self, block, quadtree) -> int: # return: outside=-1 , inside=1, on_edge=0
         # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
         # This allows inter-leaf collision
         right = block.rect.right + (1 * block.rect.width)
         left = block.rect.left - (1 * block.rect.width)
         top = block.rect.top + (1 * block.rect.height)
-        bottom = block.rect.bottom - (1 * block.rect.height)
+        # bottom = block.rect.bottom - (1 * block.rect.height)
+
+        top_dist = quadtree.y - (block.rect.top + block.rect.height)
+
+        if quadtree.y >= top >= (quadtree.y - quadtree.height - block.rect.height) \
+                and (right >= quadtree.x and left <= quadtree.x + quadtree.width):
+            if top_dist < block.rect.height:  # in multiple leaves
+                return 0
+            return 1
+        return -1
 
 
-        # if quadtree.y >= bottom <= (quadtree.y + quadtree.height + block.rect.height) \
+        # if quadtree.y >= top >= (quadtree.y - quadtree.height - block.rect.height) \
         #         and (right >= quadtree.x and left <= quadtree.x + quadtree.width):
         #     return True
         # return False  # Slightly slower
-
-        # q_width, q_height = self.get_quadnode_dimensions(quadtree.branch_count)
-        # horiz = right - quadtree.x
-        if (right >= quadtree.x and left <= quadtree.x + quadtree.width) \
-            and (bottom <= quadtree.y and top >= quadtree.y - quadtree.height):
-                return True
-        else: return False
+        #
+        # # q_width, q_height = self.get_quadnode_dimensions(quadtree.branch_count)
+        # # horiz = right - quadtree.x
+        # if (right >= quadtree.x and left <= quadtree.x + quadtree.width) \
+        #     and (bottom <= quadtree.y and top >= quadtree.y - quadtree.height):
+        #         return True
+        # else: return False
 
 
 
@@ -196,7 +203,7 @@ class Terrain_Manager:
         if len(quadtree.children) > 0:
             for child in quadtree.children:
                 contained = self.check_block_in_quad(block, child)
-                if contained:
+                if contained != -1:
                     self.add_rects_to_quadtree(block, child)
 
         # reached a leaf. proceed
@@ -204,9 +211,6 @@ class Terrain_Manager:
         elif quadtree.count >= self.capacity and quadtree.branch_count < self.max_branches:
             # split
             children = self.create_branches(quadtree)
-#TODO: Slowdown and errors in this function below:
-            # objects = []
-            # objects.extend(quadtree.objects)
             # quadtree.objects.clear()  # WHY IS THIS SO SLOW?? Stuck in a loop?
             for block_id in quadtree.objects:
                 refind_block = self.blocks[block_id]
@@ -218,15 +222,15 @@ class Terrain_Manager:
 
                 for child in children:
                     contained = self.check_block_in_quad(refind_block, child)
-                    if contained:
+                    if contained != -1:
                         self.add_rects_to_quadtree(refind_block, child)
                         # self.set_count_tree(child, 1) # No need, count will be added when we hit a leaf
 
             for child in children:  # check if original block is in each child
                 contained = self.check_block_in_quad(block, child)
-                if contained:
+                if contained != -1:
                     self.add_rects_to_quadtree(block, child)
-        else:  # found leaf w/ under capacity or max branches
+        elif block.id not in quadtree.objects:  # found leaf w/ under capacity or max branches
             id = block.id
             # print(f'count: {quadtree.count}   branches: {quadtree.branch_count}')
             # if id not in quadtree.objects:

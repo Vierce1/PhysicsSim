@@ -59,6 +59,7 @@ def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
 
 # Block functions
 def update(block, screen):
+    # print(f'# of leaves: {block.leaves}')
     if block.grounded_timer == frames_til_grounded:
         block.collision_detection = False
     neighboring_blocks = move(block)
@@ -66,6 +67,7 @@ def update(block, screen):
     pg.draw.rect(surface=screen, color=block.type.color, rect=block.rect)
 
 
+# @profile
 def move(block) -> list:
     if not block.collision_detection: # or len(block.quadtrees) == 0:  #not block.quadtree:
         block.horiz_velocity = 0
@@ -81,7 +83,7 @@ def move(block) -> list:
         block.vert_velocity = 0
         if collision != True:  # true means ground
             block.bottom_collide_block = collision
-#TODO: is this causing slowdowns?
+
         if type(collision) is not bool and collision.vert_velocity == 0:
             slide = check_slide(block, collision)
             # check if there is a block in the way to stop sliding that direction
