@@ -54,6 +54,7 @@ class Terrain_Manager:
 #TODO: Counts are wrong (shows more than the 25 i spawned in some nodes, root node does not equal 25)
 # And cleanup tree removes nodes that should not be removed
 
+    # @profile  # Very low memory usage
     def cleanup_tree(self):  # remove empty quadtree nodes i/o deleting all of them every frame
         process_list = [self.root_quadtree]
         deletions = []
@@ -89,6 +90,7 @@ class Terrain_Manager:
     #         eval_node = eval_node.parent
     #     return eval_node  # found the node just under the parent node that has a count > 0
 
+    # @profile  # Low memory usage
     def del_children_recursive(self, root):
         # print(f'deleing {round(root.x)}  {round(root.y)}')
         for child in root.children:
@@ -102,10 +104,14 @@ class Terrain_Manager:
 
 
 
-#TODO: Now collision detection is very efficient, but creating nodes every frame slow
-# Need a way to skip this for grounded blocks.
-# For grounded blocks can I cache the position of their quadtree and then add them in after the other blocks finish?
-#     @profile
+#TODO: Major memory usage functions:
+    # get_neighbors, check_down_collisions, check_block_in_quad
+
+
+
+#TODO: For grounded blocks can I cache position of their quadtree and then add them in after the other blocks finish?
+
+    # @profile
     def insert_blocks(self, block, root_quadtree):
         # Check if block is still contained in same leaf(s) as last frame
         # leaf_count = [len(block.leaves)]
@@ -133,6 +139,7 @@ class Terrain_Manager:
             #     leaves.append(leaf)
         return change #, leaves
 
+
     # @profile
     def create_branches(self, quadtree: Quadtree):
         if len(quadtree.children) > 0:
@@ -150,12 +157,13 @@ class Terrain_Manager:
                 self.all_quads.append(child)
         return quadtree.children
 
-    # @profile  # large memory cost
+
+    # @profile  # large memory cost: 30MB for about 8 frames. Every non-grounded block calls this every frame
     def get_neighbors(self, quadtree):  # Now returns indices of blocks
         return [self.blocks[id] for id in quadtree.objects]
         # return quadtree.objects
 
-
+    @profile  # Massive memory consumption. 10 frames: ~ 20MB
     def check_block_in_quad(self, block, quadtree) -> int: # return: outside=-1 , inside=1, on_edge=0
         # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
         # This allows inter-leaf collision

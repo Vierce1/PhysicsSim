@@ -16,15 +16,14 @@ t_m = None
 
 # @profile  # Massive memory hit
 def check_down_collision(block, other_blocks: list):  # -> Block or bool
+    other_blocks.remove(block)  # faster than checking block==other_block every iteration
     for oth_block in other_blocks:
-        if oth_block == block:
-            continue
         # t_m.total_col_dets += 1
         if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
             and -1 * (oth_block.rect.width + block.rect.width) * collision_width <= \
                 oth_block.rect.centerx - block.rect.centerx \
                 <= (oth_block.rect.width + block.rect.width) * collision_width:
-                # move the block back 1 frame so they aren't occluded. Grid system will also help with this
+        # move the block back 1 frame so they aren't occluded. Grid system will also help with this
         # had to remove this because it was bouncing blocks out of their quadtree
                 # block.rect.bottom = oth_block.rect.top
                 block.grounded_timer += 1
@@ -59,7 +58,6 @@ def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
 
 
 # Block functions
-
 def update(block, screen):
     if block.grounded_timer == frames_til_grounded:
         block.collision_detection = False
