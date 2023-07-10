@@ -123,6 +123,8 @@ class Terrain_Manager:
 
     # @profile
     def check_remove_leaf(self, block) -> bool:
+        if not block.collision_detection:
+            return False  # block is grounded. If block has not been added to any leaves yet it will still proces
         change = False
         for leaf in block.leaves:
             # this check happens large number of times. Reducing would help.
