@@ -34,7 +34,7 @@ class Terrain_Manager:
 
 
     def update(self, screen) -> list:
-        self.total_col_dets = 0
+        # self.total_col_dets = 0
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
