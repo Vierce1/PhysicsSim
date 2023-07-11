@@ -32,7 +32,7 @@ class Game:
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
-        self.blocks = tg.gen_terrain(block_list=(3000, Sand()), bounds=(620, 780, 100, 600),
+        self.blocks = tg.gen_terrain(block_list=(2000, Sand()), bounds=(100, 1800, 100, 600), # bounds=(620, 780, 100, 600),
                                          terrain_manager=self.terrain_manager)
 
         rocks = tg.gen_terrain(block_list=(1000, Rock()), bounds=(600, 800, 800, 900),
@@ -44,7 +44,7 @@ class Game:
                                               terrain_manager=self.terrain_manager))
         # print(f'length of blocks = {str(len(self.blocks))}')
 
-        self.terrain_manager.blocks.extend(self.blocks)
+        self.terrain_manager.blocks.update(self.blocks)
         block_rects = [block.rect for block in self.blocks]
         self.terrain_manager.block_rects.extend(block_rects)
         self.terrain_manager.setup(self.render_image)

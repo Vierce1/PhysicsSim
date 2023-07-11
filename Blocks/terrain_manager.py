@@ -18,7 +18,7 @@ class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
         self.all_quads = []# set()
         self.node_count = 1  # for root node
-        self.blocks = []
+        self.blocks = set()
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -37,8 +37,9 @@ class Terrain_Manager:
 
 
     def setup(self, render_image):  # need new method for adding blocks after init
-        [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
-        self.max_collision_dist = 2 * self.blocks[0].rect.width
+        # [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
+        block = Blocks.block.Block(Blocks.block_type.Sand(), (0, 0))
+        self.max_collision_dist = 2 * block.rect.width
         self.render_image = render_image
 
 
@@ -53,16 +54,15 @@ class Terrain_Manager:
 
         # print(f'quadtrees size = {size_checker.total_size(self.all_quads, verbose=False)}')
         # print(f'quadtree size: {sys.getsizeof(self.root_quadtree)}')
-        # print(f'blocks size: {sys.getsizeof(self.blocks)}')
+        # print(f'blocks size: {sys.getsizeof(self.blocks[0])}')
         # print(f'non-grounded block count: {len([b for b in self.blocks if b.collision_detection])}')
         # print(f'leaf=leaf '
         #       f'{[b for b in self.blocks if [l for l in b.leaves if
         #       len([l2 for l2 in b.leaves if l == l2 and b.leaves.index(l) != b.leaves.index(l2)]) > 0]]}')
 
-        # self.assign_z_addresses()
+
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
-        # [self.assign_z_addresses(b) for b in self.blocks]
         for block in self.blocks:
             physics.update(block=block, screen=self.render_image)
 
@@ -132,7 +132,9 @@ class Terrain_Manager:
     # @profile
     def insert_blocks(self, block, root_quadtree):
         # Check if block is still contained in same leaf(s) as last frame
-        change, left_leaves = self.check_remove_leaf(block)
+        change, left_leaves = False, []
+        if block.collision_detection:
+            change, left_leaves = self.check_remove_leaf(block)
         if change is True or len(block.leaves) == 0:  # search if no leaves, or changed leaves
             root = root_quadtree
             if len(left_leaves) > 0:
@@ -142,8 +144,6 @@ class Terrain_Manager:
 
     # @profile
     def check_remove_leaf(self, block) -> (bool, list[Quadtree]):
-        if not block.collision_detection:
-            return False, []  # block is grounded. If block has not been added to any leaves yet it will still proces
         change = False
         left_leaves = []  # we will start searching for a new leaf from this list's common root
         for leaf in block.leaves:
