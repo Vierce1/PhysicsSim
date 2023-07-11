@@ -16,7 +16,7 @@ class Game:
     def __init__(self, display_resolution: list[int], screen: pg.Surface):
         self.display_resolution = display_resolution
         self.screen = screen
-        self.quadtrees = []
+        self.blocks = []
         # Initial load time goes up with more cells, but fps is better
         # Having a huge number of trees decreases FPS but reduces impact of collision.
         # width and height of each quadtree cell
@@ -33,10 +33,10 @@ class Game:
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
-        self.blocks = tg.gen_terrain(block_count=2000, block_type=Sand(), bounds=(100, 1800, 100, 600),
-                                         terrain_manager=self.terrain_manager)
+        # self.blocks = tg.gen_terrain(block_count=20000, block_type=Sand(), bounds=(300, 800, 100, 600),
+        #                                  terrain_manager=self.terrain_manager)
 
-        rocks = tg.gen_terrain(block_count=6000, block_type=Rock(), bounds=(600, 800, 800, 900),
+        rocks = tg.gen_terrain(block_count=15000, block_type=Rock(), bounds=(600, 800, 800, 900),
                                         terrain_manager=self.terrain_manager)
         self.blocks.extend(rocks)
         self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(580, 599, 760, 800),
@@ -62,8 +62,8 @@ class Game:
         pg.draw.line(self.render_image, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
 
         # timed functions
-        if timer > 1:
-            new_blocks = tg.gen_terrain(block_count=10, block_type=Sand(), bounds=(620, 780, 0, 10),
+        if timer > 1 and timer < 600:
+            new_blocks = tg.gen_terrain(block_count=20, block_type=Sand(), bounds=(540, 780, 400, 410),
                                                  terrain_manager=self.terrain_manager)
             self.blocks.extend(new_blocks)
             self.terrain_manager.blocks.update(new_blocks)
