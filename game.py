@@ -33,10 +33,10 @@ class Game:
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
-        self.blocks = tg.gen_terrain(block_count=20000, block_type=Sand(), bounds=(100, 1800, 100, 600),
+        self.blocks = tg.gen_terrain(block_count=2000, block_type=Sand(), bounds=(100, 1800, 100, 600),
                                          terrain_manager=self.terrain_manager)
 
-        rocks = tg.gen_terrain(block_count=4000, block_type=Rock(), bounds=(600, 800, 800, 900),
+        rocks = tg.gen_terrain(block_count=6000, block_type=Rock(), bounds=(600, 800, 800, 900),
                                         terrain_manager=self.terrain_manager)
         self.blocks.extend(rocks)
         self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(580, 599, 760, 800),
@@ -62,11 +62,11 @@ class Game:
         pg.draw.line(self.render_image, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
 
         # timed functions
-        # if timer > 1:
-        #     new_blocks = tg.gen_terrain(block_count=10, block_type=Sand(), bounds=(620, 780, 0, 200),
-        #                                          terrain_manager=self.terrain_manager)
-        #     self.blocks.extend(new_blocks)
-        #     self.terrain_manager.blocks.update(new_blocks)
+        if timer > 1:
+            new_blocks = tg.gen_terrain(block_count=10, block_type=Sand(), bounds=(620, 780, 0, 10),
+                                                 terrain_manager=self.terrain_manager)
+            self.blocks.extend(new_blocks)
+            self.terrain_manager.blocks.update(new_blocks)
 
 
         self.render_image.convert()  # optimize image after drawing on it

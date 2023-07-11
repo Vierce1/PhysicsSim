@@ -17,7 +17,10 @@ def gen_terrain(block_count: int, block_type: Block_Type, bounds: (int, int, int
     x = bounds[0]
     y = bounds[2]
     for x, y in zip(xs, ys):
-        block = Block(block_type, (round(x), round(y)))
+        pos = (round(x), round(y))
+        if terrain_manager.matrix[pos[0], pos[1]] == 1:
+            continue
+        block = Block(block_type, pos)
         generated_blocks.append(block)
 
     return generated_blocks

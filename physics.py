@@ -28,7 +28,7 @@ def check_slide(block) -> int:  # int -1 for slide left, 1 slide right, 0 no sli
     dir = 1 if random.random() < 0.5 else -1
     if t_m.matrix[block.position[0] + block.width * dir, block.position[1] + block.height] == 0:
         return 1
-    elif t_m.matrix[block.position[0]- block.width * -dir, block.position[1] + block.height] == 0:
+    elif t_m.matrix[block.position[0] + block.width * -dir, block.position[1] + block.height] == 0:
         return -1
     return 0
 
