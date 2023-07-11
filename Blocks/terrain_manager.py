@@ -16,35 +16,40 @@ import size_checker
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int):
-        self.all_quads = []# set()
-        self.node_count = 1  # for root node
+        # self.all_quads = []# set()
+        # self.node_count = 1  # for root node
         self.blocks = set()
-        self.block_rects = []
+        # self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 10
-        self.capacity = 35
-        self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
-                                 width=self.screen_width, height=self.screen_height, branch_count=0)
-        self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
+        # self.max_branches = 10
+        # self.capacity = 35
+        # self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
+        #                          width=self.screen_width, height=self.screen_height, branch_count=0)
+        # self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
         physics.t_m = self
-        self.max_collision_dist = 0 # should be about 1.5x diameter of block
-        self.total_col_dets = 0
+        # self.max_collision_dist = 0 # should be about 1.5x diameter of block
+        # self.total_col_dets = 0
         self.render_image = None
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
-
+        self.matrix = {}
+        for x in range(screen_width):  # initalize all spaces as empty
+            for y in range(screen_height):
+                self.matrix[x,y] = 0
 
 
 
     def setup(self, render_image):  # need new method for adding blocks after init
         # [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
-        block = Blocks.block.Block(Blocks.block_type.Sand(), (0, 0))
-        self.max_collision_dist = 2 * block.rect.width
+        # block = Blocks.block.Block(Blocks.block_type.Sand(), (0, 0))
+        # self.max_collision_dist = 2 * block.rect.width
+        for b in self.blocks:
+            self.matrix[b.rect.x, b.rect.y] = 1
         self.render_image = render_image
 
 
-    def set_index(self, block, index: int):
-        block.id = index
+    # def set_index(self, block, index: int):
+    #     block.id = index
 
 
 
@@ -61,12 +66,12 @@ class Terrain_Manager:
         #       len([l2 for l2 in b.leaves if l == l2 and b.leaves.index(l) != b.leaves.index(l2)]) > 0]]}')
 
 
-        [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
+        # [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
         for block in self.blocks:
             physics.update(block=block, screen=self.render_image)
 
-        self.cleanup_tree()
+        # self.cleanup_tree()
 
         # print(f'total collision detections: {self.total_col_dets}')
         # print(f'{len(self.all_quads)} all quads')
@@ -74,7 +79,7 @@ class Terrain_Manager:
         #     if q.count > 0:
         #         print(f'node index {i}    count: {q.count}  branches: {q.branch_count}')
 
-        return self.all_quads    # return just for drawing visually
+        # return self.all_quads    # return just for drawing visually
 
 
 #TODO: Counts are wrong (shows more than the 25 i spawned in some nodes, root node does not equal 25)
