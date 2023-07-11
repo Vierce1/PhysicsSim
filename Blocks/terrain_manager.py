@@ -190,7 +190,7 @@ class Terrain_Manager:
             all_neighbors.remove(block)
         # all_neighbors = [b for b in quadtree.objects if b != block] # SLower
         # return all_neighbors
-        # close_neighbors = self.exclude_far_blocks(block, all_neighbors)
+        # close_neighbors = self.exclude_blocks_z_address(block, all_neighbors)
         close_neighbors = self.exclude_blocks_limit(block, all_neighbors)
         # print(f'all neighbors: {len(all_neighbors)}')
         # print(f'    close neighbors: {len(close_neighbors)}')
@@ -220,27 +220,18 @@ class Terrain_Manager:
 
 
     # @profile
-    def exclude_far_blocks(self, block, otherblocks: list):
-        min = pymorton.interleave2(round(block.rect.x) - round(self.max_collision_dist),
-                                   round(block.rect.y) - round(self.max_collision_dist))
-        max = pymorton.interleave2(round(block.rect.x) + round(self.max_collision_dist),
-                                         round(block.rect.y) + round(self.max_collision_dist))
-        neighbors = []
-        # print(f'{[b.rect.x for b in otherblocks]}  {[b.rect.y for b in otherblocks]}')
-        # print(f'{[b.z_address for b in otherblocks]} ')
-
-        # print(f'block z : {block.z_address}')
-        # print(f'min {min}  max {max}')
-        for b in otherblocks:
-            # print(f'other block z: {b.z_address}  x: {b.rect.x}  y: {b.rect.y}')
-            if min < b.z_address < max:
-                neighbors.append(b)
-            elif b.z_address >= max:
-                break
-        # print(f'test block: {block.rect.x}  {block.rect.y}')
-        # print(f'{[b.rect.x for b in neighbors]}  {[b.rect.y for b in neighbors]}')
-
-        return neighbors
+    # def exclude_blocks_z_address(self, block, otherblocks: list):
+    #     min = pymorton.interleave2(round(block.rect.x) - round(self.max_collision_dist),
+    #                                round(block.rect.y) - round(self.max_collision_dist))
+    #     max = pymorton.interleave2(round(block.rect.x) + round(self.max_collision_dist),
+    #                                      round(block.rect.y) + round(self.max_collision_dist))
+    #     neighbors = []
+    #     for b in otherblocks:
+    #         if min < b.z_address < max:
+    #             neighbors.append(b)
+    #         elif b.z_address >= max:
+    #             break
+    #     return neighbors
 
 
 
@@ -280,8 +271,6 @@ class Terrain_Manager:
 
 
 
-# TODO:  Don't i need to add the block to the node BEFORE checking capacity? Otherwise the block will not
-# be added to the quad ever
     def add_rects_to_quadtree(self, block, quadtree: Quadtree):
         # first check if the node is already split
         if len(quadtree.children) > 0:
@@ -299,16 +288,13 @@ class Terrain_Manager:
             objs.extend(quadtree.objects)
             quadtree.objects.clear()
             for b in objs:
-                refind_block = b
-                # quadtree.objects.remove(block_id)
-                # if block_id != block.id:
                 self.set_count_tree(quadtree=quadtree, value=-1)  # decrement count, will increment it below
                 b.leaves.remove(quadtree)
 
                 for child in children:
-                    contained = self.check_block_in_quad(refind_block, child)
+                    contained = self.check_block_in_quad(b, child)
                     if contained != -1:
-                        self.add_rects_to_quadtree(refind_block, child)
+                        self.add_rects_to_quadtree(b, child)
                         # self.set_count_tree(child, 1) # No need, count will be added when we hit a leaf
 
             for child in children:  # check if original block is in each child
@@ -316,14 +302,9 @@ class Terrain_Manager:
                 if contained != -1:
                     self.add_rects_to_quadtree(block, child)
         elif block not in quadtree.objects:  # found leaf w/ under capacity or max branches
-            # id = block.id
-            # print(f'count: {quadtree.count}   branches: {quadtree.branch_count}')
-            # if id not in quadtree.objects:
             quadtree.objects.append(block)
             self.set_count_tree(quadtree=quadtree, value=1)
             block.leaves.append(quadtree)
-#TODO: Blocks not getting multiple leaves
-            # print(len(block.leaves))
 
 
     def set_count_tree(self, quadtree: Quadtree, value: int):
@@ -334,7 +315,7 @@ class Terrain_Manager:
             node.parent.count += value
             node = node.parent
 
-
+# Alternate method: Quadtree branches don't store their positions, calc on the fly. FPS drop
     # def get_quadnode_dimensions(self, branch_count):
     #     divisor = 1
     #     if branch_count > 0:
