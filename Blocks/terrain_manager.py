@@ -22,7 +22,7 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 7
+        self.max_branches = 9
         self.capacity = 35
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
@@ -54,6 +54,10 @@ class Terrain_Manager:
         # print(f'quadtrees size = {size_checker.total_size(self.all_quads, verbose=False)}')
         # print(f'quadtree size: {sys.getsizeof(self.root_quadtree)}')
         # print(f'blocks size: {sys.getsizeof(self.blocks)}')
+        # print(f'non-grounded block count: {len([b for b in self.blocks if b.collision_detection])}')
+        # print(f'leaf=leaf '
+        #       f'{[b for b in self.blocks if [l for l in b.leaves if
+        #       len([l2 for l2 in b.leaves if l == l2 and b.leaves.index(l) != b.leaves.index(l2)]) > 0]]}')
 
         # self.assign_z_addresses()
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
@@ -114,15 +118,9 @@ class Terrain_Manager:
 
     # @profile  # Low memory usage
     def del_children_recursive(self, root):
-        # print(f'deleing {round(root.x)}  {round(root.y)}')
         for child in root.children:
             self.del_children_recursive(child)
-        # try:
         self.all_quads.remove(root)
-        # except:
-            # print("fail")
-            # pass
-        # del root
 
 
 
@@ -136,18 +134,18 @@ class Terrain_Manager:
     # @profile
     def insert_blocks(self, block, root_quadtree):
         # Check if block is still contained in same leaf(s) as last frame
-        # leaf_count = [len(block.leaves)]
-        change = self.check_remove_leaf(block)  # will either be blank (if no same leaves contain) or not
-        if len(block.leaves) == 0 or change is True:
-                #leaf_count[0] != len(block.leaves):  # Only search for new leaf if it left one of its previous ones
-            self.add_rects_to_quadtree(block, root_quadtree)
+        change, left_leaves = self.check_remove_leaf(block)
+        if change is True or len(block.leaves) == 0:  # search if no leaves, or changed leaves
+            root = self.get_common_root(left_leaves) if len(left_leaves) > 0 else root_quadtree
+            self.add_rects_to_quadtree(block, root)
 
 
     # @profile
-    def check_remove_leaf(self, block) -> bool:
+    def check_remove_leaf(self, block) -> (bool, list[Quadtree]):
         if not block.collision_detection:
-            return False  # block is grounded. If block has not been added to any leaves yet it will still proces
+            return False, []  # block is grounded. If block has not been added to any leaves yet it will still proces
         change = False
+        left_leaves = []  # we will start searching for a new leaf from this list's common root
         for leaf in block.leaves:
             # this check happens large number of times.
             # Reducing would help.
@@ -158,9 +156,36 @@ class Terrain_Manager:
                 block.leaves.remove(leaf)
                 self.set_count_tree(quadtree=leaf, value=-1)
                 change = True
+                left_leaves.append(leaf)
             elif contained == 0:  # on the edge of the leaf. Process change but don't remove it
                 change = True
-        return change
+        return change, left_leaves
+
+
+    def get_common_root(self, leaves: list[Quadtree]):
+        # Need to take branch count into effect. First eval'd parent should be the lowest branch count shared
+        leaves = self.match_branches(leaves)
+        parents = [leaf.parent for leaf in leaves]
+        if self.root_quadtree == parents[0]:
+            return self.root_quadtree
+
+        for i in range(1, len(parents)):
+            if parents[i] != parents[0]:
+                return self.get_common_root(parents)
+        # no mismatches. Found the common root
+        # print(f'{parents[0].x}  {parents[0].y}')
+        return parents[0]
+
+    def match_branches(self, leaves: list[Quadtree]):
+        biggest_branch = max(leaf.branch_count for leaf in leaves)
+        for leaf in leaves:
+            while leaf.branch_count > biggest_branch:
+                if not leaf.parent:
+                    leaves[0] = self.root_quadtree
+                    return leaves
+                leaf = leaf.parent
+        return leaves
+
 
 
     # @profile
