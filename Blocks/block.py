@@ -18,4 +18,5 @@ class Block:
         self.grounded_timer = 0
         # self.neighboring_blocks = []
         self.bottom_collide_block = None
-        self.leaves = []  #TODO: Remove this somehow
+        self.leaves = []
+        self.z_address = 0x00

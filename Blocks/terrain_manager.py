@@ -57,6 +57,7 @@ class Terrain_Manager:
 
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
+        [self.assign_z_addresses(b) for b in self.blocks]
         for block in self.blocks:
             physics.update(block=block, screen=self.render_image)
 
@@ -183,16 +184,23 @@ class Terrain_Manager:
     def get_neighbors(self, block, quadtree):  # Now returns indices of blocks
         # all_neighbors = [self.blocks[id] for id in quadtree.objects if id != block.id]
         all_neighbors =[]
-        all_neighbors.extend( quadtree.objects)
+        all_neighbors.extend(quadtree.objects)
         if block in all_neighbors:
             all_neighbors.remove(block)
         # all_neighbors = [b for b in quadtree.objects if b != block] # SLower
-        return all_neighbors
+        # return all_neighbors
         # print(len(all_neighbors))
-        # close_neighbors = self.exclude_far_blocks(block, all_neighbors)
+        close_neighbors = self.exclude_far_blocks(block, all_neighbors)
         # print(len(close_neighbors))
         # print('\n')
-        # return close_neighbors
+        return close_neighbors
+
+
+    def assign_z_addresses(self, block):
+        block.z_address = pymorton.interleave2(round(block.rect.x), round(block.rect.y))
+
+
+
 
     # @profile
     def exclude_far_blocks(self, block, otherblocks: list):
@@ -202,8 +210,8 @@ class Terrain_Manager:
                                          round(block.rect.y) + round(self.max_collision_dist))
         neighbors = []
         for b in otherblocks:
-            code = pymorton.interleave2(round(b.rect.x), round(b.rect.y))
-            if min < code < max:
+            # code = pymorton.interleave2(round(b.rect.x), round(b.rect.y))
+            if min < b.z_address < max:
                 neighbors.append(b)
         return neighbors
 
