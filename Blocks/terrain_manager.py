@@ -22,7 +22,7 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 9
+        self.max_branches = 10
         self.capacity = 35
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
@@ -136,7 +136,9 @@ class Terrain_Manager:
         # Check if block is still contained in same leaf(s) as last frame
         change, left_leaves = self.check_remove_leaf(block)
         if change is True or len(block.leaves) == 0:  # search if no leaves, or changed leaves
-            root = self.get_common_root(left_leaves) if len(left_leaves) > 0 else root_quadtree
+            root = root_quadtree
+            if len(left_leaves) > 0:
+                root = self.get_common_root(left_leaves)
             self.add_rects_to_quadtree(block, root)
 
 
@@ -164,6 +166,8 @@ class Terrain_Manager:
 
     def get_common_root(self, leaves: list[Quadtree]):
         # Need to take branch count into effect. First eval'd parent should be the lowest branch count shared
+        if self.root_quadtree in leaves:
+            return leaves[0]
         leaves = self.match_branches(leaves)
         parents = [leaf.parent for leaf in leaves]
         if self.root_quadtree == parents[0]:
@@ -173,16 +177,12 @@ class Terrain_Manager:
             if parents[i] != parents[0]:
                 return self.get_common_root(parents)
         # no mismatches. Found the common root
-        # print(f'{parents[0].x}  {parents[0].y}')
         return parents[0]
 
     def match_branches(self, leaves: list[Quadtree]):
         biggest_branch = max(leaf.branch_count for leaf in leaves)
         for leaf in leaves:
             while leaf.branch_count > biggest_branch:
-                if not leaf.parent:
-                    leaves[0] = self.root_quadtree
-                    return leaves
                 leaf = leaf.parent
         return leaves
 
