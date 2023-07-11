@@ -22,8 +22,8 @@ class Terrain_Manager:
         self.block_rects = []
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.max_branches = 8
-        self.capacity = 25
+        self.max_branches = 7
+        self.capacity = 35
         self.root_quadtree = Quadtree(x=0, y=0 + self.screen_height,
                                  width=self.screen_width, height=self.screen_height, branch_count=0)
         self.all_quads.append(self.root_quadtree)  #add(self.root_quadtree)
@@ -38,7 +38,7 @@ class Terrain_Manager:
 
     def setup(self, render_image):  # need new method for adding blocks after init
         [self.set_index(block=b, index=self.blocks.index(b)) for b in self.blocks]
-        self.max_collision_dist = 1.5 * self.blocks[0].rect.width
+        self.max_collision_dist = 2 * self.blocks[0].rect.width
         self.render_image = render_image
 
 
@@ -55,9 +55,10 @@ class Terrain_Manager:
         # print(f'quadtree size: {sys.getsizeof(self.root_quadtree)}')
         # print(f'blocks size: {sys.getsizeof(self.blocks)}')
 
+        # self.assign_z_addresses()
         [self.insert_blocks(block, self.root_quadtree) for block in self.blocks]
 
-        [self.assign_z_addresses(b) for b in self.blocks]
+        # [self.assign_z_addresses(b) for b in self.blocks]
         for block in self.blocks:
             physics.update(block=block, screen=self.render_image)
 
@@ -189,15 +190,31 @@ class Terrain_Manager:
             all_neighbors.remove(block)
         # all_neighbors = [b for b in quadtree.objects if b != block] # SLower
         # return all_neighbors
-        # print(len(all_neighbors))
-        close_neighbors = self.exclude_far_blocks(block, all_neighbors)
-        # print(len(close_neighbors))
+        # close_neighbors = self.exclude_far_blocks(block, all_neighbors)
+        close_neighbors = self.exclude_blocks_limit(block, all_neighbors)
+        # print(f'all neighbors: {len(all_neighbors)}')
+        # print(f'    close neighbors: {len(close_neighbors)}')
         # print('\n')
         return close_neighbors
 
 
-    def assign_z_addresses(self, block):
-        block.z_address = pymorton.interleave2(round(block.rect.x), round(block.rect.y))
+    def assign_z_addresses(self):
+        for block in self.blocks:
+            block.z_address = pymorton.interleave2(round(block.rect.x), round(block.rect.y))
+        # now sort them. When inserting into quadtree leaves, they should remain sorted.
+        self.blocks = sorted(self.blocks, key=lambda x: x.z_address)  # slower 1 fps
+
+
+
+    def exclude_blocks_limit(self, block, others: list):
+        min_x, min_y = block.rect.x - self.max_collision_dist, block.rect.y - self.max_collision_dist
+        max_x, max_y = block.rect.x + self.max_collision_dist, block.rect.y + self.max_collision_dist
+        neighbors = []
+        for b in others:  # can't sort unless you put them in 1d
+            if min_x < b.rect.x < max_x and min_y < b.rect.y < max_y:
+                neighbors.append(b)
+        return neighbors
+
 
 
 
@@ -209,10 +226,20 @@ class Terrain_Manager:
         max = pymorton.interleave2(round(block.rect.x) + round(self.max_collision_dist),
                                          round(block.rect.y) + round(self.max_collision_dist))
         neighbors = []
+        # print(f'{[b.rect.x for b in otherblocks]}  {[b.rect.y for b in otherblocks]}')
+        # print(f'{[b.z_address for b in otherblocks]} ')
+
+        # print(f'block z : {block.z_address}')
+        # print(f'min {min}  max {max}')
         for b in otherblocks:
-            # code = pymorton.interleave2(round(b.rect.x), round(b.rect.y))
+            # print(f'other block z: {b.z_address}  x: {b.rect.x}  y: {b.rect.y}')
             if min < b.z_address < max:
                 neighbors.append(b)
+            elif b.z_address >= max:
+                break
+        # print(f'test block: {block.rect.x}  {block.rect.y}')
+        # print(f'{[b.rect.x for b in neighbors]}  {[b.rect.y for b in neighbors]}')
+
         return neighbors
 
 
