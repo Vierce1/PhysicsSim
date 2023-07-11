@@ -8,7 +8,7 @@ import random
 gravity = 1
 terminal_velocity = 1
 display_res = []
-ground = 1008
+ground = 705
 frames_til_grounded = 120  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally
 t_m = None

@@ -12,16 +12,17 @@ import gc
 
 
 pg.init()
-display_resolution = [1920,1080]
+window_size = [1920, 1080]
+display_resolution = [1280, 720]
 flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
-screen = pg.display.set_mode(display_resolution)
+screen = pg.display.set_mode(window_size)
 gc.disable()
 
 physics.display_res = display_resolution
 game_running = True
 
 
-game = Game(display_resolution=display_resolution, screen=screen)  # main game functions
+game = Game(window_size=window_size, display_resolution=display_resolution, screen=screen)  # main game functions
 game.setup()
 
 clock = time.Clock()
