@@ -4,13 +4,13 @@ from Blocks import block
 import pygame as pg
 
 
-gravity = 2
-terminal_velocity = 200
+gravity = 1
+terminal_velocity = 1
 display_res = []
 ground = 1008
 collision_width = 0.25  # how far offset two blocks can be to still collide
 frames_til_grounded = 120 # 100  # how many frames a block must be stationary before being grounded
-slide_factor = .20  # how fast blocks slide horizontally
+slide_factor = 1 # .20  # how fast blocks slide horizontally
 t_m = None
 
 
@@ -34,7 +34,15 @@ def check_down_collision(block, other_blocks: list):  # -> Block or bool
     return None
 
 
-#TODO: Should I restrict blocks to landing on an int position ?
+def check_under(block):
+    if block.rect.y == ground:
+        return True
+    return t_m.matrix[block.rect.x, block.rect.y + block.rect.width] == 1
+
+# def check_side()
+
+
+
 def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
     # get relative x position of block against the collided block
     x_diff = block.rect.centerx - collided_block.rect.centerx
@@ -62,42 +70,45 @@ def update(block, screen):
     # print(f'# of leaves: {block.leaves}')
     if block.grounded_timer == frames_til_grounded:
         block.collision_detection = False
-    neighboring_blocks = move(block)
-    slide(block, neighboring_blocks)
+    move(block)
+    # slide(block, neighboring_blocks)
     pg.draw.rect(surface=screen, color=block.type.color, rect=block.rect)
 
 
 # @profile
-def move(block) -> list:
+def move(block):
     if not block.collision_detection: # or len(block.quadtrees) == 0:  #not block.quadtree:
         block.horiz_velocity = 0
-        return []
+        return
 
-    block.bottom_collide_block = None
-    neighboring_blocks = []
-    for quadtree in block.leaves:
-        neighboring_blocks.extend(t_m.get_neighbors(block, quadtree))
-    collision = check_down_collision(block, neighboring_blocks)
+    # block.bottom_collide_block = None
+    # neighboring_blocks = []
+    # for quadtree in block.leaves:
+    #     neighboring_blocks.extend(t_m.get_neighbors(block, quadtree))
+    # collision = check_down_collision(block, neighboring_blocks)
+
+    collision = check_under(block)
 
     if collision:  # collided. Check if it should slide to either side
         block.vert_velocity = 0
-        if collision != True:  # true means ground
-            block.bottom_collide_block = collision
+        return
 
-        if type(collision) is not bool and collision.vert_velocity == 0:
-            slide = check_slide(block, collision)
-            # check if there is a block in the way to stop sliding that direction
-            block.horiz_velocity = slide * block.rect.width * slide_factor
-        return neighboring_blocks
+        # if type(collision) is not bool and collision.vert_velocity == 0:
+        #     slide = check_slide(block, collision)
+        #     # check if there is a block in the way to stop sliding that direction
+        #     block.horiz_velocity = slide * block.rect.width * slide_factor
+        # return neighboring_blocks
+
     if block.vert_velocity < terminal_velocity:
         block.vert_velocity += (gravity * block.move_speed)
+
+    # mark prev position empty
+    t_m.matrix[block.rect.x, block.rect.y] = 0
     position = (block.rect.x, block.rect.y + block.vert_velocity)
-    # block.rect = block.rect.move(position[0] - block.rect.x, position[1] - block.rect.y)
-#TODO: Which is more efficient?
     block.rect.left = position[0]
     block.rect.top = position[1]
-    # block.position = position
-    return neighboring_blocks
+    t_m.matrix[block.rect.x, block.rect.y] = 1
+    return
 
 def slide(block, neighboring_blocks) -> None:
     if block.vert_velocity > 0 or block.grounded_timer > frames_til_grounded \

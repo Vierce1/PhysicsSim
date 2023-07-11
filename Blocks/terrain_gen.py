@@ -17,7 +17,7 @@ def gen_terrain(block_list: (int, Block_Type), bounds: (int, int, int, int),
     return generated_blocks
 
 
-def get_random_coords(x_bounds: (int, int), y_bounds: (int, int), prev_blocks: list[Block]):
+def get_random_coords(x_bounds: (int, int), y_bounds: (int, int), prev_blocks: list[Block]) -> (int, int):
     coord_x = random.randrange(x_bounds[0], x_bounds[1])
     coord_y = random.randrange(y_bounds[0], y_bounds[1])
     loop_break = 0

@@ -30,6 +30,7 @@ class Game:
 
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
 
+
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
         self.blocks = tg.gen_terrain(block_list=(2000, Sand()), bounds=(100, 1800, 100, 600), # bounds=(620, 780, 100, 600),
@@ -45,8 +46,8 @@ class Game:
         # print(f'length of blocks = {str(len(self.blocks))}')
 
         self.terrain_manager.blocks.update(self.blocks)
-        block_rects = [block.rect for block in self.blocks]
-        self.terrain_manager.block_rects.extend(block_rects)
+        # block_rects = [block.rect for block in self.blocks]
+        # self.terrain_manager.block_rects.extend(block_rects)
         self.terrain_manager.setup(self.render_image)
 
 
@@ -55,16 +56,16 @@ class Game:
         self.render_image.fill((0, 0, 0))
         # self.screen.fill((0, 0, 0))
 
-        self.quadtrees = self.terrain_manager.update(screen=self.screen)
+        self.terrain_manager.update(screen=self.screen)
 
         # # visualization
         pg.draw.line(self.render_image, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
-        for q in self.quadtrees:
-            color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
-            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.render_image, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
-            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x, q.y - q.height))
-            pg.draw.line(self.render_image, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
+        # for q in self.quadtrees:
+        #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
+        #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
+        #     pg.draw.line(self.render_image, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
+        #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x, q.y - q.height))
+        #     pg.draw.line(self.render_image, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
 
         # timed functions
         # if timer > 60:
