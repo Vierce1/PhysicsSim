@@ -17,22 +17,18 @@ t_m = None
 def check_under(block):
     if block.rect.y == ground:
         return True
-    return t_m.matrix[block.rect.x, block.rect.y + block.rect.width] == 1
+    return t_m.matrix[block.rect.x, block.rect.y + block.rect.height] == 1
 
 # def check_side()
 
 
 
-def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
-    # get relative x position of block against the collided block
-    x_diff = block.rect.centerx - collided_block.rect.centerx
-    # incorporate the friction to determine if it slides off
-    if x_diff > block.type.friction:
+def check_slide(block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
+    if t_m.matrix[block.rect.x + block.rect.width, block.rect.y + block.rect.height] == 0:
         return 1
-    elif x_diff < block.type.friction * -1:
+    elif t_m.matrix[block.rect.x- block.rect.width, block.rect.y + block.rect.height] == 0:
         return -1
-    else:
-        return 0
+    return 0
 
 
 
@@ -42,25 +38,31 @@ def update(block, screen):
     if block.grounded_timer == frames_til_grounded:
         block.collision_detection = False
     move(block)
-    # slide(block, neighboring_blocks)
     pg.draw.rect(surface=screen, color=block.type.color, rect=block.rect)
 
 
 # @profile
 def move(block):
-    if not block.collision_detection: # or len(block.quadtrees) == 0:  #not block.quadtree:
+    if not block.collision_detection or block.rect.y == ground - 1:
         block.horiz_velocity = 0
         return
 
-
     collision = check_under(block)
 
-    if collision:  # collided. Check if it should slide to either side
+    if collision:  # collided. Check if it should slide to either side + down 1
         block.vert_velocity = 0
+
+        # May need to check if block under it is going to move this frame?
+        slide = check_slide(block)
+        block.horiz_velocity = slide * block.rect.width * slide_factor
+        t_m.matrix[block.rect.x, block.rect.y] = 0
+        position = (block.rect.x + block.horiz_velocity, block.rect.y)
+        block.rect.left = position[0]
+        block.rect.top = position[1]
+        t_m.matrix[block.rect.x, block.rect.y] = 1
         return
-        #     slide = check_slide(block, collision)
         #     # check if there is a block in the way to stop sliding that direction
-        #     block.horiz_velocity = slide * block.rect.width * slide_factor
+
         # return neighboring_blocks
 
     if block.vert_velocity < terminal_velocity:
@@ -75,16 +77,12 @@ def move(block):
     return
 
 
-def slide(block, neighboring_blocks) -> None:
+def slide(block) -> None:
     if block.vert_velocity > 0 or block.grounded_timer > frames_til_grounded \
             or (block.bottom_collide_block and block.bottom_collide_block.vert_velocity > 0):
-        return
-    if check_side_collision(block, neighboring_blocks, block.horiz_velocity < 0):
-        block.horiz_velocity = 0
         return
     # not blocked to the side trying to slide
     position = (block.rect.x + block.horiz_velocity, block.rect.y)
     block.rect.left = position[0]
     block.rect.top = position[1]
-    # block.position = position
     return

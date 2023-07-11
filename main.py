@@ -32,7 +32,7 @@ pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.KEYUP]) # limit allowed events we 
 print('\n\nGame Loaded')
 while game_running:
     clock.tick(999)
-    # timer += 1
+    timer += 1
     print(f'fps: {str(round(clock.get_fps()))}')
 
 
