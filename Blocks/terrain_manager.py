@@ -126,10 +126,8 @@ class Terrain_Manager:
 
 #TODO: Major memory usage functions:
     # get_neighbors, check_down_collisions, check_block_in_quad (called from check_remove_leaf)
+    # Grounded blocks take up processing power. Need to reduce to almost zero.
 
-
-
-#TODO: For grounded blocks can I cache position of their quadtree and then add them in after the other blocks finish?
 
     # @profile
     def insert_blocks(self, block, root_quadtree):
