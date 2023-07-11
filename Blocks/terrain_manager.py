@@ -29,7 +29,7 @@ class Terrain_Manager:
 
     def setup(self, render_image):  # need new method for adding blocks after init
         for b in self.blocks:
-            self.matrix[b.rect.x, b.rect.y] = 1
+            self.matrix[b.position[0], b.position[1]] = 1
         self.render_image = render_image
 
 

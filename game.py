@@ -8,6 +8,7 @@ from Blocks.block_type import *
 from Blocks import terrain_gen as tg, terrain_manager as tm
 import physics
 import psutil
+import gc
 import sys
 
 
@@ -26,22 +27,22 @@ class Game:
         self.delay = 2
         # self.y_count = round(self.display_resolution[1] / self.quadtree_height)
         # self.x_count = round(self.display_resolution[0] / self.quadtree_width)
-
+        gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
 
 
     def setup(self):
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
-        self.blocks = tg.gen_terrain(block_list=(8000, Sand()), bounds=(100, 1800, 100, 600), # bounds=(620, 780, 100, 600),
+        self.blocks = tg.gen_terrain(block_count=10000, block_type=Sand(), bounds=(100, 1800, 100, 600),
                                          terrain_manager=self.terrain_manager)
 
-        rocks = tg.gen_terrain(block_list=(4000, Rock()), bounds=(600, 800, 800, 900),
-                                        terrain_manager=self.terrain_manager)
-        self.blocks.extend(rocks)
-        self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(580, 599, 760, 800),
-                                              terrain_manager=self.terrain_manager))
-        self.blocks.extend(tg.gen_terrain(block_list=(60, Rock()), bounds=(801, 820, 760, 800),
-                                              terrain_manager=self.terrain_manager))
+        # rocks = tg.gen_terrain(block_count=4000, block_type=Rock(), bounds=(600, 800, 800, 900),
+        #                                 terrain_manager=self.terrain_manager)
+        # self.blocks.extend(rocks)
+        # self.blocks.extend(tg.gen_terrain(block_count=60, block_type=Rock(), bounds=(580, 599, 760, 800),
+        #                                       terrain_manager=self.terrain_manager))
+        # self.blocks.extend(tg.gen_terrain(block_count=60, block_type=Rock(), bounds=(801, 820, 760, 800),
+        #                                       terrain_manager=self.terrain_manager))
         # print(f'length of blocks = {str(len(self.blocks))}')
 
         self.terrain_manager.blocks.update(self.blocks)
@@ -62,7 +63,7 @@ class Game:
 
         # timed functions
         # if timer > 1:
-        #     new_blocks = tg.gen_terrain(block_list=(10, Sand()), bounds=(620, 780, 0, 200),
+        #     new_blocks = tg.gen_terrain(block_count=10, block_type=Sand(), bounds=(620, 780, 0, 200),
         #                                          terrain_manager=self.terrain_manager)
         #     self.blocks.extend(new_blocks)
         #     self.terrain_manager.blocks.update(new_blocks)
