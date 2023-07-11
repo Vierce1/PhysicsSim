@@ -7,7 +7,6 @@ from Blocks.block import Block
 from Blocks.block_type import *
 from Blocks import terrain_gen as tg, terrain_manager as tm
 import physics
-from quadtree import Quadtree
 import psutil
 import sys
 

@@ -1,12 +1,10 @@
 import pygame as pg
 import random
-from quadtree import Quadtree
 
 class Player:
-    def __init__(self, quadtrees: list[Quadtree]):
+    def __init__(self):
         self.position = (100, 100)
         self.move_speed = 10
-        self.quadtrees = quadtrees
 
     def update(self, events, screen):
         self.accept_input(events=events, screen=screen)
@@ -38,15 +36,11 @@ class Player:
 
 
     def blow_up(self, location: (int, int), force: int):
-        # get location quadtree, then neighboring trees
-        quad = next(iter([q for q in self.quadtrees if q.x < location[0] and q.x + q.width > location[0]
-                and q.y < location[1] and q.y + q.height > location[1]]), None)
-        if not quad:
-            return
-        blocks = [b for b in quad.objects]
-        for block in blocks:
-            block.collision_detection = True
-            block.grounded_timer = 0
-            block.horiz_velocity += random.randrange(-1, 2) * force
+        return
+        # blocks =
+        # for block in blocks:
+        #     block.collision_detection = True
+        #     block.grounded_timer = 0
+        #     block.horiz_velocity += random.randrange(-1, 2) * force
 
 

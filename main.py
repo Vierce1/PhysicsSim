@@ -8,7 +8,6 @@ from Blocks.block import Block
 from Blocks.block_type import *
 from Blocks import terrain_gen, terrain_manager
 import physics
-from quadtree import Quadtree
 import gc
 
 

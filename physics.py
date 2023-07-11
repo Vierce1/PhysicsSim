@@ -8,30 +8,10 @@ gravity = 1
 terminal_velocity = 1
 display_res = []
 ground = 1008
-collision_width = 0.25  # how far offset two blocks can be to still collide
-frames_til_grounded = 120 # 100  # how many frames a block must be stationary before being grounded
-slide_factor = 1 # .20  # how fast blocks slide horizontally
+frames_til_grounded = 120  # how many frames a block must be stationary before being grounded
+slide_factor = 1  # how fast blocks slide horizontally
 t_m = None
 
-
-# @profile  # Massive memory hit
-def check_down_collision(block, other_blocks: list):  # -> Block or bool
-    for oth_block in other_blocks:
-        # t_m.total_col_dets += 1
-        if block.rect.bottom - oth_block.rect.top >= 0 and block.rect.centery < oth_block.rect.centery \
-            and -1 * (oth_block.rect.width + block.rect.width) * collision_width <= \
-                oth_block.rect.centerx - block.rect.centerx \
-                <= (oth_block.rect.width + block.rect.width) * collision_width:
-        # move the block back 1 frame so they aren't occluded. Grid system will also help with this
-        # had to remove this because it was bouncing blocks out of their quadtree
-                # block.rect.bottom = oth_block.rect.top
-                block.grounded_timer += 1
-                return oth_block
-    if block.rect.y + block.rect.height >= ground:  # block is at ground level, stop detecting collision
-        block.collision_detection = None
-        return True
-
-    return None
 
 
 def check_under(block):
@@ -55,15 +35,6 @@ def check_slide(block, collided_block) -> int:  # int -1 for slide left, 1 slide
         return 0
 
 
-def check_side_collision(block, other_blocks: list, left_side: bool) -> bool:
-    for oth_block in other_blocks:
-        if left_side:
-            return oth_block.rect.right == block.rect.left
-        else:
-            return oth_block.rect.left == block.rect.right
-
-
-
 
 # Block functions
 def update(block, screen):
@@ -81,26 +52,19 @@ def move(block):
         block.horiz_velocity = 0
         return
 
-    # block.bottom_collide_block = None
-    # neighboring_blocks = []
-    # for quadtree in block.leaves:
-    #     neighboring_blocks.extend(t_m.get_neighbors(block, quadtree))
-    # collision = check_down_collision(block, neighboring_blocks)
 
     collision = check_under(block)
 
     if collision:  # collided. Check if it should slide to either side
         block.vert_velocity = 0
         return
-
-        # if type(collision) is not bool and collision.vert_velocity == 0:
         #     slide = check_slide(block, collision)
         #     # check if there is a block in the way to stop sliding that direction
         #     block.horiz_velocity = slide * block.rect.width * slide_factor
         # return neighboring_blocks
 
     if block.vert_velocity < terminal_velocity:
-        block.vert_velocity += (gravity * block.move_speed)
+        block.vert_velocity += gravity
 
     # mark prev position empty
     t_m.matrix[block.rect.x, block.rect.y] = 0
@@ -109,6 +73,7 @@ def move(block):
     block.rect.top = position[1]
     t_m.matrix[block.rect.x, block.rect.y] = 1
     return
+
 
 def slide(block, neighboring_blocks) -> None:
     if block.vert_velocity > 0 or block.grounded_timer > frames_til_grounded \
