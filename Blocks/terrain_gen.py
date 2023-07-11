@@ -1,52 +1,26 @@
 import math
-
 import Blocks.block_type as block_type
 from Blocks.block_type import *
 from Blocks.block import Block
 import Blocks.terrain_manager as tm
 import random
-import math
+import numpy as np
+from scipy.stats import uniform
 
 
 randomness = (0, 3)
 def gen_terrain(block_count: int, block_type: Block_Type, bounds: (int, int, int, int),
                 terrain_manager: tm.Terrain_Manager)-> list[Block]:
     generated_blocks = []
-    blocks_per_row = math.ceil(block_count / ((bounds[1] - bounds[0]) / (bounds[3] - bounds[2])))
-    x_step = round((bounds[1] - bounds[0]) / blocks_per_row)
-    print(f'blocks per row: {blocks_per_row}')
-    print(f'x_step: {x_step}')
+    xs = uniform.rvs(loc=bounds[0], scale=bounds[1]-bounds[0], size=block_count)
+    ys = uniform.rvs(loc=bounds[2], scale=bounds[3]-bounds[2], size=block_count)
     x = bounds[0]
     y = bounds[2]
-    for i in range(block_count):
-        block = Block(block_type, (x, y))
+    for x, y in zip(xs, ys):
+        block = Block(block_type, (round(x), round(y)))
         generated_blocks.append(block)
-        next_x = x_step + random.randrange(randomness[0], randomness[1])
-        if next_x == x:
-          next_x = x + x_step
-        else:
-            x += next_x
-        if x >= bounds[1]:
-            y += 1
-            x = bounds[0]
-        if y >= bounds[3]:
-            break
-
-    # for y in range(bounds[2], bounds[3]):
-    #     for x in range(bounds[0], bounds[1], x_step):
-    #         block = Block(block_type, (x, y))
-    #         generated_blocks.append(block)
-
-
-    # for i in range(block_count):
-    #     coord_x, coord_y = get_random_coords(x_bounds=(bounds[0], bounds[1]),   \
-    #                                 y_bounds=(bounds[2], bounds[3]), prev_blocks=generated_blocks)
-    #
-    #     block = Block(block_type, (coord_x, coord_y))
-    #     generated_blocks.append(block)
 
     return generated_blocks
-
 
 
 
