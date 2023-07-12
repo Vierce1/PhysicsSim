@@ -28,7 +28,7 @@ class Terrain_Manager:
         for x in range(screen_width):  # initalize all spaces as empty
             for y in range(screen_height):
                 self.matrix[x,y] = 0
-        print(f'matrix length: {len(self.matrix)}')
+        # print(f'matrix length: {len(self.matrix)}')
 
 
 

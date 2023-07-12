@@ -6,6 +6,7 @@ import Blocks
 from Blocks.block import Block
 from Blocks.block_type import *
 from Blocks import terrain_gen as tg, terrain_manager as tm
+from level import *
 import psutil
 import gc
 import sys
@@ -17,23 +18,17 @@ class Game:
         self.window_size = window_size
         self.screen = screen
         self.blocks = []
-        # Initial load time goes up with more cells, but fps is better
-        # Having a huge number of trees decreases FPS but reduces impact of collision.
-        # width and height of each quadtree cell
-        self.quadtree_height = 1000  # Update to nested nodes
-        self.quadtree_width = 1000
-        self.y_count = 1
-        self.x_count = 2
         self.delay = 2
-        # self.y_count = round(self.display_resolution[1] / self.quadtree_height)
-        # self.x_count = round(self.display_resolution[0] / self.quadtree_width)
         gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
         self.spaces_to_clear = set()
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
+        self.level = 1
+        self.terrain_manager.setup(self.render_image)
 
 
-    def setup(self):
+    def setup(self, level: int):
+        self.terrain_manager.blocks.clear()
         self.blocks = tg.gen_terrain(block_count=5000, block_type=Sand(), bounds=(100, 1000, 100, 600),
                                          terrain_manager=self.terrain_manager)
 
@@ -47,12 +42,17 @@ class Game:
                                               terrain_manager=self.terrain_manager))
         self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(801, 820, 580, 605),
                                               terrain_manager=self.terrain_manager))
+
+
+        level = Level_Getter.get_level(1)
+
+
         print(f'length of blocks = {str(len(self.blocks))}')
 
+
+
+
         self.terrain_manager.blocks.update(self.blocks)
-        # block_rects = [block.rect for block in self.blocks]
-        # self.terrain_manager.block_rects.extend(block_rects)
-        self.terrain_manager.setup(self.render_image)
 
 
     def update(self, timer: int, events: list[pg.event.Event]):

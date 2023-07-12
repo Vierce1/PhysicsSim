@@ -21,7 +21,7 @@ game_running = True
 
 
 game = Game(window_size=window_size, display_resolution=display_resolution, screen=screen)  # main game functions
-game.setup()
+game.setup(level=1)
 
 clock = time.Clock()
 timer = 0
