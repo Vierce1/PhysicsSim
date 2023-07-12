@@ -1,10 +1,9 @@
-import math
 import Blocks.block_type as block_type
 from Blocks.block_type import *
 from Blocks.block import Block
 import Blocks.terrain_manager as tm
+import math
 import random
-import numpy as np
 from scipy.stats import uniform
 
 

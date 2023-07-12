@@ -1,12 +1,7 @@
-# import Blocks.block_type as block_type
-# from Blocks.block_type import *
-import Blocks.block_type
-import pymorton
-# import Blocks.block as block
-from Blocks import block
+from Blocks.block import Block
+import Blocks.block_type as block_type
 import pygame as pg
 import math
-from pymorton import *
 import sys
 import random
 
@@ -22,10 +17,11 @@ OCCUPIED = 1
 
 
 class Terrain_Manager:
-    def __init__(self, screen_width: int, screen_height: int):
+    def __init__(self, screen_width: int, screen_height: int, game):
         self.blocks = set()
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.game = game
         self.render_image = None
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
         self.matrix = {}
@@ -44,6 +40,8 @@ class Terrain_Manager:
 
     # @profile
     def update(self, screen) -> list:
+        # [self.game.spaces_to_clear.add(pos) for pos in self.matrix if pos == EMPTY]
+
         for block in self.blocks:
             self.update_blocks(block=block, screen=self.render_image)
 
@@ -52,7 +50,7 @@ class Terrain_Manager:
 
 # Physics
 
-    def check_under(self, block):
+    def check_under(self, block: Block):
         if block.position[1] == ground:
             return True
         return self.matrix[block.position[0], block.position[1] + block.height] == 1
@@ -91,28 +89,27 @@ class Terrain_Manager:
             block.vert_velocity = 0
 
             slide = self.check_slide(block)
-            block.horiz_velocity = slide * 1 * slide_factor
-            self.matrix[block.position[0], block.position[1]] = EMPTY
-            block.position = (block.position[0] + block.horiz_velocity, block.position[1])
-            self.matrix[block.position[0], block.position[1]] = OCCUPIED
+            if slide != 0:
+                self.slide(block, slide)
             return
 
         if block.vert_velocity < terminal_velocity:
             block.vert_velocity += gravity
 
-        # mark prev position empty
+        # mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = 0
+        # self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
         block.position = (block.position[0], block.position[1] + block.vert_velocity)
         self.matrix[block.position[0], block.position[1]] = 1
         return
 
 
-    def slide(self, block) -> None:
-        if block.vert_velocity > 0 or block.grounded_timer > frames_til_grounded \
-                or (block.bottom_collide_block and block.bottom_collide_block.vert_velocity > 0):
-            return
-        # not blocked to the side trying to slide
-        position = (block.position[0] + block.horiz_velocity, block.position[1])
+    def slide(self, block: Block, slide: int) -> None:
+        block.horiz_velocity = slide * 1 * slide_factor
+        self.matrix[block.position[0], block.position[1]] = EMPTY
+        # self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
+        block.position = (block.position[0] + block.horiz_velocity, block.position[1])
+        self.matrix[block.position[0], block.position[1]] = OCCUPIED
         return
 
 

@@ -30,14 +30,17 @@ class Game:
         gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
         self.spaces_to_clear = set()
+        self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
 
 
     def setup(self):
-        self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1])
         self.blocks = tg.gen_terrain(block_count=5000, block_type=Sand(), bounds=(100, 1000, 100, 600),
                                          terrain_manager=self.terrain_manager)
 
         rocks = tg.gen_terrain(block_count=15000, block_type=Rock(), bounds=(600, 800, 600, 700),
+                                        terrain_manager=self.terrain_manager)
+        self.blocks.extend(rocks)
+        rocks = tg.gen_terrain(block_count=15000, block_type=Rock(), bounds=(100, 400, 300, 400),
                                         terrain_manager=self.terrain_manager)
         self.blocks.extend(rocks)
         self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(580, 599, 580, 605),
@@ -53,9 +56,9 @@ class Game:
 
 
     def update(self, timer: int, events: list[pg.event.Event]):
-        # fill screen with black
-        # self.render_image.fill((0, 0, 0))  # Just fill the now empty spots
-        # self.screen.fill((0, 0, 0))
+        self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
+        # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
+        # self.spaces_to_clear.clear()
 
         self.terrain_manager.update(screen=self.screen)
 
@@ -78,18 +81,15 @@ class Game:
 
         # self.player.update(events, self.screen)
 
-        # tick = pg.time.get_ticks()
-        # now = pg.time.get_ticks()
-        # while now - tick < self.delay:
-        #     now = pg.time.get_ticks()
+        tick = pg.time.get_ticks()
+        now = pg.time.get_ticks()
+        while now - tick < self.delay:
+            now = pg.time.get_ticks()
 
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
         # print(f'cpu % usage: {psutil.cpu_percent()}')
 
         pg.event.pump()
         pg.display.flip()  # updates the display
-        # for r in self.terrain_manager.blocks:
-        #     pg.display.update(r.rect)
         # gc.collect() # possible performance improvement by removing unreferenced memory
-        # blocks_update = [block.rect for block in self.blocks]  # slower and would need to also clear the prev. space
         # pg.display.update(blocks_update)
