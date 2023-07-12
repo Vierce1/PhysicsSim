@@ -28,21 +28,21 @@ timer = 0
 # bliting slowed down by 30%+. Drawing directly on screen faster
 pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.KEYUP]) # limit allowed events we have to check for every frame
 
-#
-# print('\n\nGame Loaded')
-# while game_running:
-#     clock.tick(999)
-#     timer += 1
-#     print(f'fps: {str(round(clock.get_fps()))}')
-#
-#
-#     events = pg.event.get()
-#     for event in events:
-#         if event.type == pg.QUIT:
-#             game_running = False
-#
-#     game.update(timer=timer, events=events)
-#
-# pg.quit()
-#
-#
+
+print('\n\nGame Loaded')
+while game_running:
+    clock.tick(999)
+    timer += 1
+    print(f'fps: {str(round(clock.get_fps()))}')
+
+
+    events = pg.event.get()
+    for event in events:
+        if event.type == pg.QUIT:
+            game_running = False
+
+    game.update(timer=timer, events=events)
+
+pg.quit()
+
+

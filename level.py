@@ -13,16 +13,16 @@ class Level_Getter:
     def read_levels_json(self):
         json_file = open('levels.json')
         levels = json.load(json_file)
-        print(levels)
         for level in levels:
             self.levels.append(Level(id=level['id'], block_counts=level['block_counts'],
                                      block_types=level['block_types'], bounds=level['bounds']))
-        # [print(l.block_types) for l in self.levels]
+        # [print(l.bounds) for l in self.levels]
 
 
     def get_level(self, level: int):
         print(f'creating level {level}')
-
+        level = self.levels[level - 1]
+        return level
 
 
 
@@ -31,8 +31,11 @@ class Level:
                     bounds: list[(int,int,int,int)]):
         self.id = id
         self.block_counts = block_counts
-        self.block_types = block_types
         self.bounds = bounds
+        self.block_types = []
+        for t in block_types:
+            tp = block_type.Block_Type().get_block_type(t['name'])
+            self.block_types.append(tp)
 
 
 

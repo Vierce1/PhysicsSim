@@ -17,7 +17,7 @@ class Game:
         self.display_resolution = display_resolution
         self.window_size = window_size
         self.screen = screen
-        self.blocks = []
+        self.blocks = set()
         self.delay = 2
         gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
@@ -25,6 +25,7 @@ class Game:
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.level = 1
         self.terrain_manager.setup(self.render_image)
+        self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
 
 
     def setup(self, level: int):
@@ -45,13 +46,12 @@ class Game:
 
 
         level = Level_Getter().get_level(level=1)
-
+        for i in range(len(level.block_counts)):  # iterate over all entries in the dict for this level
+            blocks = self.terrain_gen.gen_terrain(block_count=level.block_counts[i],
+                                block_type=level.block_types[i], bounds=level.bounds[i])
+            self.blocks.update(blocks)
 
         print(f'length of blocks = {str(len(self.blocks))}')
-
-
-
-
         self.terrain_manager.blocks.update(self.blocks)
 
 
@@ -67,9 +67,8 @@ class Game:
 
         # timed functions
         if timer > 1 and timer < 600:
-            new_blocks = tg.gen_terrain(block_count=20, block_type=Sand(), bounds=(540, 780, 150, 180),
-                                                 terrain_manager=self.terrain_manager)
-            self.blocks.extend(new_blocks)
+            new_blocks = self.terrain_gen.gen_terrain(block_count=20, block_type=Sand(), bounds=(540, 780, 150, 180),)
+            self.blocks.update(new_blocks)
             self.terrain_manager.blocks.update(new_blocks)
 
 

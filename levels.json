@@ -8,58 +8,6 @@
    200,
    200
   ],
-  "block_types": [
-   {
-    "name": "sand",
-    "rigid": false,
-    "color": [
-     150,
-     190,
-     0
-    ],
-    "friction": 0.3
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   }
-  ],
   "bounds": [
    [
     100,
@@ -91,12 +39,72 @@
     580,
     605
    ]
+  ],
+  "block_types": [
+   {
+    "name": "sand",
+    "rigid": false,
+    "color": [
+     150,
+     190,
+     0
+    ],
+    "friction": 0.3
+   },
+   {
+    "name": "rock",
+    "rigid": true,
+    "color": [
+     160,
+     160,
+     160
+    ],
+    "friction": 0.8
+   },
+   {
+    "name": "rock",
+    "rigid": true,
+    "color": [
+     160,
+     160,
+     160
+    ],
+    "friction": 0.8
+   },
+   {
+    "name": "rock",
+    "rigid": true,
+    "color": [
+     160,
+     160,
+     160
+    ],
+    "friction": 0.8
+   },
+   {
+    "name": "rock",
+    "rigid": true,
+    "color": [
+     160,
+     160,
+     160
+    ],
+    "friction": 0.8
+   }
   ]
  },
  {
   "id": 2,
   "block_counts": [
    200
+  ],
+  "bounds": [
+   [
+    100,
+    1000,
+    100,
+    600
+   ]
   ],
   "block_types": [
    {
@@ -109,14 +117,6 @@
     ],
     "friction": 0.3
    }
-  ],
-  "bounds": [
-   [
-    100,
-    1000,
-    100,
-    600
-   ]
   ]
  }
 ]
