@@ -29,22 +29,22 @@ class Game:
 
     def setup(self, level: int):
         self.terrain_manager.blocks.clear()
-        self.blocks = tg.gen_terrain(block_count=5000, block_type=Sand(), bounds=(100, 1000, 100, 600),
-                                         terrain_manager=self.terrain_manager)
+        # self.blocks = tg.gen_terrain(block_count=5000, block_type=Sand(), bounds=(100, 1000, 100, 600),
+        #                                  terrain_manager=self.terrain_manager)
+        #
+        # rocks = tg.gen_terrain(block_count=15000, block_type=Rock(), bounds=(600, 800, 600, 700),
+        #                                 terrain_manager=self.terrain_manager)
+        # self.blocks.extend(rocks)
+        # rocks = tg.gen_terrain(block_count=15000, block_type=Rock(), bounds=(100, 400, 300, 400),
+        #                                 terrain_manager=self.terrain_manager)
+        # self.blocks.extend(rocks)
+        # self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(580, 599, 580, 605),
+        #                                       terrain_manager=self.terrain_manager))
+        # self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(801, 820, 580, 605),
+        #                                       terrain_manager=self.terrain_manager))
 
-        rocks = tg.gen_terrain(block_count=15000, block_type=Rock(), bounds=(600, 800, 600, 700),
-                                        terrain_manager=self.terrain_manager)
-        self.blocks.extend(rocks)
-        rocks = tg.gen_terrain(block_count=15000, block_type=Rock(), bounds=(100, 400, 300, 400),
-                                        terrain_manager=self.terrain_manager)
-        self.blocks.extend(rocks)
-        self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(580, 599, 580, 605),
-                                              terrain_manager=self.terrain_manager))
-        self.blocks.extend(tg.gen_terrain(block_count=200, block_type=Rock(), bounds=(801, 820, 580, 605),
-                                              terrain_manager=self.terrain_manager))
 
-
-        level = Level_Getter.get_level(1)
+        level = Level_Getter().get_level(level=1)
 
 
         print(f'length of blocks = {str(len(self.blocks))}')
