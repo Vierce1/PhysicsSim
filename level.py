@@ -22,7 +22,7 @@ class Level_Getter:
 
     def get_level(self, level: int):
         print(f'creating level {level}')
-        level = self.levels[level]
+        level = [l for l in self.levels if l.id == level][0]
         return level
 
 
@@ -34,6 +34,7 @@ class Level:
         self.block_counts = block_counts
         self.bounds = bounds
         self.block_types = []
+        self.timed_spawns = []  # create the list even if none so no if check needed in game.update
 
         if writing:  # Creating json. Don't convert to objects
             self.block_types = block_types
@@ -45,7 +46,6 @@ class Level:
                 tp = block_type.Block_Type().get_block_type(t)
                 self.block_types.append(tp)
             if timed_spawns:
-                self.timed_spawns = []
                 # get the length of 1 of the fields, which will equate to length for all fields
                 for i in range(len(timed_spawns['block_types'])):
                     timed_spawn = Timed_Spawn(b_type=timed_spawns['block_types'][i],

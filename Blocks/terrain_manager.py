@@ -16,6 +16,9 @@ EMPTY = 0
 OCCUPIED = 1
 
 
+
+#TODO: What if after Rock (or any unmovable block) is drawn when gen'd, it is removed from blocks?
+# Then no iterating over it each frame
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int, game):
         self.blocks = set()

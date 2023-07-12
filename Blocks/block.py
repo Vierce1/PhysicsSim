@@ -10,13 +10,13 @@ class Reduce(type):
 
 
 class Block: # no change in size. (metaclass=Reduce):
-    def __init__(self, type: block_type.Block_Type, position: (int, int), width: int = 1, height: int = 1):
+    def __init__(self, type: block_type.Block_Type, position: (int, int)):
         # print(sys.getsizeof(self ))
         # self.id = -1
         self.type = type
         self.position = position
-        self.width = width
-        self.height = height
+        self.width = type.width
+        self.height = type.height
         # self.move_speed = 1 #.03  # different blocks can fall different speeds
         self.vert_velocity = 0
         self.horiz_velocity = 0
