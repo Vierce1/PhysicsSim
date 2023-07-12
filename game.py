@@ -30,6 +30,7 @@ class Game:
         # self.x_count = round(self.display_resolution[0] / self.quadtree_width)
         gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
+        self.spaces_to_clear = set()
 
 
     def setup(self):
@@ -54,7 +55,7 @@ class Game:
 
     def update(self, timer: int, events: list[pg.event.Event]):
         # fill screen with black
-        self.render_image.fill((0, 0, 0))
+        # self.render_image.fill((0, 0, 0))  # Just fill the now empty spots
         # self.screen.fill((0, 0, 0))
 
         self.terrain_manager.update(screen=self.screen)

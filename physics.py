@@ -12,6 +12,8 @@ ground = 705
 frames_til_grounded = 120  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally
 t_m = None
+EMPTY = 0
+OCCUPIED = 1
 
 
 
@@ -59,11 +61,11 @@ def move(block):
         # May need to check if block under it is going to move this frame?
         slide = check_slide(block)
         block.horiz_velocity = slide * 1 * slide_factor
-        t_m.matrix[block.position[0], block.position[1]] = 0
+        t_m.matrix[block.position[0], block.position[1]] = EMPTY
         block.position = (block.position[0] + block.horiz_velocity, block.position[1])
         # block.rect.left = position[0]
         # block.rect.top = position[1]
-        t_m.matrix[block.position[0], block.position[1]] = 1
+        t_m.matrix[block.position[0], block.position[1]] = OCCUPIED
         return
         #     # check if there is a block in the way to stop sliding that direction
 
