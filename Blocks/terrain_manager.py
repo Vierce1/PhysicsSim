@@ -1,13 +1,11 @@
 # import Blocks.block_type as block_type
 # from Blocks.block_type import *
 import Blocks.block_type
-import physics
 import pymorton
 # import Blocks.block as block
 from Blocks import block
 import pygame as pg
 import math
-import physics
 from pymorton import *
 import sys
 import random
@@ -19,7 +17,6 @@ display_res = []
 ground = 705
 frames_til_grounded = 120  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally
-# t_m = None
 EMPTY = 0
 OCCUPIED = 1
 
@@ -29,7 +26,6 @@ class Terrain_Manager:
         self.blocks = set()
         self.screen_width = screen_width
         self.screen_height = screen_height
-        physics.t_m = self
         self.render_image = None
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
         self.matrix = {}

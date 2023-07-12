@@ -6,7 +6,6 @@ import Blocks
 from Blocks.block import Block
 from Blocks.block_type import *
 from Blocks import terrain_gen as tg, terrain_manager as tm
-import physics
 import psutil
 import gc
 import sys
@@ -61,7 +60,7 @@ class Game:
         self.terrain_manager.update(screen=self.screen)
 
         # # visualization
-        pg.draw.line(self.render_image, (0, 0, 255), (0, physics.ground), (2400, physics.ground))  # Ground
+        pg.draw.line(self.render_image, (0, 0, 255), (0, tm.ground), (2400, tm.ground))  # Ground
 
         # timed functions
         if timer > 1 and timer < 600:

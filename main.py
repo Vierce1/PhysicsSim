@@ -7,7 +7,6 @@ import Blocks
 from Blocks.block import Block
 from Blocks.block_type import *
 from Blocks import terrain_gen, terrain_manager
-import physics
 import gc
 
 
@@ -18,7 +17,6 @@ flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
 screen = pg.display.set_mode(window_size)
 gc.disable()
 
-physics.display_res = display_resolution
 game_running = True
 
 
