@@ -103,6 +103,7 @@ class Terrain_Manager:
         self.matrix[block.position[0], block.position[1]] = 0
         # self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
         block.position = (block.position[0], block.position[1] + block.vert_velocity)
+#TODO: If want to incorporate block width/height, need to draw all pixels contained here
         self.matrix[block.position[0], block.position[1]] = 1
         return
 
