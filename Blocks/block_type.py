@@ -11,9 +11,9 @@ class Block_Type:
 
     def get_block_type(self, block_type):
         print(block_type)
-        if block_type == 'sand':
+        if block_type == SAND:
             return Sand()
-        elif block_type == 'rock':
+        elif block_type == ROCK:
             return Rock()
 
 

@@ -41,57 +41,13 @@
    ]
   ],
   "block_types": [
-   {
-    "name": "sand",
-    "rigid": false,
-    "color": [
-     150,
-     190,
-     0
-    ],
-    "friction": 0.3
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   },
-   {
-    "name": "rock",
-    "rigid": true,
-    "color": [
-     160,
-     160,
-     160
-    ],
-    "friction": 0.8
-   }
-  ]
+   0,
+   1,
+   1,
+   1,
+   1
+  ],
+  "timed_spawns": null
  },
  {
   "id": 2,
@@ -107,16 +63,9 @@
    ]
   ],
   "block_types": [
-   {
-    "name": "sand",
-    "rigid": false,
-    "color": [
-     150,
-     190,
-     0
-    ],
-    "friction": 0.3
-   }
-  ]
+   1,
+   0
+  ],
+  "timed_spawns": null
  }
 ]

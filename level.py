@@ -21,21 +21,28 @@ class Level_Getter:
 
     def get_level(self, level: int):
         print(f'creating level {level}')
-        level = self.levels[level - 1]
+        level = self.levels[level]
         return level
 
 
 
 class Level:
-    def __init__(self, id: int, block_counts: list[int], block_types: list[block_type.Block_Type],
-                    bounds: list[(int,int,int,int)]):
+    def __init__(self, id: int, block_counts: list[int], block_types: list[str],
+                    bounds: list[(int,int,int,int)], timed_spawns: dict = None, writing: bool = False):
         self.id = id
         self.block_counts = block_counts
         self.bounds = bounds
         self.block_types = []
-        for t in block_types:
-            tp = block_type.Block_Type().get_block_type(t['name'])
-            self.block_types.append(tp)
+        if writing:  # Creating json. Don't convert to objects
+            self.block_types = block_types
+        else:  # Reading level. Create block types from the enums
+            for t in block_types:
+                # tp = block_type.Block_Type().get_block_type(t['name'])
+                tp = block_type.Block_Type().get_block_type(t)
+                self.block_types.append(tp)
+
+        self.timed_spawns = timed_spawns  # particles that spawn over time
+        # example format:  {SAND
 
 
 
