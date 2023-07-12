@@ -21,7 +21,7 @@ game_running = True
 
 
 game = Game(window_size=window_size, display_resolution=display_resolution, screen=screen)  # main game functions
-game.setup(level=1)
+level = game.setup(level=1)
 
 clock = time.Clock()
 timer = 0
@@ -29,11 +29,13 @@ timer = 0
 pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.KEYUP]) # limit allowed events we have to check for every frame
 
 
+
 print('\n\nGame Loaded')
 while game_running:
     clock.tick(999)
-    timer += 1
-    print(f'fps: {str(round(clock.get_fps()))}')
+    fps = clock.get_fps()
+    timer += 1 / fps if fps > 0 else 0
+    print(f'fps: {str(round(fps))}')
 
 
     events = pg.event.get()
@@ -41,7 +43,7 @@ while game_running:
         if event.type == pg.QUIT:
             game_running = False
 
-    game.update(timer=timer, events=events)
+    game.update(level=level, timer=timer, events=events)
 
 pg.quit()
 

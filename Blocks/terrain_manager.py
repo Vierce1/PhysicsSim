@@ -39,7 +39,7 @@ class Terrain_Manager:
 
 
     # @profile
-    def update(self, screen) -> list:
+    def update(self, screen) -> None:
         # [self.game.spaces_to_clear.add(pos) for pos in self.matrix if pos == EMPTY]
 
         for block in self.blocks:

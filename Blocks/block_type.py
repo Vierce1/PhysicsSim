@@ -10,7 +10,6 @@ class Block_Type:
         self.friction = 1  # slidieness. 1 = no sliding
 
     def get_block_type(self, block_type):
-        print(block_type)
         if block_type == SAND:
             return Sand()
         elif block_type == ROCK:
