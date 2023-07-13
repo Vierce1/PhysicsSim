@@ -35,7 +35,7 @@ while game_running:
     clock.tick(999)
     fps = clock.get_fps()
     timer += 1 / fps if fps > 0 else 0
-    # print(f'fps: {str(round(fps))}')
+    print(f'fps: {str(round(fps))}')
 
 
     events = pg.event.get()

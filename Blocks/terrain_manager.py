@@ -124,5 +124,8 @@ class Terrain_Manager:
     def destroy_block(self, block: Block) -> None:
         self.matrix[block.position[0], block.position[1]] = EMPTY
         self.game.spaces_to_clear.add(block.position)
+        # self.trigger_ungrounding(/)
+
+    # def trigger_ungrounding(self, ):
 
 

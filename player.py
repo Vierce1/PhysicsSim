@@ -69,16 +69,10 @@ class Player:
         blocks = self.terrain_manager.blocks
         blocks.update(self.terrain_manager.inactive_blocks)
         in_range_blocks = help.get_blocks_in_dist(pos=location, block_list=blocks, distance=self.destroy_distance)
-        print(f'# of blocks in destroy radius: {len(in_range_blocks)}')
-        print(f'mouse_pos : {location}')
         for block in in_range_blocks:
-            # print(f'{block.position[0]}  {block.position[1]}  {block.type.name}')
             if not block.type.destroyable:
                 continue
-            print(f'destroy block at {block.position[0]}  {block.position[1]}')
             self.terrain_manager.destroy_block(block)
-            # block.collision_detection = True
-            # block.grounded_timer = 0
-            # block.horiz_velocity += random.randrange(-1, 2) * force
+
 
 

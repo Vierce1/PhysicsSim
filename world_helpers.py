@@ -8,8 +8,6 @@ def get_blocks_in_dist(pos: (int, int), block_list, distance: int) -> set:
     for block in block_list:
         # dist = (block.position[0] - pos[0])**2 + (block.position[1] - pos[1])**2 < distance**2
         dist = math.sqrt((block.position[0] - pos[0])**2 + (block.position[1] - pos[1])**2)
-        if block.type.name == 'dirt':
-            print(f'dirt {dist}')
         if dist < distance:
             blocks.add(block)
     return blocks
