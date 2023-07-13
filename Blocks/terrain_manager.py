@@ -6,11 +6,10 @@ import sys
 import random
 
 
-gravity = 1
-terminal_velocity = 1
+
 display_res = []
 ground = 705
-frames_til_grounded = 100 # 320  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 320  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
@@ -26,6 +25,8 @@ class Terrain_Manager:
         self.game = game
         self.render_image = None
         self.first_trigger_radius = 10
+        self.gravity = 1
+        self.terminal_velocity = 1
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
         self.matrix = {}
         for x in range(screen_width):  # initalize all spaces as empty
@@ -48,7 +49,7 @@ class Terrain_Manager:
 
         self.inactive_blocks.update({b for b in self.blocks if not b.collision_detection})
         self.blocks = {b for b in self.blocks if b.collision_detection}
-        print(len([b for b in self.blocks]))
+        # print(len([b for b in self.blocks]))
         # print(len(self.blocks))
 
 
@@ -57,10 +58,11 @@ class Terrain_Manager:
 
 # Physics
 
-    def check_under(self, block: Block):
-        if block.position[1] == ground:
+    # TODO: Need to ravamp this for speed changes
+    def check_under(self, position: (int, int)) -> bool:
+        if position[1] == ground:
             return True
-        return self.matrix[block.position[0], block.position[1] + 1][0] == 1
+        return self.matrix[position[0], position[1] + 1][0] == 1
 
 
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
@@ -70,6 +72,11 @@ class Terrain_Manager:
         elif self.matrix[block.position[0] - dir, block.position[1] + 1][0] == EMPTY:
             return -dir
         return 0
+
+    def check_slope(self, position: (int, int), direction: int) -> bool:
+        if self.matrix[position[0] + direction[0], position[1] - 1][0] == EMPTY:
+            return True
+        return False
 
 
 
@@ -91,7 +98,7 @@ class Terrain_Manager:
             block.horiz_velocity = 0
             return
 
-        collision = self.check_under(block)
+        collision = self.check_under(block.position)
 
         if collision:  # collided. Check if it should slide to either side + down 1
             block.vert_velocity = 0
@@ -102,8 +109,8 @@ class Terrain_Manager:
                 self.slide(block, slide)
             return
 
-        if block.vert_velocity < terminal_velocity:
-            block.vert_velocity += gravity
+        if block.vert_velocity < self.terminal_velocity:
+            block.vert_velocity += self.gravity
 
         # mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = (EMPTY, None)

@@ -12,20 +12,36 @@ class Player:
         self.screen_height = screen_height
         self.render_width = render_width
         self.render_height = render_height
-        self.position = (100, 100)
+        self.position = (200, 205)
         self.size = 10
-        self.move_speed = 10
+        self.rect = pg.Rect(self.position[0], self.position[1], self.size, self.size)
+        self.move_speed = 3
+        self.vertical_speed = 0
         self.manipulation_distance = 600
         self.destroy_distance = 8
 
     def update(self, events, render_image):
         self.accept_input(events=events, render_image=render_image)
+        self.fall()
+        pg.draw.rect(surface=render_image, color=(255, 255, 255), rect=self.rect)
 
+
+    def fall(self):
+        grounded = self.terrain_manager.check_under((self.position[0], self.rect.bottom + 1))
+        if not grounded:
+            # TODO: Need to revamp this for gravity changes
+            self.vertical_speed += self.terrain_manager.gravity \
+                if self.vertical_speed < self.terrain_manager.terminal_velocity else 0
+            self.position = (self.position[0], self.position[1] + self.vertical_speed)
+            self.rect.y = self.position[1]
+        else:
+            self.vertical_speed = 0
 
     def get_rect_pos(self, current_pos: (int, int), change: (int, int)):
         # self.position = tuple(map(sum, zip(current_pos, change)))
-        self.position = (current_pos[0] + change[0], current_pos[1] + change[1])
-        return self.position
+        self.rect.x = current_pos[0] + change[0]
+        self.rect.y = current_pos[1] + change[1]
+        return (self.rect.x, self.rect.y)
 
 
     def accept_input(self, events, render_image: pg.display):
@@ -49,12 +65,20 @@ class Player:
 
         for y in range(self.size):
             for x in range(self.size):
-                pos = (self.position[0] + x, self.position[1] + y)
+                pos = (self.rect.x + x, self.rect.y + y)
                 render_image.set_at(pos, (0, 0, 0))
 
-        player_position = self.get_rect_pos(current_pos=self.position, change=pos_change)
-        pg.draw.rect(surface=render_image, color=(255, 255, 255),
-                     rect=(player_position[0], player_position[1], self.size, self.size))
+        if pos_change[0] != 0:
+            self.move(pos_change, render_image)
+
+
+
+    def move(self, direction, render_image):
+        change = direction
+        # Check if need to go up slope first
+        if self.terrain_manager.check_slope(self.position, direction):
+            change = (change[0], change[1] - 1)
+        self.position = self.get_rect_pos(current_pos=self.position, change=change)
 
 
     def mouse_click(self, mouse_pos: (int, int)):
