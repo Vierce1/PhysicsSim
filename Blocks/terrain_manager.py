@@ -11,17 +11,15 @@ terminal_velocity = 1
 display_res = []
 ground = 705
 frames_til_grounded = 320  # how many frames a block must be stationary before being grounded
-slide_factor = 1  # how fast blocks slide horizontally
+slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
 
 
-
-#TODO: What if after Rock (or any unmovable block) is drawn when gen'd, it is removed from blocks?
-# Then no iterating over it each frame
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int, game):
         self.blocks = set()
+        self.inactive_blocks = set()
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.game = game
@@ -46,8 +44,10 @@ class Terrain_Manager:
         for block in self.blocks:
             self.update_blocks(block=block, screen=self.render_image)
 
-        self.blocks = [b for b in self.blocks if b.collision_detection]
-        print(len(self.blocks))
+        self.inactive_blocks.update({b for b in self.blocks if not b.collision_detection})
+        self.blocks = {b for b in self.blocks if b.collision_detection}
+
+        # print(len(self.blocks))
 
 
 
@@ -63,9 +63,9 @@ class Terrain_Manager:
 
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
         dir = 1 if random.random() < 0.5 else -1
-        if self.matrix[block.position[0] + dir, block.position[1] + 1] == 0:
+        if self.matrix[block.position[0] + dir, block.position[1] + 1] == EMPTY:
             return dir
-        elif self.matrix[block.position[0] - dir, block.position[1] + 1] == 0:
+        elif self.matrix[block.position[0] - dir, block.position[1] + 1] == EMPTY:
             return -dir
         return 0
 
@@ -103,21 +103,26 @@ class Terrain_Manager:
             block.vert_velocity += gravity
 
         # mark prev position empty & mark to fill with black
-        self.matrix[block.position[0], block.position[1]] = 0
-        self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
+        self.matrix[block.position[0], block.position[1]] = EMPTY
+        self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
         block.position = (block.position[0], block.position[1] + block.vert_velocity)
 #TODO: If want to incorporate block width/height, need to draw all pixels contained here
 #That adds complexity to 1-width blocks, though
-        self.matrix[block.position[0], block.position[1]] = 1
+        self.matrix[block.position[0], block.position[1]] = OCCUPIED
         return
 
 
     def slide(self, block: Block, slide: int) -> None:
         block.horiz_velocity = slide * 1 * slide_factor
         self.matrix[block.position[0], block.position[1]] = EMPTY
-        self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
+        self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
         block.position = (block.position[0] + block.horiz_velocity, block.position[1])
         self.matrix[block.position[0], block.position[1]] = OCCUPIED
         return
+
+
+    def destroy_block(self, block: Block) -> None:
+        self.matrix[block.position[0], block.position[1]] = EMPTY
+        self.game.spaces_to_clear.add(block.position)
 
 

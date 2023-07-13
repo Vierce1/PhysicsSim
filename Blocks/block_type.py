@@ -47,7 +47,7 @@ class Dirt(Block_Type):
     def __init__(self):
         self.name = 'dirt'
         self.rigid = True
-        self.destroyable = False
+        self.destroyable = True
         self.color = (70,38,0)
         self.friction = 0.3
         self.width = 1

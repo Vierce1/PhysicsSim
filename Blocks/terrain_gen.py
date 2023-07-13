@@ -12,6 +12,7 @@ class Terrain_Gen:
         self.terrain_manager = terrain_manager
 
 
+#TODO: Draw a poly and fill it with blocks
     def gen_terrain(self, block_count: int, block_type: Block_Type, bounds: (int, int, int, int))-> list[Block]:
         generated_blocks = []
         xs = uniform.rvs(loc=bounds[0], scale=bounds[1]-bounds[0], size=block_count)

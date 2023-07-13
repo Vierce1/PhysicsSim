@@ -17,7 +17,7 @@ class Game:
         self.display_resolution = display_resolution
         self.window_size = window_size
         self.screen = screen
-        self.delay = round(1000/50)
+        self.delay = round(1000/90)
         gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
         self.spaces_to_clear = set()
@@ -25,6 +25,8 @@ class Game:
         self.level = 1
         self.terrain_manager.setup(self.render_image)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
+        self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
+                             display_resolution[1])
 
 
     def setup(self, level: int) -> Level:
@@ -60,23 +62,18 @@ class Game:
                 # self.blocks.update(spawn_blocks)
                 self.terrain_manager.blocks.update(spawn_blocks)
 
-        # if timer > 1 and timer < 600:
-        #     new_blocks = self.terrain_gen.gen_terrain(block_count=20, block_type=Sand(), bounds=(540, 780, 150, 180),)
-        #     self.blocks.update(new_blocks)
-        #     self.terrain_manager.blocks.update(new_blocks)
 
+        self.player.update(events, self.render_image)
 
         self.render_image.convert()  # optimize image after drawing on it
         draw_area = self.render_image.get_rect().move(0, 0)
         resized_screen = pg.transform.scale(self.render_image, (self.window_size[0], self.window_size[1]))
         self.screen.blit(resized_screen, draw_area)
 
-        # self.player.update(events, self.screen)
-
-        # tick = pg.time.get_ticks()
-        # now = pg.time.get_ticks()
-        # while now - tick < self.delay:
-        #     now = pg.time.get_ticks()
+        tick = pg.time.get_ticks()
+        now = pg.time.get_ticks()
+        while now - tick < self.delay:
+            now = pg.time.get_ticks()
 
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
         # print(f'cpu % usage: {psutil.cpu_percent()}')
