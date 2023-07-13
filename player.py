@@ -74,5 +74,8 @@ class Player:
                 continue
             self.terrain_manager.destroy_block(block)
 
+        # if len(in_range_blocks) > 0:
+        self.terrain_manager.trigger_ungrounding(location)
+
 
 

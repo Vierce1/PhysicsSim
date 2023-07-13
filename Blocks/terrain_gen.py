@@ -21,11 +21,11 @@ class Terrain_Gen:
         y = bounds[2]
         for x, y in zip(xs, ys):
             pos = (round(x), round(y))
-            if self.terrain_manager.matrix[pos[0], pos[1]] == 1:
+            if self.terrain_manager.matrix[pos[0], pos[1]][0] == 1:
                 continue
             block = Block(block_type, pos)
             generated_blocks.append(block)
-            self.terrain_manager.matrix[pos[0], pos[1]] = 1
+            self.terrain_manager.matrix[pos[0], pos[1]] = (1, block)
 
         return generated_blocks
 
