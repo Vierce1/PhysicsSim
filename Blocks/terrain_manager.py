@@ -10,7 +10,7 @@ gravity = 1
 terminal_velocity = 1
 display_res = []
 ground = 705
-frames_til_grounded = 120  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 320  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally
 EMPTY = 0
 OCCUPIED = 1
@@ -47,6 +47,7 @@ class Terrain_Manager:
             self.update_blocks(block=block, screen=self.render_image)
 
         self.blocks = [b for b in self.blocks if b.collision_detection]
+        print(len(self.blocks))
 
 
 
@@ -75,7 +76,7 @@ class Terrain_Manager:
     # Block functions
     def update_blocks(self, block, screen):
         if block.collision_detection:
-            if block.grounded_timer == frames_til_grounded:
+            if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
             self.move(block)
         screen.set_at(block.position, block.type.color)
@@ -91,6 +92,7 @@ class Terrain_Manager:
 
         if collision:  # collided. Check if it should slide to either side + down 1
             block.vert_velocity = 0
+            block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
 
             slide = self.check_slide(block)
             if slide != 0:

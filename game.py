@@ -73,10 +73,10 @@ class Game:
 
         # self.player.update(events, self.screen)
 
-        tick = pg.time.get_ticks()
-        now = pg.time.get_ticks()
-        while now - tick < self.delay:
-            now = pg.time.get_ticks()
+        # tick = pg.time.get_ticks()
+        # now = pg.time.get_ticks()
+        # while now - tick < self.delay:
+        #     now = pg.time.get_ticks()
 
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
         # print(f'cpu % usage: {psutil.cpu_percent()}')
