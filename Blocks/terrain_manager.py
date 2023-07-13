@@ -20,6 +20,7 @@ class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int, game):
         self.blocks = set()
         self.inactive_blocks = set()
+        self.destroyable_blocks = set()
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.game = game

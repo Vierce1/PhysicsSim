@@ -38,6 +38,8 @@ class Game:
             blocks = self.terrain_gen.gen_terrain(block_count=level.block_counts[i],
                                 block_type=level.block_types[i], bounds=level.bounds[i])
             level_blocks.update(blocks)
+            if blocks[0].type.destroyable:
+                self.terrain_manager.destroyable_blocks.update(blocks)
 
         print(f'length of blocks = {str(len(level_blocks))}')
         self.terrain_manager.blocks.update(level_blocks)
