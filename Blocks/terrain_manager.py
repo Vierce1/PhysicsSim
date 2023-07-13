@@ -43,10 +43,11 @@ class Terrain_Manager:
 
     # @profile
     def update(self, screen) -> None:
-        # [self.game.spaces_to_clear.add(pos) for pos in self.matrix if pos == EMPTY]
-
         for block in self.blocks:
             self.update_blocks(block=block, screen=self.render_image)
+
+        self.blocks = [b for b in self.blocks if b.collision_detection]
+
 
 
 
@@ -101,7 +102,7 @@ class Terrain_Manager:
 
         # mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = 0
-        # self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
+        self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
         block.position = (block.position[0], block.position[1] + block.vert_velocity)
 #TODO: If want to incorporate block width/height, need to draw all pixels contained here
 #That adds complexity to 1-width blocks, though
@@ -112,7 +113,7 @@ class Terrain_Manager:
     def slide(self, block: Block, slide: int) -> None:
         block.horiz_velocity = slide * 1 * slide_factor
         self.matrix[block.position[0], block.position[1]] = EMPTY
-        # self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
+        self.game.spaces_to_clear.add((block.position[0], block.position[1]))  # Slower with more particles updating
         block.position = (block.position[0] + block.horiz_velocity, block.position[1])
         self.matrix[block.position[0], block.position[1]] = OCCUPIED
         return

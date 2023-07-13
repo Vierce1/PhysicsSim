@@ -43,9 +43,9 @@ class Game:
 
 
     def update(self, level: Level, timer: int, events: list[pg.event.Event]):
-        self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
-        # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
-        # self.spaces_to_clear.clear()
+        # self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
+        [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
+        self.spaces_to_clear.clear()
 
         self.terrain_manager.update(screen=self.screen)
 
