@@ -24,6 +24,7 @@ class Terrain_Gen:
                 continue
             block = Block(block_type, pos)
             generated_blocks.append(block)
+            self.terrain_manager.matrix[pos[0], pos[1]] = 1
 
         return generated_blocks
 

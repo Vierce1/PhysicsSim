@@ -17,7 +17,7 @@ class Game:
         self.display_resolution = display_resolution
         self.window_size = window_size
         self.screen = screen
-        self.delay = 2
+        self.delay = round(1000/50)
         gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
         self.spaces_to_clear = set()

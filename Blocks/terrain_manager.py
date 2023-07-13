@@ -57,15 +57,15 @@ class Terrain_Manager:
     def check_under(self, block: Block):
         if block.position[1] == ground:
             return True
-        return self.matrix[block.position[0], block.position[1] + block.height] == 1
+        return self.matrix[block.position[0], block.position[1] + 1] == 1
 
 
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
         dir = 1 if random.random() < 0.5 else -1
-        if self.matrix[block.position[0] + block.width * dir, block.position[1] + block.height] == 0:
-            return 1
-        elif self.matrix[block.position[0] + block.width * -dir, block.position[1] + block.height] == 0:
-            return -1
+        if self.matrix[block.position[0] + dir, block.position[1] + 1] == 0:
+            return dir
+        elif self.matrix[block.position[0] - dir, block.position[1] + 1] == 0:
+            return -dir
         return 0
 
 
