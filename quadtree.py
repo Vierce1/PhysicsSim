@@ -29,8 +29,10 @@ class Quadtree:
 
 
     # @profile
-    def create_tree(self, blocks: list[Block]) -> None:
+    def create_tree(self, blocks: list[Block]) -> list[Quadtree_Node]:
         self.insert_blocks(blocks=blocks)
+
+        return self.all_quads
         
         # print(f'quadtrees size = {size_checker.total_size(self.all_quads, verbose=False)}')
         # print(f'quadtree size: {sys.getsizeof(self.root_quadtree)}')
@@ -99,7 +101,7 @@ class Quadtree:
         #     if len(left_leaves) > 0:
         #         root = self.get_common_root(left_leaves)
         for block in blocks:
-            self.add_rects_to_quadtree(block, self.root_node)
+            self.add_rects_to_node(block, self.root_node)
 
 
 
@@ -216,9 +218,9 @@ class Quadtree:
     def check_block_in_quad(self, block, node) -> bool: 
         # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
         # This allows inter-leaf collision
-        right = block.rect.right + (1 * block.type.width)
+        right = block.position[0] + block.type.width + (1 * block.type.width)
         # left = block.rect.left - (1 * block.type.width)
-        top = block.rect.top + (1 * block.type.height)
+        top = block.position[1] - block.type.height + (1 * block.type.height)
         # bottom = block.rect.bottom - (1 * block.rect.height)
 
         #TODO: Vett this formula
@@ -267,7 +269,7 @@ class Quadtree:
             node.objects.clear()
             for b in objs:
                 self.set_count_tree(branch=node, value=-1)  # decrement count, will increment it below
-                b.leaves.remove(node)
+                # b.leaves.remove(node)
 
                 for child in children:
                     contained = self.check_block_in_quad(b, child)
@@ -282,7 +284,7 @@ class Quadtree:
         elif block not in node.objects:  # found leaf w/ under capacity or max branches
             node.objects.add(block)
             self.set_count_tree(branch=node, value=1)
-            block.leaves.append(node)
+            # block.leaves.append(node)
 
 
     def set_count_tree(self, branch: Quadtree_Node, value: int):

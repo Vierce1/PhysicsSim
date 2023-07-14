@@ -27,6 +27,7 @@ class Game:
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
                              display_resolution[1])
+        self.quadtree_nodes = set()
 
 
     def setup(self, level: int) -> Level:
@@ -55,6 +56,13 @@ class Game:
 
         # # visualization
         pg.draw.line(self.render_image, (0, 0, 255), (0, tm.ground), (2400, tm.ground))  # Ground
+        for q in self.quadtree_nodes:
+            color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
+            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
+            pg.draw.line(self.render_image, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
+            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x, q.y - q.height))
+            pg.draw.line(self.render_image, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
+
 
         # timed functions
         for ts in level.timed_spawns:
