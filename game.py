@@ -17,7 +17,7 @@ class Game:
         self.display_resolution = display_resolution
         self.window_size = window_size
         self.screen = screen
-        self.delay = round(1000/90)
+        self.delay = round(1000/144)
         gc.disable()
         self.render_image = pg.Surface((display_resolution[0], display_resolution[1]))  # for drawing offscreen first
         self.spaces_to_clear = set()
@@ -74,8 +74,8 @@ class Game:
 
         tick = pg.time.get_ticks()
         now = pg.time.get_ticks()
-        while now - tick < self.delay:
-            now = pg.time.get_ticks()
+        # while now - tick < self.delay:
+        #     now = pg.time.get_ticks()
 
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
         # print(f'cpu % usage: {psutil.cpu_percent()}')

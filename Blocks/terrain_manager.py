@@ -29,8 +29,8 @@ class Terrain_Manager:
         self.terminal_velocity = 1
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
         self.matrix = {}
-        for x in range(screen_width):  # initalize all spaces as empty
-            for y in range(screen_height):
+        for x in range(-10, screen_width + 10):  # initalize all spaces as empty
+            for y in range(-10, screen_height + 10):
                 self.matrix[x,y] = (0, None)
         # print(f'matrix length: {len(self.matrix)}')
 
@@ -67,6 +67,8 @@ class Terrain_Manager:
 
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
         dir = 1 if random.random() < 0.5 else -1
+        # if self.screen_width > block.position[0] + dir > 0 \  # costs fps
+        #   and self.screen_height > block.position[1] + dir > 0:
         if self.matrix[block.position[0] + dir, block.position[1] + 1][0] == EMPTY:
             return dir
         elif self.matrix[block.position[0] - dir, block.position[1] + 1][0] == EMPTY:

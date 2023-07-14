@@ -29,7 +29,7 @@ class Level_Getter:
 # noinspection PyTypeChecker
 class Level:
     def __init__(self, id: int, block_counts: list[int], block_types: list[str],
-                    bounds: list[(int,int,int,int)], timed_spawns: list = None, writing: bool = False):
+                    bounds: list[(int,int,int,int)], timed_spawns=None, writing: bool = False):
         self.id = id
         self.block_counts = block_counts
         self.bounds = bounds
