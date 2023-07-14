@@ -30,7 +30,7 @@ class Terrain_Gen:
                 if block.type.start_static:  # allow blocks like sand to start grounded after 1 frame (drawing)
                     block.collision_detection = False
                 generated_blocks.add(block)
-                self.terrain_manager.matrix[x, y] = (1, block)
+                self.terrain_manager.matrix[x, y] = 1
 
         return generated_blocks
 
@@ -44,13 +44,13 @@ class Terrain_Gen:
         y = bounds[2]
         for x, y in zip(xs, ys):
             pos = (round(x), round(y))
-            if self.terrain_manager.matrix[pos[0], pos[1]][0] == 1:
+            if self.terrain_manager.matrix[pos[0], pos[1]] == 1:
                 continue
             block = Block(block_type, pos)
             if block.type.start_static:
                 block.collision_detection = False
             generated_blocks.add(block)
-            self.terrain_manager.matrix[pos[0], pos[1]] = (1, block)
+            self.terrain_manager.matrix[pos[0], pos[1]] = 1
 
         return generated_blocks
 

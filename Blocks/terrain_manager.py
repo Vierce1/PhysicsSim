@@ -14,7 +14,7 @@ slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
 
-class Matrix(dict):
+class Matrix(dict):  #TODO Change to tuple or other cheaper object
     def __init__(self, width: int, height: int):
         super().__init__()
         # self.matrix = {}
@@ -22,8 +22,14 @@ class Matrix(dict):
             for y in range(-10, height + 10):
                 self[x,y] = (0, None)
 
-    def __getitem__(self, key):  # overrirde default to return None if out of bounds
-        return self.get(key, None)
+    def get_val(self, key):
+        try: return self[key]
+        except KeyError: return None
+
+    # def __getitem__(self, key):  # overrirde default to return None if out of bounds. Makes it slower
+    #     # return self.get(key, None)
+    #     try: return self[key]
+    #     except KeyError: return None
 
 
 
@@ -40,18 +46,18 @@ class Terrain_Manager:
         self.gravity = 1
         self.terminal_velocity = 1
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
-        # self.matrix = Matrix(width=screen_width + 10, height=screen_height+10)
-        self.matrix = {}
-        for x in range(-10, screen_width + 10):  # initalize all spaces as empty
-            for y in range(-10, screen_height + 10):
-                self.matrix[x,y] = (0, None)
-        print(f'matrix length: {len(self.matrix)}')
+        self.matrix = Matrix(width=screen_width + 10, height=screen_height+10)
+        # self.matrix = {}
+        # for x in range(-10, screen_width + 10):  # initalize all spaces as empty
+        #     for y in range(-10, screen_height + 10):
+        #         self.matrix[x,y] = (0, None)
+        # print(f'matrix length: {len(self.matrix)}')
 
 
 
     def setup(self, render_image):  # need new method for adding blocks after init
         for b in self.blocks:
-            self.matrix[b.position[0], b.position[1]] = (OCCUPIED, b)
+            self.matrix[b.position[0], b.position[1]] = OCCUPIED
         self.render_image = render_image
 
 
@@ -75,21 +81,21 @@ class Terrain_Manager:
     def check_under(self, position: (int, int)) -> bool:
         if position[1] == ground:
             return True
-        return self.matrix[position[0], position[1] + 1][0] == 1
+        return self.matrix.get_val((position[0], position[1] + 1)) == 1
 
 
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
         dir = 1 if random.random() < 0.5 else -1
         # if self.screen_width > block.position[0] + dir > 0 \  # costs fps
         #   and self.screen_height > block.position[1] + dir > 0:
-        if self.matrix[block.position[0] + dir, block.position[1] + 1][0] == EMPTY:
+        if self.matrix.get_val((block.position[0] + dir, block.position[1] + 1)) == EMPTY:
             return dir
-        elif self.matrix[block.position[0] - dir, block.position[1] + 1][0] == EMPTY:
+        elif self.matrix.get_val((block.position[0] - dir, block.position[1] + 1)) == EMPTY:
             return -dir
         return 0
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
-        if self.matrix[position[0] + direction[0], position[1] - 1][0] == EMPTY:
+        if self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == EMPTY:
             return True
         return False
 
@@ -128,18 +134,18 @@ class Terrain_Manager:
             block.vert_velocity += self.gravity
 
         # mark prev position empty & mark to fill with black
-        self.matrix[block.position[0], block.position[1]] = (EMPTY, None)
+        self.matrix[block.position[0], block.position[1]] = EMPTY
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
         block.position = (block.position[0], block.position[1] + block.vert_velocity)
 #TODO: If want to incorporate block width/height, need to draw all pixels contained here
 #That adds complexity to 1-width blocks, though
-        self.matrix[block.position[0], block.position[1]] = (OCCUPIED, block)
+        self.matrix[block.position[0], block.position[1]] = OCCUPIED
         return
 
 
     def slide(self, block: Block, slide: int) -> None:
         block.horiz_velocity = slide * 1 * slide_factor
-        self.matrix[block.position[0], block.position[1]] = (EMPTY, None)
+        self.matrix[block.position[0], block.position[1]] = EMPTY
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
         block.position = (block.position[0] + block.horiz_velocity, block.position[1])
         self.matrix[block.position[0], block.position[1]] = (OCCUPIED, block)
@@ -147,12 +153,13 @@ class Terrain_Manager:
 
 
     def destroy_block(self, block: Block) -> None:
-        self.matrix[block.position[0], block.position[1]] = (EMPTY, None)
+        self.matrix[block.position[0], block.position[1]] = EMPTY
         self.game.spaces_to_clear.add(block.position)
 
 
 #TODO: major fps slowdown when long trigger chain
 # Need to not check the same pixels twice as radius expands (will require multiple loops, low and high?)
+# Need to remove the block from the dictionary and find it some other way.
     def trigger_ungrounding(self, position: (int, int), call_count: int = 0):
         call_count += 1
         triggered = False
@@ -163,7 +170,7 @@ class Terrain_Manager:
                     continue
                 # print(f'checking {x}  {y}')
                 check_pos = (x, y)
-                block = self.matrix[check_pos[0], check_pos[1]][1]
+                block = self.matrix[check_pos[0], check_pos[1]]
                 if not block or block.type.rigid or block not in self.inactive_blocks:
                     continue
                 block.collision_detection = True
