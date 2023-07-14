@@ -88,8 +88,7 @@ class Player:
 
 
 
-#TODO: Consider reimplementing quadtree that classifies blocks for 1 frame rather than using all undestroyable blocks
-# When dealing with  200k destroyable blocks, see an fps drop (~ 8fps)
+#TODO: UPDATE TO USE THE QUADTREE NOW
     def destroy(self, location: (int, int), force: int):
         blocks = self.terrain_manager.destroyable_blocks
         in_range_blocks = help.get_blocks_in_dist(pos=location, block_list=blocks, distance=self.destroy_distance)
