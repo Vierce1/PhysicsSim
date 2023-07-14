@@ -14,7 +14,8 @@ slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
 
-class Matrix(dict):  #TODO Change to tuple or other cheaper object
+class Matrix(dict):  #TODO: Use dict, looks like it is fastest. But maybe I can speed up the exception handling
+    # Or dispose of it entirely.
     def __init__(self, width: int, height: int):
         super().__init__()
         # self.matrix = {}
