@@ -138,6 +138,8 @@ class Terrain_Manager:
         self.game.spaces_to_clear.add(block.position)
 
 
+#TODO: major fps slowdown when long trigger chain
+# Need to not check the same pixels twice as radius expands (will require multiple loops, low and high?)
     def trigger_ungrounding(self, position: (int, int), call_count: int = 0):
         call_count += 1
         triggered = False
