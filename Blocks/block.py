@@ -3,13 +3,11 @@ import Blocks.block_type as block_type
 import Blocks.block_type
 # import sys
 
-class Reduce(type):
-    def __new__(cls, name, bases, attrs):
-        attrs['__dict__'] = {}
-        return super().__new__(cls, name, bases, attrs)
 
-
-class Block: # no change in size. (metaclass=Reduce):
+class Block:
+    # slots reduces size of object by only reserving enough memory to hold these values.
+    __slots__ = ('type', 'position', 'width', 'height', 'vert_velocity', 'horiz_velocity', 'collision_detection',
+                 'grounded_timer')
     def __init__(self, type: block_type.Block_Type, position: (int, int)):
         # print(sys.getsizeof(self ))
         # self.id = -1

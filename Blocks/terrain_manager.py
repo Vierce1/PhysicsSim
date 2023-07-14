@@ -15,7 +15,7 @@ EMPTY = 0
 OCCUPIED = 1
 
 class Matrix(dict):  #TODO: Use dict, looks like it is fastest. But maybe I can speed up the exception handling
-    # Or dispose of it entirely.
+    # __slots__ = dict
     def __init__(self, width: int, height: int):
         super().__init__()
         # self.matrix = {}
