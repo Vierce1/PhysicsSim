@@ -18,13 +18,13 @@ class Terrain_Gen:
         if block_count / pixel_count < 1:  # particles do not fill entire bounds
             return list(self.uniform(block_count,block_type, bounds))
         else:  # particles fill exactly bounds. Note can pass in 999999 as block count to force the fill method
-            print('fill bounds') # Pass in pixel_count to avoid over-generation
+            # print('fill bounds') # Pass in pixel_count to avoid over-generation
             return list(self.fill_bounds(pixel_count,block_type, bounds))
 
     def fill_bounds(self, block_count: int, block_type: Block_Type, bounds: (int, int, int, int)) -> set[Block]:
         generated_blocks = set()
         for y in range(bounds[2], bounds[3]):
-            for x in range(bounds[1] - bounds[0]):
+            for x in range(bounds[0], bounds[1]):
                 pos = (x, y)
                 block = Block(block_type, pos)
                 if block.type.start_static:  # allow blocks like sand to start grounded after 1 frame (drawing)

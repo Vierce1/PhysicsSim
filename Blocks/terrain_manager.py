@@ -9,10 +9,22 @@ import random
 
 display_res = []
 ground = 705
-frames_til_grounded = 320  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 420  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
+
+class Matrix(dict):
+    def __init__(self, width: int, height: int):
+        super().__init__()
+        # self.matrix = {}
+        for x in range(-10, width + 10):  # initalize all spaces as empty
+            for y in range(-10, height + 10):
+                self[x,y] = (0, None)
+
+    def __getitem__(self, key):  # overrirde default to return None if out of bounds
+        return self.get(key, None)
+
 
 
 class Terrain_Manager:
@@ -28,11 +40,12 @@ class Terrain_Manager:
         self.gravity = 1
         self.terminal_velocity = 1
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
+        # self.matrix = Matrix(width=screen_width + 10, height=screen_height+10)
         self.matrix = {}
         for x in range(-10, screen_width + 10):  # initalize all spaces as empty
             for y in range(-10, screen_height + 10):
                 self.matrix[x,y] = (0, None)
-        # print(f'matrix length: {len(self.matrix)}')
+        print(f'matrix length: {len(self.matrix)}')
 
 
 
