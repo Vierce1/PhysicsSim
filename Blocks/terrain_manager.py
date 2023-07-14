@@ -158,7 +158,7 @@ class Terrain_Manager:
         self.game.spaces_to_clear.add(block.position)
 
 
-#TODO: major fps slowdown when long trigger chain
+#TODO: major fps slowdown when long trigger chain. Use Quadtree ?
 # Need to not check the same pixels twice as radius expands (will require multiple loops, low and high?)
 # Need to remove the block from the dictionary and find it some other way.
     def trigger_ungrounding(self, position: (int, int), call_count: int = 0):
