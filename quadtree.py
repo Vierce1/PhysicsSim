@@ -21,7 +21,7 @@ class Quadtree:
         self.all_quads = set()        
         self.blocks = set()
         self.max_branches = 15
-        self.capacity = 60
+        self.capacity = 125
         self.root_node = Quadtree_Node(x=0, y=0 + world_height,
                                   width=world_width, height=world_height, branch_count=0)
         self.all_quads.add(self.root_node)
@@ -31,6 +31,9 @@ class Quadtree:
 
     # @profile
     def create_tree(self, blocks: set[Block]) -> set[Quadtree_Node]:
+        if self.initialized:  # redoing tree. cleanup.
+            self.cleanup_tree()
+
         self.initialized = True
         self.insert_blocks(blocks=blocks)
 
@@ -59,37 +62,37 @@ class Quadtree:
 
 
 
+    def cleanup_tree(self):  # remove empty quadtree nodes i/o deleting all of them every frame
+        process_list = [self.root_node]
+        deletions = []
+        while len(process_list) > 0:
+            node = process_list.pop(0)
+            empty_count = 0
+            for child in node.children:
+                if child.count == 0:
+                    empty_count += 1
+                    deletions.append(child)
+                elif child.branch_count < self.max_branches:  # Not empty, go down a level to check again
+                    process_list.append(child)
 
-#     def cleanup_tree(self):  # remove empty quadtree nodes i/o deleting all of them every frame
-#         process_list = [self.root_quadtree]
-#         deletions = []
-#         while len(process_list) > 0:
-#             node = process_list.pop(0)
-#             empty_count = 0
-#             for child in node.children:
-#                 if child.count == 0:
-#                     empty_count += 1
-#                     deletions.append(child)
-#                 elif child.branch_count < self.max_branches:  # Not empty, go down a level to check again
-#                     process_list.append(child)
-# 
-# 
-#         root_nodes = set() # 2 children can share same parent node, thus eliminate deleting a root twice
-#         for node in deletions:
-#             # root_nodes.add(self.get_root_parent_no_count(node))
-#             # Purpose of below is so not to delete a child of a node that has a count
-#             # we just want to delete the children (recursively) of a node with 0 count
-#             # otherwise end up with a node containing 3 children
-#             root_nodes.update([child for child in node.children if child.count == 0])
-#             node.children.clear()
-#         # root_nodes = set(deletions)
-#         for root in root_nodes:
-#             self.del_children_recursive(root)
+
+        root_nodes = set() # 2 children can share same parent node, thus eliminate deleting a root twice
+        for node in deletions:
+            # root_nodes.add(self.get_root_parent_no_count(node))
+            # Purpose of below is so not to delete a child of a node that has a count
+            # we just want to delete the children (recursively) of a node with 0 count
+            # otherwise end up with a node containing 3 children
+            root_nodes.update([child for child in node.children if child.count == 0])
+            node.children.clear()
+        # root_nodes = set(deletions)
+        for root in root_nodes:
+            self.del_children_recursive(root)
     
-    # def del_children_recursive(self, root):
-    #     for child in root.children:
-    #         self.del_children_recursive(child)
-    #     self.all_quads.remove(root)
+
+    def del_children_recursive(self, root):
+        for child in root.children:
+            self.del_children_recursive(child)
+        self.all_quads.remove(root)
 
 
 
@@ -150,7 +153,23 @@ class Quadtree:
 
 
 
-    # @profile
+#DOESN"T WORK
+    def get_leaves(self, node: Quadtree_Node) -> set[Quadtree_Node]:
+        leaves = self.get_leaves_recursive(node)
+        return_leaves = {leaves}
+        while leaves:
+            for leaf in leaves:
+                leaves = self.get_leaves_recursive(leaf)
+                return_leaves.add(leaves)
+
+
+    def get_leaves_recursive(self, node: Quadtree_Node) -> set[Quadtree_Node]:
+        if len(node.children) > 0:
+            return node.children
+        return None
+
+
+
     def create_branches(self, node: Quadtree_Node):
         if len(node.children) > 0:
             return node.children  # another block already created the children
@@ -167,7 +186,7 @@ class Quadtree:
         return node.children
 
     
-    def get_neighbors(self, block, quadtree): 
+    def get_neighbors(self, block, quadtree: Quadtree_Node):
         all_neighbors = {obj for obj in quadtree.objects if obj != block}
         return all_neighbors
         # all_neighbors =[]
@@ -182,6 +201,10 @@ class Quadtree:
         # print(f'    close neighbors: {len(close_neighbors)}')
         # print('\n')
         # return close_neighbors
+
+
+    def get_parent_branch(self, node: Quadtree_Node) -> Quadtree_Node:
+        return node.parent
 
 
     # def assign_z_addresses(self):
@@ -217,7 +240,13 @@ class Quadtree:
 
 
 
-    def check_block_in_quad(self, block, node) -> bool: 
+    def check_pos_in_quad(self, x: int, y: int, node: Quadtree_Node) -> bool:
+        if node.y >= y >= node.y - node.height \
+          and node.x <= x <= node.x + node.width:
+            return True
+        return False
+
+    def check_block_in_quad(self, block, node: Quadtree_Node) -> bool:
         # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
         # This allows inter-leaf collision
         right = block.position[0] + block.type.width + (1 * block.type.width)
@@ -251,6 +280,19 @@ class Quadtree:
 
 
 
+
+    def insert_object(self, obj, x: int, y: int, start_node: Quadtree_Node) -> Quadtree_Node:
+        if len(start_node.children) > 0:
+            for child in start_node.children:
+                contained = self.check_pos_in_quad(x=x, y=y, node=child)
+                if contained:
+                    return self.insert_object(obj, x, y, child)
+        else:  # don't split for single objects unless already split
+            # this is because if we hit ANY leaf we want to get the objects in that leaf w/out more processing time
+            if obj:  # sometimes pass in None just to get the neighboring objects (like ungrounding)
+                start_node.objects.add(obj)
+            # self.set_count_tree(start_node, 1)  # Don't bother?
+            return start_node
 
 
     def add_rects_to_node(self, block, node: Quadtree_Node):

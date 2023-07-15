@@ -3,7 +3,7 @@ import math
 def check_dist(pos_1: (int, int), pos_2: (int, int)) -> int:
     return round(math.dist(pos_1, pos_2))
 
-def get_blocks_in_dist(pos: (int, int), block_list, distance: int) -> set:
+def get_blocks_in_dist(pos: (int, int), block_list: set, distance: int) -> set:
     blocks = set()
     for block in block_list:
         # dist = (block.position[0] - pos[0])**2 + (block.position[1] - pos[1])**2 < distance**2

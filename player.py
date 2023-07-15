@@ -91,14 +91,22 @@ class Player:
 #TODO: UPDATE TO USE THE QUADTREE NOW
     def destroy(self, location: (int, int), force: int):
         blocks = self.terrain_manager.destroyable_blocks
-        in_range_blocks = help.get_blocks_in_dist(pos=location, block_list=blocks, distance=self.destroy_distance)
+        # in_range_blocks = help.get_blocks_in_dist(pos=location, block_list=blocks, distance=self.destroy_distance)
+        # don't bother inserting player. We just want to get the neighboring objects
+        quadtree_node = self.terrain_manager.insert_object_quadtree(None, location[0], location[1])
+        in_range_blocks = quadtree_node.objects
+        for child in quadtree_node.children:  # go up 1 branch to be safe. May need tweaking
+            in_range_blocks.update(child.objects)
+        print(f'neighboring objects: {len(in_range_blocks)}')
         for block in in_range_blocks:
             if not block.type.destroyable:
                 continue
-            self.terrain_manager.destroy_block(block)
+            # get distance
+            if help.get_blocks_in_dist(pos=location, block_list={block}, distance=self.destroy_distance):
+                self.terrain_manager.destroy_block(block)
 
         # if len(in_range_blocks) > 0:
-        self.terrain_manager.trigger_ungrounding(location)
+        self.terrain_manager.trigger_ungrounding(node=quadtree_node)
 
 
 
