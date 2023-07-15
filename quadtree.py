@@ -20,16 +20,18 @@ class Quadtree:
     def __init__(self, world_width: int, world_height: int):
         self.all_quads = set()        
         self.blocks = set()
-        self.max_branches = 6
-        self.capacity = 35
+        self.max_branches = 15
+        self.capacity = 60
         self.root_node = Quadtree_Node(x=0, y=0 + world_height,
                                   width=world_width, height=world_height, branch_count=0)
         self.all_quads.add(self.root_node)
+        self.initialized = False
 
 
 
     # @profile
-    def create_tree(self, blocks: list[Block]) -> list[Quadtree_Node]:
+    def create_tree(self, blocks: set[Block]) -> set[Quadtree_Node]:
+        self.initialized = True
         self.insert_blocks(blocks=blocks)
 
         return self.all_quads
@@ -91,7 +93,7 @@ class Quadtree:
 
 
 
-    def insert_blocks(self, blocks):
+    def insert_blocks(self, blocks: set[Block]):
         # Check if block is still contained in same leaf(s) as last frame
         # change, left_leaves = False, []
         # if block.collision_detection:

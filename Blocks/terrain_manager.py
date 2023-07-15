@@ -48,7 +48,7 @@ class Terrain_Manager:
         self.gravity = 1
         self.terminal_velocity = 1
         # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
-        self.quadtree = Quadtree(screen_width, screen_height)
+        self.quadtree = Quadtree(self.screen_width, self.screen_height)
         self.matrix = Matrix(width=screen_width + 10, height=screen_height+10)
         # self.matrix = {}
         # for x in range(-10, screen_width + 10):  # initalize all spaces as empty
@@ -165,8 +165,9 @@ class Terrain_Manager:
         call_count += 1
         triggered = False
         # Create the quadtree and insert all particles if not rigid / not in inactive_blocks
-        ungroundable_blocks = [b for b in self.inactive_blocks if not b.type.rigid]
-        quad_nodes = self.quadtree.create_tree(ungroundable_blocks)
+        quad_nodes = self.initialize_quadtree()
+#TODO: Only insert blocks in the same node as the position variable if creating a new quadtree at runtime
+# just branch down into the same branches as the position
         self.game.quadtree_nodes.update(quad_nodes)
         # Now unground all blocks inside the nodes. if find blocks continue to branch UP
 
@@ -191,4 +192,15 @@ class Terrain_Manager:
         #     self.trigger_ungrounding(position=position, call_count=call_count)
 
 
+#TODO need to redo the branches for particles that moved since creation
+    def initialize_quadtree(self) -> set[Quadtree_Node]:
+        if self.quadtree.initialized:
+            return self.quadtree.all_quads
+        else:
+            # ungroundable_blocks = [b for b in self.inactive_blocks if not b.type.rigid]
+            insert_blocks = {b for b in self.blocks if not b.type.rigid}
+            insert_blocks.update(b for b in self.inactive_blocks if not b.type.rigid)  # currently not needed
+            print(f'quadtree particle insert count on load: {len(insert_blocks)}')
+            # as blocks are always active upon load, then switch to inactive.
+            return self.quadtree.create_tree(insert_blocks)
 
