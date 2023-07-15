@@ -166,6 +166,7 @@ class Terrain_Manager:
     def trigger_ungrounding(self, node: Quadtree_Node, position: (int, int) = (0,0), call_count: int = 0):
         # call_count += 1
         triggered = False
+        node.ungrounded = True
         # Create the quadtree and insert all particles if not rigid / not in inactive_blocks
         quad_nodes, reinitialized = self.initialize_quadtree()
         # need to recreate in case blocks moved... Timer determines
@@ -185,23 +186,44 @@ class Terrain_Manager:
         for block in objs:
             if block.type.rigid or block not in self.inactive_blocks:
                 continue
-            block.collision_detection = True
-            block.grounded_timer = 0
-            self.blocks.add(block)
-            self.inactive_blocks.remove(block)
-            triggered = True
+            self.unground_recursive_check(block)
+            # block.collision_detection = True
+            # block.grounded_timer = 0
+            # self.blocks.add(block)
+            # self.inactive_blocks.remove(block)
+            # triggered = True
 
-# DOESN"T WORK. Need to somehow continue up branches
-        if triggered:  # get objects in next parent branch (Or should I just expand out in the leaves?)
-            parent = self.quadtree.get_parent_branch(node=node)
-            # Do i need to collapse the tree up one level? Or just get all children in the parent (apart from the ones
-            # I already got?)
-            self.trigger_ungrounding(node=parent)
-        # else:  # go up one additional level to check
-        #     if node.parent and node.parent.parent:
-        #         grandparent = self.quadtree.get_parent_branch(node=node.parent)
-        #         leaves = self.quadtree.get_leaves(grandparent)
-        #         [self.trigger_ungrounding(node=leaf) for leaf in leaves]
+    def unground_recursive_check(self, block):
+        block.collision_detection = True
+        block.grounded_timer = 0
+        self.blocks.add(block)
+        self.inactive_blocks.remove(block)
+        if self.matrix[block.position[0], block.position[1] + 1] == OCCUPIED:
+            # Now get the quadtree objects at that location?
+            # Need to ensure I don't trigger when a block is in a node that has already been returned
+            node = self.insert_object_quadtree(None, block.position[0], block.position[1] + 1)
+            if not node.ungrounded:
+                self.trigger_ungrounding(node=node)
+        if self.matrix[block.position[0], block.position[1] - 1] == OCCUPIED:
+            # Now get the quadtree objects at that location?
+            # Need to ensure I don't trigger when a block is in a node that has already been returned
+            node = self.insert_object_quadtree(None, block.position[0], block.position[1] - 1)
+            if not node.ungrounded:
+                self.trigger_ungrounding(node=node)
+        if self.matrix[block.position[0] + 1, block.position[1]] == OCCUPIED:
+            # Now get the quadtree objects at that location?
+            # Need to ensure I don't trigger when a block is in a node that has already been returned
+            node = self.insert_object_quadtree(None, block.position[0] + 1, block.position[1])
+            if not node.ungrounded:
+                self.trigger_ungrounding(node=node)
+        if self.matrix[block.position[0] - 1, block.position[1]] == OCCUPIED:
+            # Now get the quadtree objects at that location?
+            # Need to ensure I don't trigger when a block is in a node that has already been returned
+            node = self.insert_object_quadtree(None, block.position[0] - 1, block.position[1])
+            if not node.ungrounded:
+                self.trigger_ungrounding(node=node)
+
+
 
 
 

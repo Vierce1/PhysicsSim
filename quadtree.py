@@ -1,7 +1,7 @@
 from Blocks.block import Block
 
 class Quadtree_Node:
-    __slots__ = ('x', 'y', 'width', 'height', 'objects', 'branch_count', 'children', 'parent', 'count')
+    __slots__ = ('x', 'y', 'width', 'height', 'objects', 'branch_count', 'children', 'parent', 'count', 'ungrounded')
     def __init__(self, x: float, y: float, width: float, height: float, branch_count: int):        
         self.x = x
         self.y = y
@@ -12,6 +12,7 @@ class Quadtree_Node:
         self.children = set()  # 4 quadtree node children upon split
         self.parent = None
         self.count = 0  # total count of contained objects
+        self.ungrounded = False
 
 
 
@@ -20,7 +21,7 @@ class Quadtree:
     def __init__(self, world_width: int, world_height: int):
         self.all_quads = set()        
         self.blocks = set()
-        self.max_branches = 15
+        self.max_branches = 10
         self.capacity = 125
         self.root_node = Quadtree_Node(x=0, y=0 + world_height,
                                   width=world_width, height=world_height, branch_count=0)
@@ -31,6 +32,8 @@ class Quadtree:
 
     # @profile
     def create_tree(self, blocks: set[Block]) -> set[Quadtree_Node]:
+        #TODO This doens't work because I never remove the objects. Remove objects upon recreation if they left
+        # Could add an ID to the block that points to the leaf it is in
         if self.initialized:  # redoing tree. cleanup.
             self.cleanup_tree()
 
@@ -328,6 +331,7 @@ class Quadtree:
         elif block not in node.objects:  # found leaf w/ under capacity or max branches
             node.objects.add(block)
             self.set_count_tree(branch=node, value=1)
+            node.ungrounded = False
             # block.leaves.append(node)
 
 
