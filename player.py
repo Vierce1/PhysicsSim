@@ -95,7 +95,7 @@ class Player:
         # don't bother inserting player. We just want to get the neighboring objects
         quadtree_node = self.terrain_manager.insert_object_quadtree(None, location[0], location[1])
         in_range_blocks = quadtree_node.objects
-        for child in quadtree_node.children:  # go up 1 branch to be safe. May need tweaking
+        for child in quadtree_node.parent.children:  # go up 1 branch to be safe. May need tweaking
             in_range_blocks.update(child.objects)
         print(f'neighboring objects: {len(in_range_blocks)}')
         for block in in_range_blocks:

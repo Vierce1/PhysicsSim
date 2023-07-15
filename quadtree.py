@@ -21,8 +21,8 @@ class Quadtree:
     def __init__(self, world_width: int, world_height: int):
         self.all_quads = set()        
         self.blocks = set()
-        self.max_branches = 10
-        self.capacity = 125
+        self.max_branches = 9
+        self.capacity = 100
         self.root_node = Quadtree_Node(x=0, y=0 + world_height,
                                   width=world_width, height=world_height, branch_count=0)
         self.all_quads.add(self.root_node)

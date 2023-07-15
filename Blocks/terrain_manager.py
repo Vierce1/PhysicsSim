@@ -10,7 +10,7 @@ import random
 
 display_res = []
 ground = 705
-frames_til_grounded = 150  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 380  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
@@ -163,9 +163,7 @@ class Terrain_Manager:
 
 
 
-    def trigger_ungrounding(self, node: Quadtree_Node, position: (int, int) = (0,0), call_count: int = 0):
-        # call_count += 1
-        triggered = False
+    def trigger_ungrounding(self, node: Quadtree_Node, position: (int, int) = (0,0)):
         node.ungrounded = True
         # Create the quadtree and insert all particles if not rigid / not in inactive_blocks
         quad_nodes, reinitialized = self.initialize_quadtree()
@@ -224,29 +222,6 @@ class Terrain_Manager:
                 self.trigger_ungrounding(node=node)
 
 
-
-
-
-
-
-        # radius = self.first_trigger_radius * call_count
-        # for y in range(position[1]-radius, position[1]+radius):
-        #     for x in range(position[0]-radius, position[0]+radius):
-        #         if y < 0 or x < 0 or y > self.screen_height or x > self.screen_width:
-        #             continue
-        #         # print(f'checking {x}  {y}')
-        #         check_pos = (x, y)
-        #         block = self.matrix[check_pos[0], check_pos[1]]
-        #         if not block or block.type.rigid or block not in self.inactive_blocks:
-        #             continue
-        #         block.collision_detection = True
-        #         block.grounded_timer = 0
-        #         self.blocks.add(block)
-        #         self.inactive_blocks.remove(block)
-        #         triggered = True
-        #
-        # if triggered:
-        #     self.trigger_ungrounding(position=position, call_count=call_count)
 
 
 #TODO need to redo the branches for particles that moved since creation
