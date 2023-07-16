@@ -168,17 +168,16 @@ class Terrain_Manager:
 
 
     def trigger_ungrounding(self, block: Block) -> None:
-        for x in range(-1, 2, 1):
-            for y in range(-1, 2, 1):
+        for x in range(-1, 2):
+            for y in range(-1, 2):
                 pos = (block.position[0] + x, block.position[1] + y)
-                print(pos)
                 unground_block = self.all_blocks[self.matrix[pos]]
-                if not unground_block.type.rigid and not block.collision_detection:
-                    block.collision_detection = True
-                    block.grounded_timer = 0
-                    self.blocks.add(block)
-                    self.inactive_blocks.remove(block)
-                    self.trigger_ungrounding(unground_block)
+                # if not unground_block.type.rigid and not block.collision_detection:
+                block.collision_detection = True
+                block.grounded_timer = 0
+                self.blocks.add(block)
+                self.inactive_blocks.remove(block)
+                self.trigger_ungrounding(unground_block)
 
 
 
