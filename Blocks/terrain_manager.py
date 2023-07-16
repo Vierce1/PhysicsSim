@@ -164,6 +164,7 @@ class Terrain_Manager:
         self.game.spaces_to_clear.add(block.position)
         # Now check all spaces around this block for ungroundable blocks. Note this will be called for all
         # blocks in the destruction zone
+        self.trigger_ungrounding(block)
 
 
     def trigger_ungrounding(self, block: Block) -> None:
