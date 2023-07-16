@@ -22,7 +22,7 @@ class Matrix(dict):  #TODO: Use dict, looks like it is fastest. But maybe I can 
         # self.matrix = {}
         for x in range(-10, width + 10):  # initalize all spaces as empty
             for y in range(-10, height + 10):
-                self[x,y] = (0, -1)
+                self[x,y] = -1
 
     def get_val(self, key):
         try: return self[key]
@@ -88,21 +88,21 @@ class Terrain_Manager:
     def check_under(self, position: (int, int)) -> bool:
         if position[1] == ground:
             return True
-        return self.matrix.get_val((position[0], position[1] + 1)) == 1
+        return self.matrix.get_val((position[0], position[1] + 1)) != -1
 
 
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
         dir = 1 if random.random() < 0.5 else -1
         # if self.screen_width > block.position[0] + dir > 0 \  # costs fps
         #   and self.screen_height > block.position[1] + dir > 0:
-        if self.matrix.get_val((block.position[0] + dir, block.position[1] + 1)) == EMPTY:
+        if self.matrix.get_val((block.position[0] + dir, block.position[1] + 1)) == -1:  # EMPTY:
             return dir
-        elif self.matrix.get_val((block.position[0] - dir, block.position[1] + 1)) == EMPTY:
+        elif self.matrix.get_val((block.position[0] - dir, block.position[1] + 1)) == -1:  # EMPTY:
             return -dir
         return 0
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
-        if self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == EMPTY:
+        if self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == -1:  # EMPTY:
             return True
         return False
 
@@ -146,7 +146,7 @@ class Terrain_Manager:
         block.position = (block.position[0], block.position[1] + block.vert_velocity)
 #TODO: If want to incorporate block width/height, need to draw all pixels contained here
 #That adds complexity to 1-width blocks, though
-        self.matrix[block.position[0], block.position[1]] = block.id # OCCUPIED
+        self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return
 
 
@@ -171,6 +171,7 @@ class Terrain_Manager:
         for x in range(-1, 2, 1):
             for y in range(-1, 2, 1):
                 pos = (block.position[0] + x, block.position[1] + y)
+                print(pos)
                 unground_block = self.all_blocks[self.matrix[pos]]
                 if not unground_block.type.rigid and not block.collision_detection:
                     block.collision_detection = True

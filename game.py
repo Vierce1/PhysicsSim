@@ -27,7 +27,7 @@ class Game:
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
                              display_resolution[1])
-        # self.quadtree_nodes = set()
+        self.quadtree_nodes = set()
 
 
     def setup(self, level: int) -> Level:
@@ -48,10 +48,11 @@ class Game:
 
         print(f'length of particles = {str(len(level_blocks))}')
         self.terrain_manager.blocks.update(level_blocks)  # have to add ALL blocks to this first so they draw on frame 1
-        self.terrain_manager.all_blocks.append(level_blocks)
+        self.terrain_manager.all_blocks.extend(level_blocks)
         # Fill quadtree on load
         self.quadtree_nodes, created = self.terrain_manager.initialize_quadtree()
         # print(f'created {len(self.quadtree_nodes)} quadtree branch nodes')
+        self.terrain_manager.fill_matrix()
         return level
 
 
