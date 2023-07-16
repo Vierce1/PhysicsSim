@@ -10,7 +10,7 @@ import random
 
 display_res = []
 ground = 705
-frames_til_grounded = 380  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 100  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
