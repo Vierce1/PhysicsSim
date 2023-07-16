@@ -27,11 +27,14 @@ class Game:
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
                              display_resolution[1])
-        self.quadtree_nodes = set()
+        # self.quadtree_nodes = set()
 
 
     def setup(self, level: int) -> Level:
         self.terrain_manager.blocks.clear()
+        self.terrain_manager.all_blocks.clear()
+        self.terrain_manager.inactive_blocks.clear()
+        self.terrain_manager.destroyable_blocks.clear()
 
         level = Level_Getter().get_level(level=level)
         level_blocks = set()
@@ -42,12 +45,13 @@ class Game:
             if blocks[0].type.destroyable:
                 self.terrain_manager.destroyable_blocks.update(blocks)
 
+
         print(f'length of particles = {str(len(level_blocks))}')
-        self.terrain_manager.blocks.update(level_blocks)
+        self.terrain_manager.blocks.update(level_blocks)  # have to add ALL blocks to this first so they draw on frame 1
+        self.terrain_manager.all_blocks.append(level_blocks)
         # Fill quadtree on load
         self.quadtree_nodes, created = self.terrain_manager.initialize_quadtree()
-        print(f'created {len(self.quadtree_nodes)} quadtree branch nodes')
-
+        # print(f'created {len(self.quadtree_nodes)} quadtree branch nodes')
         return level
 
 
@@ -60,12 +64,12 @@ class Game:
 
         # # visualization
         pg.draw.line(self.render_image, (0, 0, 255), (0, tm.ground), (2400, tm.ground))  # Ground
-        for q in self.quadtree_nodes:
-            color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
-            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.render_image, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
-            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x, q.y - q.height))
-            pg.draw.line(self.render_image, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
+        # for q in self.quadtree_nodes:
+        #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
+        #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
+        #     pg.draw.line(self.render_image, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
+        #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x, q.y - q.height))
+        #     pg.draw.line(self.render_image, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
 
 
         # timed functions
