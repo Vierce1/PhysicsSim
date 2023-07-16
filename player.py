@@ -105,8 +105,6 @@ class Player:
             if help.get_blocks_in_dist(pos=location, block_list={block}, distance=self.destroy_distance):
                 self.terrain_manager.destroy_block(block)
 
-        # if len(in_range_blocks) > 0:
-        self.terrain_manager.trigger_ungrounding(node=quadtree_node)
 
 
 
