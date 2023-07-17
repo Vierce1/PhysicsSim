@@ -89,7 +89,7 @@ class Player:
             change = (change[0], change[1] - 1)
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
         # Update the camera position.
-        # Alternative way would be to use the player's finite world position
+        # Alternative way would be to use the player's finite world position.
         self.game.update_plane_shift(change)
 
 
@@ -105,6 +105,8 @@ class Player:
         blocks = self.terrain_manager.destroyable_blocks
         # don't bother inserting location. We just want to get the neighboring objects
         quadtree_node = self.terrain_manager.insert_object_quadtree(None, location[0], location[1])
+        if not quadtree_node.objects:
+            return
         in_range_blocks = quadtree_node.objects
         for child in quadtree_node.parent.children:  # go up 1 branch to be safe. May need tweaking
             in_range_blocks.update(child.objects)
