@@ -41,8 +41,7 @@ class Terrain_Manager:
         self.inactive_blocks = set()
         self.destroyable_blocks = set()
         self.unground_pos_checks = set()
-        self.current_unground_chain_checks = set()
-        self.unground_count = 0
+        self.current_unground_chain_checks = set()  # Set to keep track of pos already checked this chain
         self.all_blocks = []  # do not remove from list so indices stay the same
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -192,7 +191,7 @@ class Terrain_Manager:
     def end_frame_unground(self) -> None:
         unground_frame_blocks = self.get_unground_blocks()
         if not unground_frame_blocks:
-            self.current_unground_chain_checks.clear()
+            self.current_unground_chain_checks.clear()  # Flush set, chain is complete.
             # self.unground_count = 0
             return
         next_frame_ungrounds = set()
@@ -211,7 +210,6 @@ class Terrain_Manager:
 
 #TODO: A block becomes ungrounded. Then grounded. Then another one next to it turns it back to ungrounded.#
 # Does this happen, and if so do I want it to happen?
-# May be good to create a property that determines if a pos has already been checked in a prior frame
     def get_unground_blocks(self) -> set[Block] or None:
         if len(self.unground_pos_checks) == 0:
             return None
