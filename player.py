@@ -17,7 +17,7 @@ class Player:
         self.rect = pg.Rect(self.position[0], self.position[1], self.size, self.size)
         self.move_speed = 3
         self.vertical_speed = 0
-        self.manipulation_distance = 600
+        self.manipulation_distance = 50
         self.destroy_distance = 8
 
     def update(self, events, render_image):
@@ -88,11 +88,9 @@ class Player:
 
 
 
-#TODO: UPDATE TO USE THE QUADTREE NOW
     def destroy(self, location: (int, int), force: int):
         blocks = self.terrain_manager.destroyable_blocks
-        # in_range_blocks = help.get_blocks_in_dist(pos=location, block_list=blocks, distance=self.destroy_distance)
-        # don't bother inserting player. We just want to get the neighboring objects
+        # don't bother inserting location. We just want to get the neighboring objects
         quadtree_node = self.terrain_manager.insert_object_quadtree(None, location[0], location[1])
         in_range_blocks = quadtree_node.objects
         for child in quadtree_node.parent.children:  # go up 1 branch to be safe. May need tweaking

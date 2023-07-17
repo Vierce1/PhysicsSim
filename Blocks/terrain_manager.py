@@ -172,7 +172,7 @@ class Terrain_Manager:
 
 
 
-#TODO: Iterating through this many times for the same particle
+#TODO: Iterating through this many times for the same particle. Roughly 10x more checks than needed
     def trigger_ungrounding(self, block: Block) -> None:
         for x in range(-1, 2):
             for y in range(-1, 2):
