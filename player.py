@@ -12,13 +12,18 @@ class Player:
         self.screen_height = screen_height
         self.render_width = render_width
         self.render_height = render_height
-        self.position = (200, 205)
+        self.position = (200, 200)
         self.size = 10
         self.rect = pg.Rect(self.position[0], self.position[1], self.size, self.size)
         self.move_speed = 3
         self.vertical_speed = 0
-        self.manipulation_distance = 50
+        self.manipulation_distance = 500
         self.destroy_distance = 8
+
+    def set_start_position(self, start_pos: (int, int)):
+        self.position = start_pos
+        print(f'start at {start_pos}')
+        self.rect.x, self.rect.y = start_pos[0], start_pos[1]
 
 
     def update(self, events, render_image):
@@ -59,7 +64,10 @@ class Player:
 
         for event in events:
             if event.type == pg.MOUSEBUTTONDOWN:
-                mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.screen_width, self.render_width,
+                print(f'offset : {self.game.plane_shift}')
+                print(f'unconverted mouse pos :  {pg.mouse.get_pos()}')
+                mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
+                                                self.screen_width, self.render_width,
                                                 self.screen_height, self.render_height)
                 self.mouse_click(mouse_pos)
 
@@ -86,6 +94,7 @@ class Player:
 
 
     def mouse_click(self, mouse_pos: (int, int)):
+        print(f'click at {mouse_pos}')
         distance = help.check_dist(self.position, mouse_pos)
         if distance < self.manipulation_distance:
             self.destroy(mouse_pos, 50)

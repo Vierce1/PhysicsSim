@@ -16,7 +16,8 @@ class Level_Getter:
         for level in levels:
             self.levels.append(Level(id=level['id'], block_counts=level['block_counts'],
                                      block_types=level['block_types'], bounds=level['bounds'],
-                                     world_size=level['world_size'], timed_spawns=level['timed_spawns']))
+                                     world_size=level['world_size'], start_pos=level['start_pos'],
+                                     timed_spawns=level['timed_spawns']))
         # [print(l.bounds) for l in self.levels]
 
 
@@ -29,14 +30,15 @@ class Level_Getter:
 # noinspection PyTypeChecker
 class Level:
     def __init__(self, id: int, block_counts: list[int], block_types: list[str],
-                bounds: list[(int,int,int,int)], world_size: (int, int) = (1280, 720),
-                 timed_spawns=None, writing: bool = False):
+            bounds: list[(int,int,int,int)], world_size: (int, int) = (1280, 720), start_pos: (int, int) = (200,200),
+            timed_spawns=None, writing: bool = False):
         self.id = id
         self.world_size = world_size
         self.block_counts = block_counts
         self.bounds = bounds
         self.block_types = []
         self.timed_spawns = []  # create the list even if none so no if check needed in game.update
+        self.start_pos = start_pos
 
         if writing:  # Creating json. Don't convert to objects
             self.block_types = block_types
@@ -52,7 +54,7 @@ class Level:
                 for i in range(len(timed_spawns['block_types'])):
                     timed_spawn = Timed_Spawn(b_type=timed_spawns['block_types'][i],
                                   spawn_rate=timed_spawns['spawn_rate'][i], time=timed_spawns['times'][i],
-                                              bounds=timed_spawns['bounds'][i])
+                                  bounds=timed_spawns['bounds'][i])
                     self.timed_spawns.append(timed_spawn)
 
 

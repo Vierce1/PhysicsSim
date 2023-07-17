@@ -52,12 +52,13 @@ class Terrain_Manager:
         self.gravity = 1
         self.terminal_velocity = 1
         self.matrix = Matrix(width=0, height=0)
-        self.quadtree = Quadtree(self.screen_width, self.screen_height)
+        self.quadtree = Quadtree(0, 0)
 
 
     def setup(self, render_image, world_size: (int, int)):
         self.render_image = render_image
         self.matrix = Matrix(width=world_size[0], height=world_size[1])
+        self.quadtree = Quadtree(world_size[0], world_size[1])
         self.blocks.clear()
         self.all_blocks.clear()
         self.inactive_blocks.clear()
@@ -104,7 +105,9 @@ class Terrain_Manager:
         return 0
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
-        if self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == -1:  # EMPTY:
+        if self.matrix.get_val((position[0] + direction[0], position[1])) != -1 \
+                and self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == -1:  # EMPTY:
+            print('slope')
             return True
         return False
 
