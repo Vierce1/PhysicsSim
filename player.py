@@ -15,7 +15,7 @@ class Player:
         self.position = (200, 200)
         self.size = 10
         self.rect = pg.Rect(self.position[0], self.position[1], self.size, self.size)
-        self.move_speed = 3
+        self.move_speed = 6
         self.vertical_speed = 0
         self.manipulation_distance = 500
         self.destroy_distance = 8
@@ -40,6 +40,7 @@ class Player:
                 if self.vertical_speed < self.terrain_manager.terminal_velocity else 0
             self.position = (self.position[0], self.position[1] + self.vertical_speed)
             self.rect.y = self.position[1]
+            self.game.update_plane_shift(change=(0, self.vertical_speed))
         else:
             self.vertical_speed = 0
 
@@ -105,7 +106,7 @@ class Player:
         blocks = self.terrain_manager.destroyable_blocks
         # don't bother inserting location. We just want to get the neighboring objects
         quadtree_node = self.terrain_manager.insert_object_quadtree(None, location[0], location[1])
-        if not quadtree_node.objects:
+        if not quadtree_node or not quadtree_node.objects:
             return
         in_range_blocks = quadtree_node.objects
         for child in quadtree_node.parent.children:  # go up 1 branch to be safe. May need tweaking

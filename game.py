@@ -17,7 +17,7 @@ class Game:
         self.display_resolution = display_resolution
         self.window_size = window_size
         self.screen = screen
-        self.delay = round(1000/144)
+        self.delay = .033  # 1000/85  # slowing the delay = more things happening each frame... which hurts fps
         gc.disable()
         self.render_image = pg.Surface((0, 0))  # for drawing world size + blit. Will be resized for the level
         self.spaces_to_clear = set()
@@ -30,6 +30,8 @@ class Game:
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
         self.render_scale = (window_size[0], window_size[1])  # update based on world size in update
+        self.backdrop = pg.image.load('background_1.png')
+        self.backdrop_surface = pg.Surface((0,0))
 
 
     def setup(self, level: int) -> Level:
@@ -62,6 +64,13 @@ class Game:
         self.quadtree_nodes, created = self.terrain_manager.initialize_quadtree()
         # print(f'created {len(self.quadtree_nodes)} quadtree branch nodes')
         self.terrain_manager.fill_matrix()
+
+        # Backdrop sizing... revisit later
+        self.backdrop.convert(self.render_image)
+        self.backdrop_surface = pg.Surface(self.backdrop.get_size())
+        self.backdrop_surface.blit(self.backdrop, (0,0))
+        self.backdrop_surface = pg.transform.scale(self.backdrop_surface, (level.world_size[0], level.world_size[1]))
+        self.render_image.blit(self.backdrop_surface, (0, 0))
         return level
 
 
@@ -71,19 +80,24 @@ class Game:
 
     def update(self, level: Level, timer: int, events: list[pg.event.Event]):
         # self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
-        [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
+        # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
+        # Update now blank spaces with the backdrop
+        [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in self.spaces_to_clear]
+        #TODO: Draw black if position is outside the bounds of the render image
         self.spaces_to_clear.clear()
+
+        # self.render_image.blit(self.backdrop, (0, 0))
 
         self.terrain_manager.update()
 
         # # visualization
         pg.draw.line(self.render_image, (0, 0, 255), (0, tm.ground), (2400, tm.ground))  # Ground
-        for q in self.quadtree_nodes:
-            color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
-            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
-            pg.draw.line(self.render_image, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
-            pg.draw.line(self.render_image, color, (q.x, q.y), (q.x, q.y - q.height))
-            pg.draw.line(self.render_image, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
+        # for q in self.quadtree_nodes:
+        #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
+        #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
+        #     pg.draw.line(self.render_image, color, (q.x + q.width, q.y), (q.x + q.width, q.y - q.height))
+        #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x, q.y - q.height))
+        #     pg.draw.line(self.render_image, color, (q.x, q.y - q.height), (q.x + q.width, q.y - q.height))
 
 
         # timed functions
@@ -108,16 +122,10 @@ class Game:
         # resized_screen = pg.transform.scale_by(self.render_image, 1.5)
         self.screen.blit(self.render_image, draw_area)
 
-        tick = pg.time.get_ticks()
-        now = pg.time.get_ticks()
-        # while now - tick < self.delay:
-        #     now = pg.time.get_ticks()
-
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
         # print(f'cpu % usage: {psutil.cpu_percent()}')
 
         pg.event.pump()
         # pg.display.flip()  # updates the entire surface
         pg.display.update(draw_area)  # With dynamic world size, this is 10% faster
-        # gc.collect() # possible performance improvement by removing unreferenced memory
 
