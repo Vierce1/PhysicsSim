@@ -20,6 +20,7 @@ class Player:
         self.manipulation_distance = 50
         self.destroy_distance = 8
 
+
     def update(self, events, render_image):
         self.accept_input(events=events, render_image=render_image)
         self.fall()
@@ -79,6 +80,9 @@ class Player:
         if self.terrain_manager.check_slope(self.position, direction):
             change = (change[0], change[1] - 1)
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
+        # Update the camera position.
+        # Alternative way would be to use the player's finite world position
+        self.game.update_plane_shift(change)
 
 
     def mouse_click(self, mouse_pos: (int, int)):

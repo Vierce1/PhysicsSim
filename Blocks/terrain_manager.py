@@ -20,7 +20,7 @@ class Matrix(dict):  #TODO: Use dict, looks like it is fastest. But maybe I can 
     def __init__(self, width: int, height: int):
         super().__init__()
         # self.matrix = {}
-        for x in range(-10, width + 10):  # initalize all spaces as empty
+        for x in range(-10, width + 10):  # initalize all spaces as empty. Buffer for offscreen falling (temp)
             for y in range(-10, height + 10):
                 self[x,y] = -1
 
@@ -51,19 +51,17 @@ class Terrain_Manager:
         self.first_trigger_radius = 10
         self.gravity = 1
         self.terminal_velocity = 1
-        # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
+        self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(self.screen_width, self.screen_height)
-        self.matrix = Matrix(width=screen_width + 10, height=screen_height+10)
-        # self.matrix = {}
-        # for x in range(-10, screen_width + 10):  # initalize all spaces as empty
-        #     for y in range(-10, screen_height + 10):
-        #         self.matrix[x,y] = (0, None)
-        # print(f'matrix length: {len(self.matrix)}')
 
 
-
-    def setup(self, render_image):
+    def setup(self, render_image, world_size: (int, int)):
         self.render_image = render_image
+        self.matrix = Matrix(width=world_size[0], height=world_size[1])
+        self.blocks.clear()
+        self.all_blocks.clear()
+        self.inactive_blocks.clear()
+        self.destroyable_blocks.clear()
 
     def fill_matrix(self):  # will need new method for adding blocks after init
         for i, b in enumerate(self.all_blocks):
@@ -72,9 +70,9 @@ class Terrain_Manager:
 
 
 
-    def update(self, screen) -> None:
+    def update(self) -> None:
         for block in self.blocks:
-            self.update_blocks(block=block, screen=self.render_image)
+            self.update_blocks(block=block, render_surface=self.render_image)
 
         self.inactive_blocks.update({b for b in self.blocks if not b.collision_detection})
         self.blocks = {b for b in self.blocks if b.collision_detection}
@@ -114,14 +112,14 @@ class Terrain_Manager:
 
 
 
-    # Block functions
-    def update_blocks(self, block, screen):
+    # Particle functions
+    def update_blocks(self, block, render_surface):
         if block.collision_detection:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
             self.move(block)
-        screen.set_at(block.position, block.type.color)
+        render_surface.set_at(block.position, block.type.color)
 
 
     # @profile

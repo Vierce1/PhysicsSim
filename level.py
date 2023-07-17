@@ -15,8 +15,8 @@ class Level_Getter:
         levels = json.load(json_file)
         for level in levels:
             self.levels.append(Level(id=level['id'], block_counts=level['block_counts'],
-                                     block_types=level['block_types'], bounds=level['bounds']
-                                     , timed_spawns=level['timed_spawns']))
+                                     block_types=level['block_types'], bounds=level['bounds'],
+                                     world_size=level['world_size'], timed_spawns=level['timed_spawns']))
         # [print(l.bounds) for l in self.levels]
 
 
@@ -29,8 +29,10 @@ class Level_Getter:
 # noinspection PyTypeChecker
 class Level:
     def __init__(self, id: int, block_counts: list[int], block_types: list[str],
-                    bounds: list[(int,int,int,int)], timed_spawns=None, writing: bool = False):
+                bounds: list[(int,int,int,int)], world_size: (int, int) = (1280, 720),
+                 timed_spawns=None, writing: bool = False):
         self.id = id
+        self.world_size = world_size
         self.block_counts = block_counts
         self.bounds = bounds
         self.block_types = []
