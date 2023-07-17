@@ -40,6 +40,9 @@ class Terrain_Manager:
         self.blocks = set()
         self.inactive_blocks = set()
         self.destroyable_blocks = set()
+        self.unground_frame_blocks = set()  # blocks that will become ungrounded at end of frame
+        sys.setrecursionlimit(99999)  # increased to allow ungrounding
+        self.unground_count = 0
         self.all_blocks = []  # do not remove from list so indices stay the same
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -75,6 +78,7 @@ class Terrain_Manager:
 
         self.inactive_blocks.update({b for b in self.blocks if not b.collision_detection})
         self.blocks = {b for b in self.blocks if b.collision_detection}
+        self.end_frame_unground()
         # print(len([b for b in self.blocks]))
         # print(len(self.blocks))
 
@@ -167,72 +171,34 @@ class Terrain_Manager:
         self.trigger_ungrounding(block)
 
 
+
+#TODO: Iterating through this many times for the same particle
     def trigger_ungrounding(self, block: Block) -> None:
         for x in range(-1, 2):
             for y in range(-1, 2):
                 pos = (block.position[0] + x, block.position[1] + y)
                 unground_block = self.all_blocks[self.matrix[pos]]
-                if not unground_block.type.rigid and not block.collision_detection:
-                    block.collision_detection = True
-                    block.grounded_timer = 0
-                    self.blocks.add(block)
-                    self.inactive_blocks.remove(block)
+                # self.unground_count += 1
+                if not unground_block.type.rigid and not unground_block.collision_detection:
+                    unground_block.collision_detection = True
+                    self.unground_frame_blocks.add(unground_block)
                     self.trigger_ungrounding(unground_block)
 
 
+    def end_frame_unground(self) -> None:
+        for block in self.unground_frame_blocks:
+            block.grounded_timer = 0
+            self.blocks.add(block)
+            self.inactive_blocks.remove(block)
+        # if len(self.unground_frame_blocks) > 0:
+        #     print(f'block count: {len(self.unground_frame_blocks)}')
+        self.unground_frame_blocks.clear()
+        # if self.unground_count != 0:  # roughly 10x the # of actual blocks to unground
+        #     print(f'unground count: {self.unground_count}')
 
 
 
-# QUADTREE METHODS
-#     def trigger_ungrounding(self, node: Quadtree_Node, position: (int, int) = (0,0)): # OLD METHOD USING QUADTREE
-#         node.ungrounded = True
-#         # Create the quadtree and insert all particles if not rigid / not in inactive_blocks
-#         quad_nodes, reinitialized = self.initialize_quadtree()
-#         # need to recreate in case blocks moved... Timer determines
-#         # how to avoid, or limit # of blocks to insert?
-#         if reinitialized:
-#             self.game.quadtree_nodes = quad_nodes
-#         # Now unground all blocks inside the nodes. if find blocks continue to branch UP
-#         objs = node.objects
-#         for child in node.children:  # if node has children means we worked up 1 branch, so hit children of that parent
-#             objs.update(child.objects)
-#         print(f'adding {len(objs)}')
-#         for block in objs:
-#             if block.type.rigid or block not in self.inactive_blocks:
-#                 continue
-#             self.unground_recursive_check(block)
-#
-#     def unground_recursive_check(self, block):
-#         block.collision_detection = True
-#         block.grounded_timer = 0
-#         self.blocks.add(block)
-#         self.inactive_blocks.remove(block)
-#         if self.matrix[block.position[0], block.position[1] + 1] == OCCUPIED:
-#             # Now get the quadtree objects at that location?
-#             # Need to ensure I don't trigger when a block is in a node that has already been returned
-#             node = self.insert_object_quadtree(None, block.position[0], block.position[1] + 1)
-#             if not node.ungrounded:
-#                 self.trigger_ungrounding(node=node)
-#         if self.matrix[block.position[0], block.position[1] - 1] == OCCUPIED:
-#             # Now get the quadtree objects at that location?
-#             # Need to ensure I don't trigger when a block is in a node that has already been returned
-#             node = self.insert_object_quadtree(None, block.position[0], block.position[1] - 1)
-#             if not node.ungrounded:
-#                 self.trigger_ungrounding(node=node)
-#         if self.matrix[block.position[0] + 1, block.position[1]] == OCCUPIED:
-#             # Now get the quadtree objects at that location?
-#             # Need to ensure I don't trigger when a block is in a node that has already been returned
-#             node = self.insert_object_quadtree(None, block.position[0] + 1, block.position[1])
-#             if not node.ungrounded:
-#                 self.trigger_ungrounding(node=node)
-#         if self.matrix[block.position[0] - 1, block.position[1]] == OCCUPIED:
-#             # Now get the quadtree objects at that location?
-#             # Need to ensure I don't trigger when a block is in a node that has already been returned
-#             node = self.insert_object_quadtree(None, block.position[0] - 1, block.position[1])
-#             if not node.ungrounded:
-# #                 self.trigger_ungrounding(node=node)
-
-
+# Quadtree structure used for destroyable particles only, to find particles within destroy radius
     def initialize_quadtree(self) -> (set[Quadtree_Node], bool):
         if self.quadtree.initialized:
             return self.quadtree.all_quads, False
@@ -241,8 +207,7 @@ class Terrain_Manager:
             print(f'quadtree particle insert count: {len(insert_blocks)}')
             # as blocks are always active upon load, then switch to inactive.
             return self.quadtree.create_tree(insert_blocks), True
-#
-#
+
     def insert_object_quadtree(self, obj, x: int, y: int) -> Quadtree_Node:  # use to put specific position in tree
         return self.quadtree.insert_object(obj=obj, x=x, y=y, start_node=self.quadtree.root_node)
         # now can access node.children to get neighboring objects
