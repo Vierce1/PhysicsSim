@@ -21,7 +21,6 @@ class Game:
         gc.disable()
         self.render_image = pg.Surface((0, 0))  # for drawing world size + blit. Will be resized for the level
         self.spaces_to_clear = set()
-        self.level = 1
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
@@ -30,6 +29,7 @@ class Game:
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
         self.render_scale = (window_size[0], window_size[1])  # update based on world size in update
+        self.level: Level = None
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
 
@@ -37,6 +37,7 @@ class Game:
     def setup(self, level: int) -> Level:
         # Level reading and creation
         level = Level_Getter().get_level(level=level)
+        self.level = level
         self.render_image = pg.Surface(level.world_size)
         print(f'world size: {self.render_image.get_size()}')
         # self.render_scale = (self.window_size[0] / level.world_size[0], self.window_size[1] / level.world_size[1])
@@ -74,8 +75,16 @@ class Game:
         return level
 
 
-    def update_plane_shift(self, change: (int, int)):
-        self.plane_shift = (self.plane_shift[0] - change[0], self.plane_shift[1] - change[1])
+    def update_plane_shift(self, change: (int, int), player_pos: (int, int)):
+        # First check if hitting the bounds of the level
+        new_plane_shift = (self.plane_shift[0] - change[0], self.plane_shift[1] - change[1])
+        if (self.window_size[0] / 2) > player_pos[0] \
+          or player_pos[0] > (self.level.world_size[0] - (self.window_size[0] / 2)):
+            new_plane_shift = (self.plane_shift[0], new_plane_shift[1])  # Cancel x
+        if (self.window_size[1] / 2) > player_pos[1] \
+          or player_pos[1] > (self.level.world_size[1] - (self.window_size[1] / 2)):
+            new_plane_shift = (new_plane_shift[0], self.plane_shift[1])  # Cancel y
+        self.plane_shift = new_plane_shift
 
 
     def update(self, level: Level, timer: int, events: list[pg.event.Event]):

@@ -40,7 +40,7 @@ class Player:
                 if self.vertical_speed < self.terrain_manager.terminal_velocity else 0
             self.position = (self.position[0], self.position[1] + self.vertical_speed)
             self.rect.y = self.position[1]
-            self.game.update_plane_shift(change=(0, self.vertical_speed))
+            self.game.update_plane_shift(change=(0, self.vertical_speed), player_pos=self.position)
         else:
             self.vertical_speed = 0
 
@@ -91,7 +91,7 @@ class Player:
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
         # Update the camera position.
         # Alternative way would be to use the player's finite world position.
-        self.game.update_plane_shift(change)
+        self.game.update_plane_shift(change, self.position)
 
 
     def mouse_click(self, mouse_pos: (int, int)):
