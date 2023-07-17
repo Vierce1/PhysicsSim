@@ -40,9 +40,8 @@ class Terrain_Manager:
         self.blocks = set()
         self.inactive_blocks = set()
         self.destroyable_blocks = set()
-        # self.unground_frame_blocks = set()  # blocks that will become ungrounded at end of frame
         self.unground_pos_checks = set()
-        sys.setrecursionlimit(99999)  # increased to allow ungrounding
+        self.current_unground_chain_checks = set()
         self.unground_count = 0
         self.all_blocks = []  # do not remove from list so indices stay the same
         self.screen_width = screen_width
@@ -54,6 +53,7 @@ class Terrain_Manager:
         self.terminal_velocity = 1
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
+        self.booly = False
 
 
     def setup(self, render_image, world_size: (int, int)):
@@ -73,8 +73,10 @@ class Terrain_Manager:
 
 
     def update(self) -> None:
+        # if not self.booly:
         for block in self.blocks:
             self.update_blocks(block=block, render_surface=self.render_image)
+            # self.booly = True
 
         # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
         # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
@@ -123,7 +125,7 @@ class Terrain_Manager:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
-            # self.move(block)
+            self.move(block)
         render_surface.set_at(block.position, block.type.color)
 
 
@@ -182,12 +184,16 @@ class Terrain_Manager:
             for y in range(-1, 1):  # Updated from 2. Theoretically shouldn't need to check down
                 pos = (block.position[0] + x, block.position[1] + y)
                 # add the position to the set to check if there's an ungroundable block at end of sequence
-                self.unground_pos_checks.add(pos)
+                if pos not in self.current_unground_chain_checks:  # did we check it already this chain?
+                    self.unground_pos_checks.add(pos)
+                self.current_unground_chain_checks.add(pos)
 
 
     def end_frame_unground(self) -> None:
         unground_frame_blocks = self.get_unground_blocks()
         if not unground_frame_blocks:
+            self.current_unground_chain_checks.clear()
+            # self.unground_count = 0
             return
         next_frame_ungrounds = set()
         for block in unground_frame_blocks:
@@ -195,26 +201,28 @@ class Terrain_Manager:
             self.blocks.add(block)
             self.inactive_blocks.remove(block)
             next_frame_ungrounds.add(block)
-        if len(unground_frame_blocks) > 0:
-            print(f'block count: {len(unground_frame_blocks)}')
+        # if len(unground_frame_blocks) > 0:
+        #     print(f'unground this frame block count: {len(unground_frame_blocks)}')
         for block in next_frame_ungrounds:  # now add the blocks to check next frame
             self.trigger_ungrounding(block)
-        if self.unground_count != 0:  # roughly 10x the # of actual blocks to unground
-            print(f'unground count: {self.unground_count}')
-            self.unground_count = 0
+        # if self.unground_count != 0:  # now only checking each block 1x
+        #     print(f'unground count: {self.unground_count}')
 
 
+#TODO: A block becomes ungrounded. Then grounded. Then another one next to it turns it back to ungrounded.#
+# Does this happen, and if so do I want it to happen?
+# May be good to create a property that determines if a pos has already been checked in a prior frame
     def get_unground_blocks(self) -> set[Block] or None:
         if len(self.unground_pos_checks) == 0:
             return None
         unground_blocks = set()
         for pos in self.unground_pos_checks:
+            # self.unground_count += 1
             block_id = self.matrix.get_val(pos)
             if block_id == -1:
                 continue
             block = self.all_blocks[block_id]
             # print(f'pos to CHECK {pos}.    Block id = {self.matrix.get_val(pos)}')
-            self.unground_count += 1
             if not block.type.rigid and not block.collision_detection:
                 block.collision_detection = True
                 unground_blocks.add(block)
