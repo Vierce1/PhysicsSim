@@ -1,6 +1,10 @@
 [
  {
   "id": 0,
+  "world_size": [
+   1280,
+   720
+  ],
   "block_counts": [
    5000,
    15000,
@@ -55,10 +59,18 @@
    2,
    2
   ],
-  "timed_spawns": null
+  "timed_spawns": null,
+  "start_pos": [
+   200,
+   200
+  ]
  },
  {
   "id": 1,
+  "world_size": [
+   1280,
+   720
+  ],
   "block_counts": [
    90000,
    90000,
@@ -113,10 +125,18 @@
    2,
    0
   ],
-  "timed_spawns": null
+  "timed_spawns": null,
+  "start_pos": [
+   200,
+   200
+  ]
  },
  {
   "id": 2,
+  "world_size": [
+   1280,
+   720
+  ],
   "block_counts": [
    200
   ],
@@ -159,18 +179,28 @@
      700
     ]
    ]
-  }
+  },
+  "start_pos": [
+   200,
+   200
+  ]
  },
  {
   "id": 3,
+  "world_size": [
+   4000,
+   720
+  ],
   "block_counts": [
    999999,
-   12780
+   12780,
+   80000,
+   999999
   ],
   "bounds": [
    [
     100,
-    800,
+    1800,
     150,
     550
    ],
@@ -179,12 +209,30 @@
     1270,
     260,
     270
+   ],
+   [
+    2000,
+    2200,
+    500,
+    600
+   ],
+   [
+    2000,
+    2200,
+    480,
+    500
    ]
   ],
   "block_types": [
    3,
-   1
+   1,
+   2,
+   3
   ],
-  "timed_spawns": null
+  "timed_spawns": null,
+  "start_pos": [
+   800,
+   200
+  ]
  }
 ]

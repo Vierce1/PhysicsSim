@@ -10,7 +10,7 @@ import random
 
 display_res = []
 ground = 705
-frames_til_grounded = 100  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 320  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 EMPTY = 0
 OCCUPIED = 1
@@ -20,7 +20,7 @@ class Matrix(dict):  #TODO: Use dict, looks like it is fastest. But maybe I can 
     def __init__(self, width: int, height: int):
         super().__init__()
         # self.matrix = {}
-        for x in range(-10, width + 10):  # initalize all spaces as empty
+        for x in range(-10, width + 10):  # initalize all spaces as empty. Buffer for offscreen falling (temp)
             for y in range(-10, height + 10):
                 self[x,y] = -1
 
@@ -40,9 +40,8 @@ class Terrain_Manager:
         self.blocks = set()
         self.inactive_blocks = set()
         self.destroyable_blocks = set()
-        self.unground_frame_blocks = set()  # blocks that will become ungrounded at end of frame
-        sys.setrecursionlimit(99999)  # increased to allow ungrounding
-        self.unground_count = 0
+        self.unground_pos_checks = set()
+        self.current_unground_chain_checks = set()  # Set to keep track of pos already checked this chain
         self.all_blocks = []  # do not remove from list so indices stay the same
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -51,19 +50,19 @@ class Terrain_Manager:
         self.first_trigger_radius = 10
         self.gravity = 1
         self.terminal_velocity = 1
-        # print(f'block size: {sys.getsizeof(Blocks.block.Block)}')
-        self.quadtree = Quadtree(self.screen_width, self.screen_height)
-        self.matrix = Matrix(width=screen_width + 10, height=screen_height+10)
-        # self.matrix = {}
-        # for x in range(-10, screen_width + 10):  # initalize all spaces as empty
-        #     for y in range(-10, screen_height + 10):
-        #         self.matrix[x,y] = (0, None)
-        # print(f'matrix length: {len(self.matrix)}')
+        self.matrix = Matrix(width=0, height=0)
+        self.quadtree = Quadtree(0, 0)
+        self.booly = False
 
 
-
-    def setup(self, render_image):
+    def setup(self, render_image, world_size: (int, int)):
         self.render_image = render_image
+        self.matrix = Matrix(width=world_size[0], height=world_size[1])
+        self.quadtree = Quadtree(world_size[0], world_size[1])
+        self.blocks.clear()
+        self.all_blocks.clear()
+        self.inactive_blocks.clear()
+        self.destroyable_blocks.clear()
 
     def fill_matrix(self):  # will need new method for adding blocks after init
         for i, b in enumerate(self.all_blocks):
@@ -72,14 +71,18 @@ class Terrain_Manager:
 
 
 
-    def update(self, screen) -> None:
+    def update(self) -> None:
+        # if not self.booly:
         for block in self.blocks:
-            self.update_blocks(block=block, screen=self.render_image)
+            self.update_blocks(block=block, render_surface=self.render_image)
+            # self.booly = True
 
+        # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
+        # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
         self.inactive_blocks.update({b for b in self.blocks if not b.collision_detection})
+        # self.blocks = self.inactive_blocks.difference(coll_blocks)
         self.blocks = {b for b in self.blocks if b.collision_detection}
         self.end_frame_unground()
-        # print(len([b for b in self.blocks]))
         # print(len(self.blocks))
 
 
@@ -106,7 +109,8 @@ class Terrain_Manager:
         return 0
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
-        if self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == -1:  # EMPTY:
+        if self.matrix.get_val((position[0] + direction[0], position[1])) != -1 \
+                and self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == -1:  # EMPTY:
             return True
         return False
 
@@ -114,14 +118,14 @@ class Terrain_Manager:
 
 
 
-    # Block functions
-    def update_blocks(self, block, screen):
+    # Particle functions
+    def update_blocks(self, block, render_surface):
         if block.collision_detection:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
             self.move(block)
-        screen.set_at(block.position, block.type.color)
+        render_surface.set_at(block.position, block.type.color)
 
 
     # @profile
@@ -172,29 +176,56 @@ class Terrain_Manager:
 
 
 
-#TODO: Iterating through this many times for the same particle. Roughly 10x more checks than needed
+#TODO: There may be more finetuning to reduce checks on same positions
     def trigger_ungrounding(self, block: Block) -> None:
+        # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
-            for y in range(-1, 2):
+            for y in range(-1, 1):  # Updated from 2. Theoretically shouldn't need to check down
                 pos = (block.position[0] + x, block.position[1] + y)
-                unground_block = self.all_blocks[self.matrix[pos]]
-                # self.unground_count += 1
-                if not unground_block.type.rigid and not unground_block.collision_detection:
-                    unground_block.collision_detection = True
-                    self.unground_frame_blocks.add(unground_block)
-                    self.trigger_ungrounding(unground_block)
+                # add the position to the set to check if there's an ungroundable block at end of sequence
+                if pos not in self.current_unground_chain_checks:  # did we check it already this chain?
+                    self.unground_pos_checks.add(pos)
+                self.current_unground_chain_checks.add(pos)
 
 
     def end_frame_unground(self) -> None:
-        for block in self.unground_frame_blocks:
+        unground_frame_blocks = self.get_unground_blocks()
+        if not unground_frame_blocks:
+            self.current_unground_chain_checks.clear()  # Flush set, chain is complete.
+            # self.unground_count = 0
+            return
+        next_frame_ungrounds = set()
+        for block in unground_frame_blocks:
             block.grounded_timer = 0
             self.blocks.add(block)
             self.inactive_blocks.remove(block)
-        # if len(self.unground_frame_blocks) > 0:
-        #     print(f'block count: {len(self.unground_frame_blocks)}')
-        self.unground_frame_blocks.clear()
-        # if self.unground_count != 0:  # roughly 10x the # of actual blocks to unground
+            next_frame_ungrounds.add(block)
+        # if len(unground_frame_blocks) > 0:
+        #     print(f'unground this frame block count: {len(unground_frame_blocks)}')
+        for block in next_frame_ungrounds:  # now add the blocks to check next frame
+            self.trigger_ungrounding(block)
+        # if self.unground_count != 0:  # now only checking each block 1x
         #     print(f'unground count: {self.unground_count}')
+
+
+#TODO: A block becomes ungrounded. Then grounded. Then another one next to it turns it back to ungrounded.#
+# Does this happen, and if so do I want it to happen?
+    def get_unground_blocks(self) -> set[Block] or None:
+        if len(self.unground_pos_checks) == 0:
+            return None
+        unground_blocks = set()
+        for pos in self.unground_pos_checks:
+            # self.unground_count += 1
+            block_id = self.matrix.get_val(pos)
+            if block_id == -1:
+                continue
+            block = self.all_blocks[block_id]
+            # print(f'pos to CHECK {pos}.    Block id = {self.matrix.get_val(pos)}')
+            if not block.type.rigid and not block.collision_detection:
+                block.collision_detection = True
+                unground_blocks.add(block)
+        self.unground_pos_checks.clear()
+        return unground_blocks
 
 
 
