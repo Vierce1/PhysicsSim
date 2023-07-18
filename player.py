@@ -28,27 +28,33 @@ class Player:
 
     def update(self, events, render_image):
         self.accept_input(events=events, render_image=render_image)
-        self.fall()
+        grounded = False
+        for _ in range(self.vertical_speed):
+            grounded = self.fall()
+        if not grounded and self.vertical_speed < self.terrain_manager.terminal_velocity:
+            # TODO: Need to revamp this for gravity direction changes
+            self.vertical_speed += self.terrain_manager.gravity
+
         pg.draw.rect(surface=render_image, color=(255, 255, 255), rect=self.rect)
 
 
-    def fall(self):
+    def fall(self) -> bool:
         grounded = self.terrain_manager.check_under((self.position[0], self.rect.bottom + 1))
         if not grounded:
-            # TODO: Need to revamp this for gravity changes
-            self.vertical_speed += self.terrain_manager.gravity \
-                if self.vertical_speed < self.terrain_manager.terminal_velocity else 0
-            self.game.spaces_to_clear.add(self.position)
-            self.position = (self.position[0], self.position[1] + self.vertical_speed)
+            self.game.spaces_to_clear.add_pos(self.position)
+            self.position = (self.position[0], self.position[1] + 1)
             self.rect.y = self.position[1]
             self.game.update_plane_shift(change=(0, self.vertical_speed), player_pos=self.position)
+            return False
         else:
             self.vertical_speed = 0
+            return True
 
     def get_rect_pos(self, current_pos: (int, int), change: (int, int)):
         # self.position = tuple(map(sum, zip(current_pos, change)))
         self.rect.x = current_pos[0] + change[0]
         self.rect.y = current_pos[1] + change[1]
+
         return (self.rect.x, self.rect.y)
 
 
@@ -66,8 +72,6 @@ class Player:
 
         for event in events:
             if event.type == pg.MOUSEBUTTONDOWN:
-                print(f'offset : {self.game.plane_shift}')
-                print(f'unconverted mouse pos :  {pg.mouse.get_pos()}')
                 mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
                                                 self.screen_width, self.render_width,
                                                 self.screen_height, self.render_height)
@@ -89,7 +93,7 @@ class Player:
         # Check if need to go up slope first
         if self.terrain_manager.check_slope(self.position, direction):
             change = (change[0], change[1] - 1)
-        self.game.spaces_to_clear.add(self.position)  # Not working?
+        self.game.spaces_to_clear.add_pos(self.position)  # Not working?
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
         # Update the camera position.
         # Alternative way would be to use the player's finite world position.
@@ -113,7 +117,7 @@ class Player:
         in_range_blocks = quadtree_node.objects
         for child in quadtree_node.parent.children:  # go up 1 branch to be safe. May need tweaking
             in_range_blocks.update(child.objects)
-        print(f'neighboring objects: {len(in_range_blocks)}')
+        # print(f'neighboring objects: {len(in_range_blocks)}')
         for block in in_range_blocks:
             if not block.type.destroyable:
                 continue
