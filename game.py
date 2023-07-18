@@ -20,7 +20,7 @@ class Game:
         self.delay = .033  # 1000/85  # slowing the delay = more things happening each frame... which hurts fps
         gc.disable()
         self.render_image = pg.Surface((0, 0))  # for drawing world size + blit. Will be resized for the level
-        self.spaces_to_clear = set()
+        self.spaces_to_clear = Clear_Spaces(self)  # set()
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
@@ -137,4 +137,21 @@ class Game:
         pg.event.pump()
         # pg.display.flip()  # updates the entire surface
         pg.display.update(draw_area)  # With dynamic world size, this is 10% faster
+
+
+
+class Clear_Spaces(set):
+    def __init__(self, game):
+        super(Clear_Spaces, self).__init__()
+        self.game = game
+
+    def add_pos(self, pos) -> None:
+        try:
+            self.game.render_image.get_at(pos)
+        except:
+            print('failed to add position for clearing')
+            return
+        self.add(pos)
+
+
 

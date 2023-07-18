@@ -125,7 +125,8 @@ class Terrain_Manager:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
-            self.move(block)
+            for _ in range(block.vert_velocity + self.gravity):
+                self.move(block)
         render_surface.set_at(block.position, block.type.color)
 
 
@@ -151,10 +152,10 @@ class Terrain_Manager:
 
         # mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = -1
+#TODO: Am I slowing things down by adding spaces to clear that will be covered by other blocks same frame?
+# Seems about the same fps, with 200k blocks moving
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
         block.position = (block.position[0], block.position[1] + block.vert_velocity)
-#TODO: If want to incorporate block width/height, need to draw all pixels contained here
-#That adds complexity to 1-width blocks, though
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return
 
