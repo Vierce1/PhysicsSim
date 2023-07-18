@@ -161,8 +161,8 @@ class Player:
 
                     # horiz = -1 if x < location[0] else 1
                     # verti = -1 if y < location[1] else 1
-                    horiz = round(max(location[0] - x, 1) / force_radius * force)
-                    verti = round(max(location[1] - y, 1) / force_radius * force)
+                    horiz = round(location[0] - x / force_radius * force)
+                    verti = round(location[1] - y / force_radius * force)
                     self.terrain_manager.trigger_ungrounding(block)
                     block.collision_detection = True
                     block.grounded_timer = 0
