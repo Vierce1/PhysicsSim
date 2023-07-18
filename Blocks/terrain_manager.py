@@ -16,7 +16,6 @@ slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # OCCUPIED = 1
 
 class Matrix(defaultdict):  # defaultdict will create items if try to get a value from a key that does not exist
-    # __slots__ = dict
     def __init__(self, width: int, height: int):
         super().__init__(self.default)  # will return -1 for out of bounds (fall)
         # self.matrix = {}
@@ -26,14 +25,6 @@ class Matrix(defaultdict):  # defaultdict will create items if try to get a valu
 
     def default(self):
         return -1
-    # def get_val(self, key):  # not needed with defaultdict
-    #     try: return self[key]
-    #     except KeyError: return None
-
-    # def __getitem__(self, key):  # overrirde default to return None if out of bounds. Makes it slower
-    #     # return self.get(key, None)
-    #     try: return self[key]
-    #     except KeyError: return None
 
 
 
@@ -51,7 +42,7 @@ class Terrain_Manager:
         self.render_image = None
         self.first_trigger_radius = 10
         self.gravity = 1
-        self.terminal_velocity = 1
+        self.terminal_velocity = 20
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
         self.booly = False
@@ -125,37 +116,37 @@ class Terrain_Manager:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
-            for _ in range(block.vert_velocity + self.gravity):
+
+            if block.vert_velocity < self.terminal_velocity:
+                block.vert_velocity += self.gravity
+            for _ in range(block.vert_velocity):
                 self.move(block)
+            if block.vert_velocity == 0:
+                block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
+
         render_surface.set_at(block.position, block.type.color)
 
 
-    # @profile
+
     def move(self, block):
         if block.position[1] == ground - 1:
             block.horiz_velocity = 0
             return
 
         collision = self.check_under(block.position)
-
         if collision:  # collided. Check if it should slide to either side + down 1
             block.vert_velocity = 0
-            block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
-
             slide = self.check_slide(block)
             if slide != 0:
                 self.slide(block, slide)
             return
 
-        if block.vert_velocity < self.terminal_velocity:
-            block.vert_velocity += self.gravity
-
-        # mark prev position empty & mark to fill with black
+        # Did not collide. Mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = -1
 #TODO: Am I slowing things down by adding spaces to clear that will be covered by other blocks same frame?
-# Seems about the same fps, with 200k blocks moving
+# Seems about the same fps, with 200k blocks moving when testing against no space clearing
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
-        block.position = (block.position[0], block.position[1] + block.vert_velocity)
+        block.position = (block.position[0], block.position[1] + 1)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return
 

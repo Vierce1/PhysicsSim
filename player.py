@@ -72,8 +72,6 @@ class Player:
 
         for event in events:
             if event.type == pg.MOUSEBUTTONDOWN:
-                print(f'offset : {self.game.plane_shift}')
-                print(f'unconverted mouse pos :  {pg.mouse.get_pos()}')
                 mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
                                                 self.screen_width, self.render_width,
                                                 self.screen_height, self.render_height)
@@ -119,7 +117,7 @@ class Player:
         in_range_blocks = quadtree_node.objects
         for child in quadtree_node.parent.children:  # go up 1 branch to be safe. May need tweaking
             in_range_blocks.update(child.objects)
-        print(f'neighboring objects: {len(in_range_blocks)}')
+        # print(f'neighboring objects: {len(in_range_blocks)}')
         for block in in_range_blocks:
             if not block.type.destroyable:
                 continue
