@@ -5,7 +5,7 @@ import pygame as pg
 import math
 import sys
 import random
-
+from collections import defaultdict
 
 
 display_res = []
@@ -15,18 +15,20 @@ slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # EMPTY = 0
 # OCCUPIED = 1
 
-class Matrix(dict):  #TODO: Use dict, looks like it is fastest. But maybe I can speed up the exception handling
+class Matrix(defaultdict):  # defaultdict will create items if try to get a value from a key that does not exist
     # __slots__ = dict
     def __init__(self, width: int, height: int):
-        super().__init__()
+        super().__init__(self.default)  # will return -1 for out of bounds (fall)
         # self.matrix = {}
         for x in range(-10, width + 10):  # initalize all spaces as empty. Buffer for offscreen falling (temp)
             for y in range(-10, height + 10):
                 self[x,y] = -1
 
-    def get_val(self, key):
-        try: return self[key]
-        except KeyError: return None
+    def default(self):
+        return -1
+    # def get_val(self, key):  # not needed with defaultdict
+    #     try: return self[key]
+    #     except KeyError: return None
 
     # def __getitem__(self, key):  # overrirde default to return None if out of bounds. Makes it slower
     #     # return self.get(key, None)
@@ -95,22 +97,21 @@ class Terrain_Manager:
     def check_under(self, position: (int, int)) -> bool:
         if position[1] == ground:
             return True
-        return self.matrix.get_val((position[0], position[1] + 1)) != -1
+        return self.matrix[(position[0], position[1] + 1)] != -1
 
 
+#TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
         dir = 1 if random.random() < 0.5 else -1
-        # if self.screen_width > block.position[0] + dir > 0 \  # costs fps
-        #   and self.screen_height > block.position[1] + dir > 0:
-        if self.matrix.get_val((block.position[0] + dir, block.position[1] + 1)) == -1:  # EMPTY:
+        if self.matrix[(block.position[0] + dir, block.position[1] + 1)] == -1:  # EMPTY:
             return dir
-        elif self.matrix.get_val((block.position[0] - dir, block.position[1] + 1)) == -1:  # EMPTY:
+        elif self.matrix[(block.position[0] - dir, block.position[1] + 1)] == -1:  # EMPTY:
             return -dir
         return 0
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
-        if self.matrix.get_val((position[0] + direction[0], position[1])) != -1 \
-                and self.matrix.get_val((position[0] + direction[0], position[1] - 1)) == -1:  # EMPTY:
+        if self.matrix[(position[0] + direction[0], position[1])] != -1 \
+                and self.matrix[(position[0] + direction[0], position[1] - 1)] == -1:  # EMPTY:
             return True
         return False
 
@@ -216,7 +217,7 @@ class Terrain_Manager:
         unground_blocks = set()
         for pos in self.unground_pos_checks:
             # self.unground_count += 1
-            block_id = self.matrix.get_val(pos)
+            block_id = self.matrix[(pos)]
             if block_id == -1:
                 continue
             block = self.all_blocks[block_id]
