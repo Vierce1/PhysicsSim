@@ -10,7 +10,7 @@ from collections import defaultdict
 
 display_res = []
 ground = 705
-frames_til_grounded = 400  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 600  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # EMPTY = 0
 # OCCUPIED = 1
@@ -117,8 +117,6 @@ class Terrain_Manager:
 
     # Particle functions
     def update_blocks(self, block, render_surface):
-        # if block.grounded_timer > 0:
-        #     print(f'grounded: {block.grounded_timer}')
         if block.collision_detection:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
@@ -133,11 +131,14 @@ class Terrain_Manager:
             # move through all spaces based on velocity
             total_x = block.horiz_velocity
             total_y = block.vert_velocity
-            for _ in range(max(abs(block.vert_velocity) + 1, abs(block.horiz_velocity) + 1)):
+            for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
-                self.move(block, next_x, next_y)
+                collided = self.move(block, next_x, next_y)
+                if collided:
+                    break
                 total_x -= total_x / abs(total_x) if total_x != 0 else 0  # decrement by 1 in correct direction
                 total_y -= total_y / abs(total_y) if total_y != 0 else 0  # but stop if it gets to zero
+
 
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
@@ -145,26 +146,27 @@ class Terrain_Manager:
         render_surface.set_at(block.position, block.type.color)
 
 
-    def move(self, block: Block, x_step: int, y_step: int) -> None:
+    def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
         if block.position[1] == ground - 1:
             block.horiz_velocity = 0
-            return
+            block.vert_velocity = 0
+            return True
         next_pos = (block.position[0] + x_step, block.position[1] + y_step)
         collision = self.check_pos_collide(next_pos)
-        # collision = self.check_under(block.position)  # no horiz motion considered
+
         if collision:  # collided. Check if it should slide to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
             slide = self.check_slide(block)
             if slide != 0:
                 self.slide(block, slide)
-            return
+            return True
         # Did not collide. Mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = -1
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
-        block.position = (block.position[0], block.position[1] + 1)
+        block.position = next_pos
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
-        return
+        return False
 
 
     def get_step_velocity(self, total_x: int, total_y: int) -> (int, int):
@@ -179,13 +181,12 @@ class Terrain_Manager:
             y = -1
         elif y > 0:
             y = 1
-
-        return x, y
+        return int(x), int(y)
 
 
 
     def slide(self, block: Block, slide: int) -> None:
-        # block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
+        block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
         block.position = (block.position[0] + slide, block.position[1])
