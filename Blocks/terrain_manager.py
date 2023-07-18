@@ -10,7 +10,7 @@ from collections import defaultdict
 
 display_res = []
 ground = 705
-frames_til_grounded = 800  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 400  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # EMPTY = 0
 # OCCUPIED = 1
@@ -83,8 +83,13 @@ class Terrain_Manager:
 
 
 # Physics
+    def check_pos_collide(self, position: (int, int)) -> bool:
+        if position[1] == ground:
+            return True
+        return self.matrix[position] != -1
 
-    # TODO: Need to ravamp this for speed changes
+
+#TODO: Remove and change player to use check_pos_collide
     def check_under(self, position: (int, int)) -> bool:
         if position[1] == ground:
             return True
@@ -112,50 +117,78 @@ class Terrain_Manager:
 
     # Particle functions
     def update_blocks(self, block, render_surface):
+        # if block.grounded_timer > 0:
+        #     print(f'grounded: {block.grounded_timer}')
         if block.collision_detection:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
 
+            # update velocities
             if block.vert_velocity < self.terminal_velocity:
                 block.vert_velocity += self.gravity
-            for _ in range(block.vert_velocity):
-                self.move(block)
+            if block.horiz_velocity != 0:
+                block.horiz_velocity -= int(block.horiz_velocity / abs(block.horiz_velocity))
+
+            # move through all spaces based on velocity
+            total_x = block.horiz_velocity
+            total_y = block.vert_velocity
+            for _ in range(max(abs(block.vert_velocity) + 1, abs(block.horiz_velocity) + 1)):
+                next_x, next_y = self.get_step_velocity(total_x, total_y)
+                self.move(block, next_x, next_y)
+                total_x -= total_x / abs(total_x) if total_x != 0 else 0  # decrement by 1 in correct direction
+                total_y -= total_y / abs(total_y) if total_y != 0 else 0  # but stop if it gets to zero
+
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
 
         render_surface.set_at(block.position, block.type.color)
 
 
-
-    def move(self, block):
+    def move(self, block: Block, x_step: int, y_step: int) -> None:
         if block.position[1] == ground - 1:
             block.horiz_velocity = 0
             return
-
-        collision = self.check_under(block.position)
+        next_pos = (block.position[0] + x_step, block.position[1] + y_step)
+        collision = self.check_pos_collide(next_pos)
+        # collision = self.check_under(block.position)  # no horiz motion considered
         if collision:  # collided. Check if it should slide to either side + down 1
+            block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
             slide = self.check_slide(block)
             if slide != 0:
                 self.slide(block, slide)
             return
-
         # Did not collide. Mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = -1
-#TODO: Am I slowing things down by adding spaces to clear that will be covered by other blocks same frame?
-# Seems about the same fps, with 200k blocks moving when testing against no space clearing
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
         block.position = (block.position[0], block.position[1] + 1)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return
 
 
+    def get_step_velocity(self, total_x: int, total_y: int) -> (int, int):
+        # returns a position based on velocity, trimmed down to -1 to +1 in any direction
+        x = total_x
+        y = total_y
+        if x < 0:
+            x = -1
+        elif x > 0:
+            x = 1
+        if y < 0:
+            y = -1
+        elif y > 0:
+            y = 1
+
+        return x, y
+
+
+
     def slide(self, block: Block, slide: int) -> None:
-        block.horiz_velocity = slide * 1 * slide_factor
+        # block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
         self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
-        block.position = (block.position[0] + block.horiz_velocity, block.position[1])
+        block.position = (block.position[0] + slide, block.position[1])
         self.matrix[block.position[0], block.position[1]] = block.id
         return
 
