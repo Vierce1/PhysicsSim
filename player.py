@@ -108,9 +108,10 @@ class Player:
 
 
 
-    def destroy(self, location: (int, int), force: int):
+    def destroy(self, location: (int, int)):
         blocks = self.terrain_manager.destroyable_blocks
         # don't bother inserting location. We just want to get the neighboring objects
+        # Now that I save the block ID in the matrix don't really need quadtree... see explode
         quadtree_node = self.terrain_manager.insert_object_quadtree(None, location[0], location[1])
         if not quadtree_node or not quadtree_node.objects:
             return
@@ -126,5 +127,6 @@ class Player:
                 self.terrain_manager.destroy_block(block)
 
 
+    def explode(self, location: (int, int), force: int):
 
 
