@@ -38,7 +38,7 @@ class Level:
         self.bounds = bounds
         self.block_types = []
         self.timed_spawns = []  # create the list even if none so no if check needed in game.update
-        self.start_pos = start_pos
+        self.start_pos = (start_pos[0], start_pos[1])
 
         if writing:  # Creating json. Don't convert to objects
             self.block_types = block_types

@@ -92,7 +92,7 @@ class Game:
         # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
         # Update now blank spaces with the backdrop
         [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in self.spaces_to_clear]
-        #TODO: Draw black if position is outside the bounds of the render image
+        #TODO: Draw black/tiles if position is outside the bounds of the render image
         self.spaces_to_clear.clear()
 
         # self.render_image.blit(self.backdrop, (0, 0))

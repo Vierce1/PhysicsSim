@@ -15,7 +15,7 @@ class Player:
         self.position = (200, 200)
         self.size = 10
         self.rect = pg.Rect(self.position[0], self.position[1], self.size, self.size)
-        self.move_speed = 6
+        self.move_speed = 18
         self.vertical_speed = 0
         self.manipulation_distance = 500
         self.destroy_distance = 8
@@ -38,6 +38,7 @@ class Player:
             # TODO: Need to revamp this for gravity changes
             self.vertical_speed += self.terrain_manager.gravity \
                 if self.vertical_speed < self.terrain_manager.terminal_velocity else 0
+            self.game.spaces_to_clear.add(self.position)
             self.position = (self.position[0], self.position[1] + self.vertical_speed)
             self.rect.y = self.position[1]
             self.game.update_plane_shift(change=(0, self.vertical_speed), player_pos=self.position)
@@ -88,6 +89,7 @@ class Player:
         # Check if need to go up slope first
         if self.terrain_manager.check_slope(self.position, direction):
             change = (change[0], change[1] - 1)
+        self.game.spaces_to_clear.add(self.position)  # Not working?
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
         # Update the camera position.
         # Alternative way would be to use the player's finite world position.

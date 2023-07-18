@@ -32,7 +32,7 @@ pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.KEYUP]) # limit allowed events we 
 
 print('\n\nGame Loaded')
 while game_running:
-    clock.tick(60)  # Limit to 30fps. This is the most consistent method and don't see drops when limiting
+    clock.tick(30)  # Limit to 30fps. This is the most consistent method and don't see drops when limiting
                     # the frame rate and then stuff happening
     fps = clock.get_fps()
     timer += 1 / fps if fps > 0 else 0
