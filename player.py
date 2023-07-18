@@ -19,6 +19,8 @@ class Player:
         self.vertical_speed = 0
         self.manipulation_distance = 500
         self.destroy_distance = 8
+        self.button_cooldown = 10
+        self.button_timer = 0
 
     def set_start_position(self, start_pos: (int, int)):
         self.position = start_pos
@@ -69,9 +71,16 @@ class Player:
             pos_change = (pos_change[0], -1 * self.move_speed)
         if keys[pg.K_s]:
             pos_change = (pos_change[0], 1 * self.move_speed)
+        if keys[pg.K_SPACE] and self.button_timer > self.button_cooldown:
+            self.button_timer = 0
+            mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
+                                            self.screen_width, self.render_width,
+                                            self.screen_height, self.render_height)
+            self.explode(location=mouse_pos, destroy_radius=6, force_radius=40, force=400)
 
         for event in events:
-            if event.type == pg.MOUSEBUTTONDOWN:
+            if event.type == pg.MOUSEBUTTONDOWN and self.button_timer > self.button_cooldown:
+                self.button_timer = 0
                 mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
                                                 self.screen_width, self.render_width,
                                                 self.screen_height, self.render_height)
@@ -85,6 +94,8 @@ class Player:
 
         if pos_change[0] != 0:
             self.move(pos_change, render_image)
+
+        self.button_timer += 1
 
 
 
@@ -100,11 +111,16 @@ class Player:
         self.game.update_plane_shift(change, self.position)
 
 
+
+    def check_dist(self, location: (int, int)):
+        distance = help.check_dist(self.position, location)
+        return distance < self.manipulation_distance
+
+
     def mouse_click(self, mouse_pos: (int, int)):
         print(f'click at {mouse_pos}')
-        distance = help.check_dist(self.position, mouse_pos)
-        if distance < self.manipulation_distance:
-            self.destroy(mouse_pos, 50)
+        if self.check_dist(mouse_pos):
+            self.destroy(mouse_pos)
 
 
 
@@ -127,6 +143,35 @@ class Player:
                 self.terrain_manager.destroy_block(block)
 
 
-    def explode(self, location: (int, int), force: int):
+    def explode(self, location: (int, int), destroy_radius: int, force_radius: int, force: int):
+        if not self.check_dist(location):
+            return
+        print(f'space at {location}')
+        # get blocks in radius around location point
+        location = (round(location[0]), round(location[1]))
+        for x in range(location[0]-force_radius, location[0]+force_radius + 1):
+            for y in range(location[1]-force_radius, location[1]+force_radius + 1):
+                id = (self.terrain_manager.matrix[x, y])
+                if id != -1:
+                    block = self.terrain_manager.all_blocks[id]
+                    if location[0] - destroy_radius < x < location[0] + destroy_radius \
+                      and location[1] - destroy_radius < y < location[1] + destroy_radius:
+                        self.terrain_manager.destroy_block(block)
+                        continue
+
+                    # horiz = -1 if x < location[0] else 1
+                    # verti = -1 if y < location[1] else 1
+                    horiz = round(max(location[0] - x, 1) / force_radius * force)
+                    verti = round(max(location[1] - y, 1) / force_radius * force)
+                    self.terrain_manager.trigger_ungrounding(block)
+                    block.collision_detection = True
+                    block.grounded_timer = 0
+                    block.horiz_velocity = horiz
+                    block.vert_velocity = verti
+                    if block in self.terrain_manager.inactive_blocks:
+                        self.terrain_manager.blocks.add(block)
+                        self.terrain_manager.inactive_blocks.remove(block)
+
+
 
 

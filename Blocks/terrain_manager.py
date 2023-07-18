@@ -163,7 +163,7 @@ class Terrain_Manager:
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = -1
-        self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
+        self.game.spaces_to_clear.add_pos(block.position)  # Slower with more particles updating
         block.position = next_pos
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return False
@@ -188,7 +188,7 @@ class Terrain_Manager:
     def slide(self, block: Block, slide: int) -> None:
         block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
-        self.game.spaces_to_clear.add(block.position)  # Slower with more particles updating
+        self.game.spaces_to_clear.add_pos(block.position)  # Slower with more particles updating
         block.position = (block.position[0] + slide, block.position[1])
         self.matrix[block.position[0], block.position[1]] = block.id
         return
@@ -196,7 +196,7 @@ class Terrain_Manager:
 
     def destroy_block(self, block: Block) -> None:
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
-        self.game.spaces_to_clear.add(block.position)
+        self.game.spaces_to_clear.add_pos(block.position)
         # Now check all spaces around this block for ungroundable blocks. Note this will be called for all
         # blocks in the destruction zone
         self.trigger_ungrounding(block)
