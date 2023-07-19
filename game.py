@@ -139,7 +139,7 @@ class Game:
         # pg.transform.scale(self.render_image, self.render_scale, self.screen)
         # resized_screen = pg.transform.scale_by(self.render_image, 1.5)
         self.screen.blit(self.render_image, (0, 0), draw_area)
-        # pg.Surface.blit(self.screen, self.render_image, draw_area)
+        # pg.Surface.blit(self.screen, self.render_image, (0, 0), draw_area)
 
 
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
@@ -148,6 +148,7 @@ class Game:
         pg.event.pump()
         pg.display.flip()  # updates the entire surface
         # pg.display.update(draw_area)  # With dynamic world size, this is 10% faster
+        # Actually I don't think this makes sense with current method. I want to update the entire display window
 
 
 
