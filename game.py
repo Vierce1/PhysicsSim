@@ -28,7 +28,7 @@ class Game:
         self.quadtree_nodes = set()
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
-        self.render_scale = (window_size[0], window_size[1])  # update based on world size in update
+        self.render_scale = (display_resolution[0], display_resolution[1])
         self.level: Level = None
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
@@ -45,8 +45,11 @@ class Game:
         self.player.set_start_position(level.start_pos)
         self.player.render_width, self.player.render_height = level.world_size[0], level.world_size[1]
         # Set the plane shift to center the camera on the player's starting position
-        self.plane_shift = (self.window_size[0] / 2 - level.start_pos[0],
-                            self.window_size[1] / 2 - level.start_pos[1])
+        # self.plane_shift = (self.display_resolution[0] * .5 - level.start_pos[0],
+        #                     self.display_resolution[1] / 2 - level.start_pos[1])
+        self.plane_shift = (level.start_pos[0] - self.display_resolution[0] / 2,  # this is corerct
+                            level.start_pos[1])
+        # self.plane_shift = (0, 0)
 
         # Create all particles
         level_blocks = set()
@@ -78,11 +81,11 @@ class Game:
     def update_plane_shift(self, change: (int, int), player_pos: (int, int)):
         # First check if hitting the bounds of the level
         new_plane_shift = (self.plane_shift[0] - change[0], self.plane_shift[1] - change[1])
-        if (self.window_size[0] / 2) > player_pos[0] \
-          or player_pos[0] > (self.level.world_size[0] - (self.window_size[0] / 2)):
+        if (self.display_resolution[0]) > player_pos[0] \
+          or player_pos[0] > (self.level.world_size[0] - (self.display_resolution[0])):
             new_plane_shift = (self.plane_shift[0], new_plane_shift[1])  # Cancel x
-        if (self.window_size[1] / 2) > player_pos[1] \
-          or player_pos[1] > (self.level.world_size[1] - (self.window_size[1] / 2)):
+        if (self.display_resolution[1]) > player_pos[1] \
+          or player_pos[1] > (self.level.world_size[1] - (self.display_resolution[1])):  # /2
             new_plane_shift = (new_plane_shift[0], self.plane_shift[1])  # Cancel y
         self.plane_shift = new_plane_shift
 
@@ -122,21 +125,29 @@ class Game:
 
         # Blitting
         self.render_image.convert()  # optimize image after drawing on it
-        draw_area = self.render_image.get_rect().move(self.plane_shift[0], self.plane_shift[1])
-        # TODO: Figure out scaling that doesn't reduce framerate if desired
-        # resized_screen = pg.transform.scale(self.render_image, (self.window_size[0] * 1.5,
-        #                                                         self.window_size[1] * 1.5))
+        # sub_surface = self.render_image.subsurface(pg.Rect(self.plane_shift[0] - 640, self.plane_shift[1], 1280, 720))
+        # draw_area = self.render_image.get_rect().move(self.plane_shift[0], self.plane_shift[1])
+        print(self.plane_shift)
+        draw_area = pg.Rect(self.player.position[0] - self.display_resolution[0] / 2, 0, 1280, 720)
+                            #  -self.plane_shift[1] + self.display_resolution[1] , 1280, 720)
+        # TODO: Figure out scaling that doesn't reduce framerate
+        # Just blit a 720p rect of the render image onto the screen and then do scaling up to window size
+        # resized_screen = pg.transform.scale(self.render_image, (self.render_scale[0],
+        #                                                         self.render_scale[1]))
         # pg.transform.scale_by(self.render_image, 1.5, self.screen)  # error, scale must match screen size
+
         # pg.transform.scale(self.render_image, self.render_scale, self.screen)
         # resized_screen = pg.transform.scale_by(self.render_image, 1.5)
-        self.screen.blit(self.render_image, draw_area)
+        self.screen.blit(self.render_image, (0, 0), draw_area)
+        # pg.Surface.blit(self.screen, self.render_image, draw_area)
+
 
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
         # print(f'cpu % usage: {psutil.cpu_percent()}')
 
         pg.event.pump()
-        # pg.display.flip()  # updates the entire surface
-        pg.display.update(draw_area)  # With dynamic world size, this is 10% faster
+        pg.display.flip()  # updates the entire surface
+        # pg.display.update(draw_area)  # With dynamic world size, this is 10% faster
 
 
 
