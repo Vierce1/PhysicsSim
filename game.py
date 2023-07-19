@@ -41,7 +41,8 @@ class Game:
         self.render_image = pg.Surface(level.world_size)
         print(f'world size: {self.render_image.get_size()}')
         # self.render_scale = (self.window_size[0] / level.world_size[0], self.window_size[1] / level.world_size[1])
-        self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size, ground=level.ground)
+        self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,
+                                   ground_level=level.ground)
         self.player.set_start_position(level.start_pos)
         self.player.render_width, self.player.render_height = level.world_size[0], level.world_size[1]
         # Set the plane shift to center the camera on the player's starting position
@@ -102,10 +103,10 @@ class Game:
         # First check if hitting the bounds of the level
         new_plane_shift = (self.plane_shift[0] - change[0], self.plane_shift[1] - change[1])
         if (self.display_resolution[0] / 2) > player_pos[0] \
-          or player_pos[0] > (self.level.world_size[0] - (self.display_resolution[0])):
+          or player_pos[0] > (self.level.world_size[0] - self.display_resolution[0] / 2):
             new_plane_shift = (self.plane_shift[0], new_plane_shift[1])  # Cancel x
         if (self.display_resolution[1] / 2) > player_pos[1] \
-          or player_pos[1] > (self.level.world_size[1] - (self.display_resolution[1])):
+          or player_pos[1] > (self.level.world_size[1] - (self.display_resolution[1] / 2)):
             new_plane_shift = (new_plane_shift[0], self.plane_shift[1])  # Cancel y
         self.plane_shift = new_plane_shift
 
@@ -123,7 +124,8 @@ class Game:
         self.terrain_manager.update()
 
         # # visualization
-        pg.draw.line(self.render_image, (0, 0, 255), (0, tm.ground), (2400, tm.ground))  # Ground
+        pg.draw.line(self.render_image, (0, 0, 255), (0, self.terrain_manager.ground),
+                     (2400, self.terrain_manager.ground))  # Ground
         # for q in self.quadtree_nodes:
         #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
         #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))

@@ -12,7 +12,7 @@ import gc
 
 pg.init()
 window_size = [1920, 1080]
-display_resolution = [1280, 720]
+display_resolution = [640, 360] # [1280, 720]
 flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
 screen = pg.display.set_mode(window_size)
 gc.disable()

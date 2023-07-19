@@ -18,8 +18,8 @@ class Matrix(defaultdict):  # defaultdict will create items if try to get a valu
     def __init__(self, width: int, height: int):
         super().__init__(self.default)  # will return -1 for out of bounds (fall)
         # self.matrix = {}
-        for x in range(-10, width + 10):  # initalize all spaces as empty. Buffer for offscreen falling (temp)
-            for y in range(-10, height + 10):
+        for x in range(width):  # initalize all spaces as empty
+            for y in range(height):
                 self[x,y] = -1
 
     def default(self):
@@ -53,6 +53,7 @@ class Terrain_Manager:
         self.matrix = Matrix(width=world_size[0], height=world_size[1])
         self.quadtree = Quadtree(world_size[0], world_size[1])
         self.ground = ground_level
+        print(self.ground)
         self.blocks.clear()
         self.all_blocks.clear()
         self.inactive_blocks.clear()
@@ -85,14 +86,14 @@ class Terrain_Manager:
 
 # Physics
     def check_pos_collide(self, position: (int, int)) -> bool:
-        if position[1] == ground:
+        if position[1] == self.ground:
             return True
         return self.matrix[position] != -1
 
 
 #TODO: Remove and change player to use check_pos_collide
     def check_under(self, position: (int, int)) -> bool:
-        if position[1] == ground:
+        if position[1] == self.ground:
             return True
         return self.matrix[(position[0], position[1] + 1)] != -1
 
@@ -148,7 +149,7 @@ class Terrain_Manager:
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
-        if block.position[1] == ground - 1:
+        if block.position[1] == self.ground - 1:
             block.horiz_velocity = 0
             block.vert_velocity = 0
             return True

@@ -17,6 +17,7 @@ class Level_Getter:
             self.levels.append(Level(id=level['id'], block_counts=level['block_counts'],
                                      block_types=level['block_types'], bounds=level['bounds'],
                                      world_size=level['world_size'], start_pos=level['start_pos'],
+                                     ground_level=level['ground'],
                                      timed_spawns=level['timed_spawns']))
         # [print(l.bounds) for l in self.levels]
 
