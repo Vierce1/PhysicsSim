@@ -28,7 +28,7 @@ class Game:
         self.quadtree_nodes = set()
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
-        self.render_scale = (display_resolution[0], display_resolution[1])
+        self.render_scale = (self.window_size[0], self.window_size[1])
         self.level: Level = None
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
@@ -125,17 +125,17 @@ class Game:
 
         # Blitting
         self.render_image.convert()  # optimize image after drawing on it
-        # sub_surface = self.render_image.subsurface(pg.Rect(self.plane_shift[0] - 640, self.plane_shift[1], 1280, 720))
-        # draw_area = self.render_image.get_rect().move(self.plane_shift[0], self.plane_shift[1])
-        draw_area = pg.Rect(-self.plane_shift[0], -self.plane_shift[1], 1280, 720)
-        # Just blit a 720p rect of the render image onto the screen and then do scaling up to window size
-        # resized_screen = pg.transform.scale(self.render_image, (self.render_scale[0],
-        #                                                         self.render_scale[1]))
-        # pg.transform.scale_by(self.render_image, 1.5, self.screen)  # error, scale must match screen size
-
-        # pg.transform.scale(self.render_image, self.render_scale, self.screen)
-        # resized_screen = pg.transform.scale_by(self.render_image, 1.5)
-        self.screen.blit(self.render_image, (0, 0), draw_area)
+    #TODO: Could remove the render_image surface and render everything on the cropped_surface first
+    # That would require rendering the edges of the screen as player moves
+        # Just blit a 720p rect of the render image onto a new surface and then do scaling up to window size
+        draw_area = pg.Rect(-self.plane_shift[0], -self.plane_shift[1],
+                                self.display_resolution[0], self.display_resolution[1])
+        cropped_surface = pg.Surface((self.display_resolution[0], self.display_resolution[1]))
+        # blit onto the cropped size surface and scale it up to the window size
+        cropped_surface.blit(self.render_image, (0, 0), draw_area)
+        resized_image = pg.transform.scale(cropped_surface, (self.render_scale[0], self.render_scale[1]))
+        # blit the scaled image onto the screen display.
+        self.screen.blit(resized_image, (0,0))
         # pg.Surface.blit(self.screen, self.render_image, (0, 0), draw_area)
 
 
