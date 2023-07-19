@@ -46,7 +46,7 @@ class Player:
             self.game.spaces_to_clear.add_pos(self.position)
             self.position = (self.position[0], self.position[1] + 1)
             self.rect.y = self.position[1]
-            self.game.update_plane_shift(change=(0, self.vertical_speed), player_pos=self.position)
+            self.game.update_plane_shift(change=(0, 1), player_pos=self.position)
             return False
         else:
             self.vertical_speed = 0

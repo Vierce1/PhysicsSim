@@ -9,7 +9,7 @@ from collections import defaultdict
 
 
 display_res = []
-ground = 705
+ground = 1200
 frames_til_grounded = 600  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # EMPTY = 0

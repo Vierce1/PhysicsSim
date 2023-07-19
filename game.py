@@ -48,7 +48,7 @@ class Game:
         # self.plane_shift = (self.display_resolution[0] * .5 - level.start_pos[0],
         #                     self.display_resolution[1] / 2 - level.start_pos[1])
         self.plane_shift = (level.start_pos[0] - self.display_resolution[0] / 2,  # this is corerct
-                            level.start_pos[1])
+                            level.start_pos[1] - self.display_resolution[1] / 2)
         # self.plane_shift = (0, 0)
 
         # Create all particles
@@ -81,8 +81,8 @@ class Game:
     def update_plane_shift(self, change: (int, int), player_pos: (int, int)):
         # First check if hitting the bounds of the level
         new_plane_shift = (self.plane_shift[0] - change[0], self.plane_shift[1] - change[1])
-        if (self.display_resolution[0]) > player_pos[0] \
-          or player_pos[0] > (self.level.world_size[0] - (self.display_resolution[0])):
+        if (self.display_resolution[0] / 2) > player_pos[0] \
+          or player_pos[0] > (self.level.world_size[0] - (self.display_resolution[0] / 2)):
             new_plane_shift = (self.plane_shift[0], new_plane_shift[1])  # Cancel x
         if (self.display_resolution[1]) > player_pos[1] \
           or player_pos[1] > (self.level.world_size[1] - (self.display_resolution[1])):  # /2
@@ -127,10 +127,7 @@ class Game:
         self.render_image.convert()  # optimize image after drawing on it
         # sub_surface = self.render_image.subsurface(pg.Rect(self.plane_shift[0] - 640, self.plane_shift[1], 1280, 720))
         # draw_area = self.render_image.get_rect().move(self.plane_shift[0], self.plane_shift[1])
-        print(self.plane_shift)
-        draw_area = pg.Rect(self.player.position[0] - self.display_resolution[0] / 2, 0, 1280, 720)
-                            #  -self.plane_shift[1] + self.display_resolution[1] , 1280, 720)
-        # TODO: Figure out scaling that doesn't reduce framerate
+        draw_area = pg.Rect(-self.plane_shift[0], -self.plane_shift[1], 1280, 720)
         # Just blit a 720p rect of the render image onto the screen and then do scaling up to window size
         # resized_screen = pg.transform.scale(self.render_image, (self.render_scale[0],
         #                                                         self.render_scale[1]))
