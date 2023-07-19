@@ -41,14 +41,16 @@ class Game:
         self.render_image = pg.Surface(level.world_size)
         print(f'world size: {self.render_image.get_size()}')
         # self.render_scale = (self.window_size[0] / level.world_size[0], self.window_size[1] / level.world_size[1])
-        self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size)
+        self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size, ground=level.ground)
         self.player.set_start_position(level.start_pos)
         self.player.render_width, self.player.render_height = level.world_size[0], level.world_size[1]
         # Set the plane shift to center the camera on the player's starting position
         # self.plane_shift = (self.display_resolution[0] * .5 - level.start_pos[0],
         #                     self.display_resolution[1] / 2 - level.start_pos[1])
-        self.plane_shift = (level.start_pos[0] - self.display_resolution[0] / 2,  # this is corerct
-                            level.start_pos[1] - self.display_resolution[1] / 2)
+# Just don't ever start player outside display res / 2. Max res therefor needs to be taken into account w/ level design
+
+        self.plane_shift = self.adjust_start_planeshift(level.start_pos, level.world_size)
+        print(f'plane shift: {self.plane_shift}')
         # self.plane_shift = (0, 0)
 
         # Create all particles
@@ -78,14 +80,32 @@ class Game:
         return level
 
 
+    def adjust_start_planeshift(self, start_pos: (int, int), world_size: (int, int)) -> (int, int):
+        x_shift = start_pos[0] - self.display_resolution[0] / 2
+        if x_shift < 0:  # player starting at a postion between 0 - display resolution [0]
+            print('Out of bounds LEFT')
+            x_shift = 0
+        elif start_pos[0] > world_size[0] - self.display_resolution[0] / 2:
+            print('Out of bounds RIGHT')
+            x_shift = - (world_size[0] - self.display_resolution[0])
+
+        y_shift = start_pos[1] - self.display_resolution[1] / 2
+        if y_shift < 0:
+            y_shift = 0
+        elif start_pos[1] > world_size[1] - self.display_resolution[1]:
+            y_shift = world_size[1] - self.display_resolution[1]
+
+        return (x_shift, y_shift)
+
+
     def update_plane_shift(self, change: (int, int), player_pos: (int, int)):
         # First check if hitting the bounds of the level
         new_plane_shift = (self.plane_shift[0] - change[0], self.plane_shift[1] - change[1])
         if (self.display_resolution[0] / 2) > player_pos[0] \
-          or player_pos[0] > (self.level.world_size[0] - (self.display_resolution[0] / 2)):
+          or player_pos[0] > (self.level.world_size[0] - (self.display_resolution[0])):
             new_plane_shift = (self.plane_shift[0], new_plane_shift[1])  # Cancel x
-        if (self.display_resolution[1]) > player_pos[1] \
-          or player_pos[1] > (self.level.world_size[1] - (self.display_resolution[1])):  # /2
+        if (self.display_resolution[1] / 2) > player_pos[1] \
+          or player_pos[1] > (self.level.world_size[1] - (self.display_resolution[1])):
             new_plane_shift = (new_plane_shift[0], self.plane_shift[1])  # Cancel y
         self.plane_shift = new_plane_shift
 
@@ -128,7 +148,7 @@ class Game:
     #TODO: Could remove the render_image surface and render everything on the cropped_surface first
     # That would require rendering the edges of the screen as player moves
         # Just blit a 720p rect of the render image onto a new surface and then do scaling up to window size
-        draw_area = pg.Rect(-self.plane_shift[0], -self.plane_shift[1],
+        draw_area = pg.Rect(self.plane_shift[0], self.plane_shift[1],
                                 self.display_resolution[0], self.display_resolution[1])
         cropped_surface = pg.Surface((self.display_resolution[0], self.display_resolution[1]))
         # blit onto the cropped size surface and scale it up to the window size

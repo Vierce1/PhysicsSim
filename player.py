@@ -46,7 +46,7 @@ class Player:
             self.game.spaces_to_clear.add_pos(self.position)
             self.position = (self.position[0], self.position[1] + 1)
             self.rect.y = self.position[1]
-            self.game.update_plane_shift(change=(0, 1), player_pos=self.position)
+            self.game.update_plane_shift(change=(0, -1), player_pos=self.position)
             return False
         else:
             self.vertical_speed = 0
@@ -108,7 +108,7 @@ class Player:
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
         # Update the camera position.
         # Alternative way would be to use the player's finite world position.
-        self.game.update_plane_shift(change, self.position)
+        self.game.update_plane_shift((-change[0], -change[1]), self.position)
 
 
 

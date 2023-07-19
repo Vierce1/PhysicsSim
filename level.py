@@ -31,7 +31,7 @@ class Level_Getter:
 class Level:
     def __init__(self, id: int, block_counts: list[int], block_types: list[str],
             bounds: list[(int,int,int,int)], world_size: (int, int) = (1280, 720), start_pos: (int, int) = (200,200),
-            timed_spawns=None, writing: bool = False):
+            ground_level: int = 1200, timed_spawns=None, writing: bool = False):
         self.id = id
         self.world_size = world_size
         self.block_counts = block_counts
@@ -39,6 +39,7 @@ class Level:
         self.block_types = []
         self.timed_spawns = []  # create the list even if none so no if check needed in game.update
         self.start_pos = (start_pos[0], start_pos[1])
+        self.ground = ground_level
 
         if writing:  # Creating json. Don't convert to objects
             self.block_types = block_types

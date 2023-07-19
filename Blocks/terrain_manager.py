@@ -9,7 +9,6 @@ from collections import defaultdict
 
 
 display_res = []
-ground = 1200
 frames_til_grounded = 600  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # EMPTY = 0
@@ -43,15 +42,17 @@ class Terrain_Manager:
         self.first_trigger_radius = 10
         self.gravity = 1
         self.terminal_velocity = 20
+        self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
         self.booly = False
 
 
-    def setup(self, render_image, world_size: (int, int)):
+    def setup(self, render_image, world_size: (int, int), ground_level: int):
         self.render_image = render_image
         self.matrix = Matrix(width=world_size[0], height=world_size[1])
         self.quadtree = Quadtree(world_size[0], world_size[1])
+        self.ground = ground_level
         self.blocks.clear()
         self.all_blocks.clear()
         self.inactive_blocks.clear()

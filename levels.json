@@ -188,7 +188,7 @@
  {
   "id": 3,
   "world_size": [
-   4000,
+   3000,
    2000
   ],
   "block_counts": [
@@ -231,7 +231,7 @@
   ],
   "timed_spawns": null,
   "start_pos": [
-   640,
+   50,
    200
   ]
  }
