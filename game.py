@@ -44,12 +44,9 @@ class Game:
         self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,
                                    ground_level=level.ground)
         self.player.set_start_position(level.start_pos)
-        self.player.render_width, self.player.render_height = level.world_size[0], level.world_size[1]
-        # Set the plane shift to center the camera on the player's starting position
-        # self.plane_shift = (self.display_resolution[0] * .5 - level.start_pos[0],
-        #                     self.display_resolution[1] / 2 - level.start_pos[1])
-# Just don't ever start player outside display res / 2. Max res therefor needs to be taken into account w/ level design
+        # self.player.render_width, self.player.render_height = level.world_size[0], level.world_size[1]
 
+        # Set the plane shift to center the camera on the player's starting position
         self.plane_shift = self.adjust_start_planeshift(level.start_pos, level.world_size)
         print(f'plane shift: {self.plane_shift}')
         # self.plane_shift = (0, 0)
@@ -176,12 +173,12 @@ class Clear_Spaces(set):
         super(Clear_Spaces, self).__init__()
         self.game = game
 
-    def add_pos(self, pos) -> None:
+    def add_pos(self, pos) -> bool:
         try:
             self.game.render_image.get_at(pos)
         except:
             print('failed to add position for clearing')
-            return
+            return True
         self.add(pos)
 
 

@@ -53,7 +53,6 @@ class Terrain_Manager:
         self.matrix = Matrix(width=world_size[0], height=world_size[1])
         self.quadtree = Quadtree(world_size[0], world_size[1])
         self.ground = ground_level
-        print(self.ground)
         self.blocks.clear()
         self.all_blocks.clear()
         self.inactive_blocks.clear()
@@ -165,7 +164,9 @@ class Terrain_Manager:
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = -1
-        self.game.spaces_to_clear.add_pos(block.position)  # Slower with more particles updating
+        if self.game.spaces_to_clear.add_pos(block.position):
+            block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
+            block.grounded_timer = 9999
         block.position = next_pos
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return False

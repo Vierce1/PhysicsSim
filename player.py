@@ -76,7 +76,7 @@ class Player:
             mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
                                             self.screen_width, self.render_width,
                                             self.screen_height, self.render_height)
-            self.explode(location=mouse_pos, destroy_radius=6, force_radius=20, force=10)
+            self.explode(location=mouse_pos, destroy_radius=6, force_radius=20, force=3)
 
         for event in events:
             if event.type == pg.MOUSEBUTTONDOWN and self.button_timer > self.button_cooldown:
