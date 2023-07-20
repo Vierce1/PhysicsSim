@@ -113,37 +113,18 @@ class Game:
 
 
 
-    async def main_upate(self, level: Level, timer: int, events: list[pg.event.Event], loop):
-        # if not self.physics_task or self.physics_task.done():
-        print("\t\tmain loop start")
-        if not self.physics_processing:
-            print('\t\t\tcreating physics task')
-            asyncio.create_task(self.update_physics())
-
-        t = loop.run_until_complete(self.update(level,timer,events))
-
-        # asyncio.create_task(self.update(level, timer, events))
-
-
-
-
-
 
     def update_physics(self):
-        print('\t\t\t\tupdating physics')
         self.physics_processing = True
-        # self.terrain_manager.update()
         asyncio.run(self.terrain_manager.update())
-        # task = await self.terrain_manager.update()
         self.physics_processing = False
-        print('\t\t\t\t\tdone')
 
 
-    async def update(self, level: Level, timer: int, events: list[pg.event.Event]):
+    def update(self, level: Level, timer: int, events: list[pg.event.Event]):
         # self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
         # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
         # Update now blank spaces with the backdrop
-        [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in self.spaces_to_clear]
+        [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in set(self.spaces_to_clear)]
         #TODO: Draw black/tiles if position is outside the bounds of the render image
         self.spaces_to_clear.clear()
 

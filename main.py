@@ -12,12 +12,14 @@ from Blocks import terrain_gen, terrain_manager
 import gc
 from threading import Thread
 
+from multiprocessing.pool import ThreadPool as tp
+
 
 
 async def main():
     pg.init()
     window_size = [1920, 1080]  # [2560, 1440]
-    display_resolution = [640, 360] # [1280, 720]  # [2560, 1440] # [640, 360]
+    display_resolution = [2560, 1440]  # [1280, 720]  # [2560, 1440] # [640, 360]
     flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
     screen = pg.display.set_mode(window_size)
     gc.disable()
@@ -34,7 +36,7 @@ async def main():
     pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.KEYUP]) # limit allowed events we have to check for every frame
 
 
-    loop = asyncio.get_event_loop()
+
     print('\n\nGame Loaded')
     while game_running:
         clock.tick(30)  # Limit to 30fps. This is the most consistent method and don't see drops when limiting
@@ -52,14 +54,11 @@ async def main():
 
 
         if not game.physics_processing:
-            print('\t\t\tcreating physics task')
+            print('\t\t\tcreating physics thread')
             Thread(target=game.update_physics, args=()).start()
 
+        game.update(level=level, timer=timer, events=events)
 
-        # loop = asyncio.new_event_loop()
-        await game.update(level=level, timer=timer, events=events)
-
-        # await game.main_upate(level=level, timer=timer, events=events)
 
     pg.quit()
 

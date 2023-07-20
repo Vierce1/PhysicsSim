@@ -7,7 +7,9 @@ import sys
 import random
 from collections import defaultdict
 import multiprocessing.dummy as mp
-import threading
+from multiprocessing import Pool
+from threading import Thread
+import asyncio
 
 
 display_res = []
@@ -48,8 +50,6 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
-        self.count = 0
-        self.physic_task_running = False
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -70,39 +70,41 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        # if not self.processing_blocks:
-        #     print(f'Begin processing....')
-        #     self.processing_blocks = True
-            # for block in self.blocks:
-            #     self.count = len(self.blocks)
-            #     thread = threading.Thread(target=lambda: self.update_blocks(block))
-            #     thread.start()
+        # # split blocks into groups max count = 10000
+        # block_chunks = []
+        # step = 1000
+        # block_list = list(self.blocks)
+        # for i in range(0, len(block_list), step):
+        #     block_chunks.append(set(block_list[i:i + step]))
+        # for chunk in block_chunks:
+        #     Thread(target=self.update_block_chunk, args=(chunk,)).start()
+            # thread.start()
             # pool = mp.Pool(4)
             # self.block_updates = pool.map(self.update_blocks, self.blocks)
             # pool.close()
             # pool.join()
 
-        # print(f'count:  {self.count}')
-        # if self.count == 0:
-        # if not self.physic_task_running:
-        #     # self.count = len(self.blocks)
-        #     self.physic_task_running = True
-        # print(f'Begin processing....')
-        for block in self.blocks:
+        for block in set(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block=block)
 
 
-    # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
-    # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
+        # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
+        # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
 
-    # if self.count <= 0:
-    #     self.processing_blocks = False
-        self.inactive_blocks.update({b for b in self.blocks if not b.collision_detection})
+        self.inactive_blocks.update({b for b in set(self.blocks) if not b.collision_detection})
         # self.blocks = self.inactive_blocks.difference(coll_blocks)
-        self.blocks = {b for b in self.blocks if b.collision_detection}
+        self.blocks = {b for b in set(self.blocks) if b.collision_detection}
         self.end_frame_unground()
-        # self.physic_task_running = False
+
         # print(len(self.blocks))
+
+
+    # def update_block_chunk(self, block_chunk: set[Block]):
+    #     for block in block_chunk:
+    #         asyncio.run(self.update_blocks(block=block))
+
+
+
 
 
 
@@ -170,7 +172,6 @@ class Terrain_Manager:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
 
         self.render_image.set_at(block.position, block.type.color)
-        self.count -=1
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
@@ -254,7 +255,8 @@ class Terrain_Manager:
         for block in unground_frame_blocks:
             block.grounded_timer = 0
             self.blocks.add(block)
-            self.inactive_blocks.remove(block)
+            if block in self.inactive_blocks:
+                self.inactive_blocks.remove(block)
             next_frame_ungrounds.add(block)
         # if len(unground_frame_blocks) > 0:
         #     print(f'unground this frame block count: {len(unground_frame_blocks)}')
