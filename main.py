@@ -53,7 +53,6 @@ async def main():
 
         if not game.physics_processing:
             print('\t\t\tcreating physics task')
-            # task = asyncio.create_task(game.update_physics())
             Thread(target=game.update_physics, args=()).start()
 
 
