@@ -6,6 +6,7 @@ import math
 import sys
 import random
 from collections import defaultdict
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 display_res = []
@@ -66,10 +67,10 @@ class Terrain_Manager:
 
 
     def update(self) -> None:
-        # if not self.booly:
+        pool = ThreadPool(8)
         for block in self.blocks:
             self.update_blocks(block=block, render_surface=self.render_image)
-            # self.booly = True
+
 
         # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
         # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
