@@ -144,14 +144,14 @@ class Terrain_Manager:
         if block.vert_velocity > 0:
             return (0,0)
         under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
-        under_block = self.all_blocks[under_block_id]
-        if under_block.type.name == 'water':  # more than 1 deep. try to spread out. Do it all in 1 frame to sim water
-            while under_block_id != -1:
-                block.position = (block.position[0] + dir, block.position[1])
-                under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
-                under_block = self.all_blocks[under_block_id]
+        side_block_id = self.matrix[(block.position[0] + dir, block.position[1])]
+        while under_block_id != -1 and side_block_id == -1:
+            #  more than 1 deep. try to spread out. Do it all in 1 frame to sim water
+            block.position = (block.position[0] + dir, block.position[1])
+            under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
+            side_block_id = self.matrix[(block.position[0] + dir, block.position[1])]
         # Found a spot where there isn't water beneath
-        block.position = (block.position[0], block.position[1] + 1)
+        block.position = (block.position[0] + dir, block.position[1] + 1)
         return (0, 0)
 
         # if self.matrix[(block.position[0] + dir, block.position[1])] == -1:  # EMPTY:
