@@ -125,13 +125,40 @@ class Terrain_Manager:
 
 
 #TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
-    def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
+    def check_slide(self, block) -> (int, int):  # int -1 for slide left, 1 slide right, 0 no slide
+        if block.type.name == 'sand':
+            return self.solid_slide(block)
+        elif block.type.name == 'water':
+            return self.water_slide(block)
+
+    def solid_slide(self, block) -> (int, int):
         dir = 1 if random.random() < 0.5 else -1
         if self.matrix[(block.position[0] + dir, block.position[1] + 1)] == -1:  # EMPTY:
-            return dir
+            return (dir, 1)
         elif self.matrix[(block.position[0] - dir, block.position[1] + 1)] == -1:  # EMPTY:
-            return -dir
-        return 0
+            return (-dir, 1)
+        return (0,0)
+
+    def water_slide(self, block) -> (int, int): # int -1 for slide left, 1 slide right, 0 no slide
+        dir = 1 if random.random() < 0.5 else -1
+        if block.vert_velocity > 0:
+            return (0,0)
+        under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
+        under_block = self.all_blocks[under_block_id]
+        if under_block.type.name == 'water':  # more than 1 deep. try to spread out. Do it all in 1 frame to sim water
+            while under_block_id != -1:
+                block.position = (block.position[0] + dir, block.position[1])
+                under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
+                under_block = self.all_blocks[under_block_id]
+        # Found a spot where there isn't water beneath
+        block.position = (block.position[0], block.position[1] + 1)
+        return (0, 0)
+
+        # if self.matrix[(block.position[0] + dir, block.position[1])] == -1:  # EMPTY:
+        #     return (dir, 0)
+        # elif self.matrix[(block.position[0] - dir, block.position[1])] == -1:  # EMPTY:
+        #     return (-dir, 0)
+        # return (0,0)
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
         if self.matrix[(position[0] + direction[0], position[1])] != -1 \
@@ -186,7 +213,7 @@ class Terrain_Manager:
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
             slide = self.check_slide(block)
-            if slide != 0:
+            if slide != (0,0):
                 self.slide(block, slide)
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
@@ -215,11 +242,11 @@ class Terrain_Manager:
 
 
 
-    def slide(self, block: Block, slide: int) -> None:
-        block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
+    def slide(self, block: Block, slide: (int, int)) -> None:
+        block.horiz_velocity = slide[0] * slide_factor  # don't add velocity. Don't need it and it causes issues
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
         self.game.spaces_to_clear.add_pos(block.position)  # Slower with more particles updating
-        block.position = (block.position[0] + slide, block.position[1])
+        block.position = (block.position[0] + slide[0], block.position[1] + slide[0])
         self.matrix[block.position[0], block.position[1]] = block.id
         return
 

@@ -2,6 +2,7 @@ SAND = 0
 ROCK = 1
 DIRT = 2
 STATIC_SAND = 3
+WATER = 4
 
 
 class Block_Type:
@@ -15,6 +16,7 @@ class Block_Type:
         self.height = 1
         self.start_static = False
 
+
     def get_block_type(self, block_type):
         if block_type == SAND:
             return Sand()
@@ -24,6 +26,8 @@ class Block_Type:
             return Rock()
         elif block_type == DIRT:
             return Dirt()
+        elif block_type == WATER:
+            return Water()
 
 
 class Sand(Block_Type):
@@ -63,3 +67,14 @@ class Dirt(Block_Type):
         self.destroyable = True
         self.color = (70,38,0)
         self.friction = 0.3
+
+
+class Water(Block_Type):
+    def __init__(self):
+        super().__init__()
+        self.name = 'water'
+        self.rigid = False
+        self.destroyable = False
+        self.color = (0,120,255)
+        self.friction = 0.1
+

@@ -19,7 +19,7 @@ from multiprocessing.pool import ThreadPool as tp
 async def main():
     pg.init()
     window_size = [1920, 1080]  # [2560, 1440]
-    display_resolution = [2560, 1440]  # [1280, 720]  # [2560, 1440] # [640, 360]
+    display_resolution = [1280, 720]  # [2560, 1440] # [640, 360]
     flags = FULLSCREEN | DOUBLEBUF  # 5 FPS boost
     screen = pg.display.set_mode(window_size)
     gc.disable()
@@ -28,7 +28,7 @@ async def main():
 
 
     game = Game(window_size=window_size, display_resolution=display_resolution, screen=screen)  # main game functions
-    level = game.setup(level=3)
+    level = game.setup(level=1)
 
     clock = time.Clock()
     timer = 0
