@@ -6,7 +6,8 @@ import math
 import sys
 import random
 from collections import defaultdict
-from multiprocessing.dummy import Pool as ThreadPool
+import multiprocessing.dummy as mp
+import threading
 
 
 display_res = []
@@ -31,6 +32,7 @@ class Matrix(defaultdict):  # defaultdict will create items if try to get a valu
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int, game):
         self.blocks = set()
+        self.processing_blocks = False
         self.inactive_blocks = set()
         self.destroyable_blocks = set()
         self.unground_pos_checks = set()
@@ -46,7 +48,8 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
-        self.booly = False
+        self.count = 0
+        self.physic_task_running = False
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -66,18 +69,39 @@ class Terrain_Manager:
 
 
 
-    def update(self) -> None:
-        pool = ThreadPool(8)
+    async def update(self) -> None:
+        # if not self.processing_blocks:
+        #     print(f'Begin processing....')
+        #     self.processing_blocks = True
+            # for block in self.blocks:
+            #     self.count = len(self.blocks)
+            #     thread = threading.Thread(target=lambda: self.update_blocks(block))
+            #     thread.start()
+            # pool = mp.Pool(4)
+            # self.block_updates = pool.map(self.update_blocks, self.blocks)
+            # pool.close()
+            # pool.join()
+
+        # print(f'count:  {self.count}')
+        # if self.count == 0:
+        # if not self.physic_task_running:
+        #     # self.count = len(self.blocks)
+        #     self.physic_task_running = True
+        # print(f'Begin processing....')
         for block in self.blocks:
-            self.update_blocks(block=block, render_surface=self.render_image)
+            await self.update_blocks(block=block)
 
 
-        # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
-        # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
+    # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
+    # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
+
+    # if self.count <= 0:
+    #     self.processing_blocks = False
         self.inactive_blocks.update({b for b in self.blocks if not b.collision_detection})
         # self.blocks = self.inactive_blocks.difference(coll_blocks)
         self.blocks = {b for b in self.blocks if b.collision_detection}
         self.end_frame_unground()
+        # self.physic_task_running = False
         # print(len(self.blocks))
 
 
@@ -118,7 +142,7 @@ class Terrain_Manager:
 
 
     # Particle functions
-    def update_blocks(self, block, render_surface):
+    async def update_blocks(self, block: Block):
         if block.collision_detection:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
@@ -145,7 +169,8 @@ class Terrain_Manager:
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
 
-        render_surface.set_at(block.position, block.type.color)
+        self.render_image.set_at(block.position, block.type.color)
+        self.count -=1
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
