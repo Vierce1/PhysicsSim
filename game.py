@@ -1,3 +1,5 @@
+import asyncio
+
 import pygame as pg
 from pygame import time
 from pygame.locals import *
@@ -32,6 +34,8 @@ class Game:
         self.level: Level = None
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
+        self.physics_processing = False
+        self.physics_task = None
 
 
     def setup(self, level: int) -> Level:
@@ -108,7 +112,34 @@ class Game:
         self.plane_shift = new_plane_shift
 
 
-    def update(self, level: Level, timer: int, events: list[pg.event.Event]):
+
+    async def main_upate(self, level: Level, timer: int, events: list[pg.event.Event], loop):
+        # if not self.physics_task or self.physics_task.done():
+        print("\t\tmain loop start")
+        if not self.physics_processing:
+            print('\t\t\tcreating physics task')
+            asyncio.create_task(self.update_physics())
+
+        t = loop.run_until_complete(self.update(level,timer,events))
+
+        # asyncio.create_task(self.update(level, timer, events))
+
+
+
+
+
+
+    def update_physics(self):
+        print('\t\t\t\tupdating physics')
+        self.physics_processing = True
+        # self.terrain_manager.update()
+        asyncio.run(self.terrain_manager.update())
+        # task = await self.terrain_manager.update()
+        self.physics_processing = False
+        print('\t\t\t\t\tdone')
+
+
+    async def update(self, level: Level, timer: int, events: list[pg.event.Event]):
         # self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
         # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
         # Update now blank spaces with the backdrop
@@ -118,7 +149,7 @@ class Game:
 
         # self.render_image.blit(self.backdrop, (0, 0))
 
-        self.terrain_manager.update()
+
 
         # # visualization
         pg.draw.line(self.render_image, (0, 0, 255), (0, self.terrain_manager.ground),
@@ -163,6 +194,7 @@ class Game:
 
         pg.event.pump()
         pg.display.flip()  # updates the entire surface
+
         # pg.display.update(draw_area)  # With dynamic world size, this is 10% faster
         # Actually I don't think this makes sense with current method. I want to update the entire display window
 
