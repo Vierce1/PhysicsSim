@@ -154,11 +154,6 @@ class Terrain_Manager:
         block.position = (block.position[0] + dir, block.position[1] + 1)
         return (0, 0)
 
-        # if self.matrix[(block.position[0] + dir, block.position[1])] == -1:  # EMPTY:
-        #     return (dir, 0)
-        # elif self.matrix[(block.position[0] - dir, block.position[1])] == -1:  # EMPTY:
-        #     return (-dir, 0)
-        # return (0,0)
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
         if self.matrix[(position[0] + direction[0], position[1])] != -1 \
@@ -249,6 +244,8 @@ class Terrain_Manager:
         block.position = (block.position[0] + slide[0], block.position[1] + slide[0])
         self.matrix[block.position[0], block.position[1]] = block.id
         return
+
+    # def flow(self, block: Block, flow: (int, int))-> None:
 
 
     def destroy_block(self, block: Block) -> None:
