@@ -245,7 +245,8 @@ class Terrain_Manager:
         self.matrix[block.position[0], block.position[1]] = block.id
         return
 
-    # def flow(self, block: Block, flow: (int, int))-> None:
+    def flow(self, block: Block, flow: (int, int))-> None:
+
 
 
     def destroy_block(self, block: Block) -> None:
