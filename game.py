@@ -18,10 +18,10 @@ class Game:
     def __init__(self, window_size: list[int], display_resolution: list[int], screen: pg.Surface):
         self.display_resolution = display_resolution
         self.window_size = window_size
-        self.screen = screen
+        self.screen = Pickle(screen)
         self.delay = .033  # 1000/85  # slowing the delay = more things happening each frame... which hurts fps
         gc.disable()
-        self.render_image = pg.Surface((0, 0))  # for drawing world size + blit. Will be resized for the level
+        self.render_image = Pickle(pg.Surface((0, 0)))  # for drawing world size + blit. Will be resized for the level
         self.spaces_to_clear = Clear_Spaces(self)  # set()
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
@@ -32,8 +32,8 @@ class Game:
                                     # Updates as player moves.
         self.render_scale = (self.window_size[0], self.window_size[1])
         self.level: Level = None
-        self.backdrop = pg.image.load('background_1.png')
-        self.backdrop_surface = pg.Surface((0,0))
+        self.backdrop = Pickle(pg.image.load('background_1.png'))
+        self.backdrop_surface = Pickle(pg.Surface((0,0)))
         self.physics_processing = False
         self.physics_task = None
 
@@ -42,8 +42,8 @@ class Game:
         # Level reading and creation
         level = Level_Getter().get_level(level=level)
         self.level = level
-        self.render_image = pg.Surface(level.world_size)
-        print(f'world size: {self.render_image.get_size()}')
+        self.render_image = Pickle(pg.Surface(level.world_size))
+        # print(f'world size: {self.render_image.get_size()}')
         # self.render_scale = (self.window_size[0] / level.world_size[0], self.window_size[1] / level.world_size[1])
         self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,
                                    ground_level=level.ground)
@@ -74,11 +74,12 @@ class Game:
         self.terrain_manager.fill_matrix()
 
         # Backdrop sizing... revisit later
-        self.backdrop.convert(self.render_image)
-        self.backdrop_surface = pg.Surface(self.backdrop.get_size())
-        self.backdrop_surface.blit(self.backdrop, (0,0))
-        self.backdrop_surface = pg.transform.scale(self.backdrop_surface, (level.world_size[0], level.world_size[1]))
-        self.render_image.blit(self.backdrop_surface, (0, 0))
+        self.backdrop.surface.convert(self.render_image.surface)
+        self.backdrop_surface = Pickle(pg.Surface(self.backdrop.surface.get_size()))
+        self.backdrop_surface.surface.blit(self.backdrop.surface, (0,0))
+        self.backdrop_surface = Pickle(pg.transform.scale(self.backdrop_surface.surface,
+                                                   (level.world_size[0], level.world_size[1])))
+        self.render_image.surface.blit(self.backdrop_surface.surface, (0, 0))
         return level
 
 
@@ -124,7 +125,8 @@ class Game:
         # self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
         # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
         # Update now blank spaces with the backdrop
-        [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in set(self.spaces_to_clear)]
+        [self.render_image.surface.set_at(pos, self.backdrop_surface.surface.get_at(pos))
+         for pos in set(self.spaces_to_clear)]
         #TODO: Draw black/tiles if position is outside the bounds of the render image
         self.spaces_to_clear.clear()
 
@@ -133,7 +135,7 @@ class Game:
 
 
         # # visualization
-        pg.draw.line(self.render_image, (0, 0, 255), (0, self.terrain_manager.ground),
+        pg.draw.line(self.render_image.surface, (0, 0, 255), (0, self.terrain_manager.ground),
                      (2400, self.terrain_manager.ground))  # Ground
         # for q in self.quadtree_nodes:
         #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
@@ -155,7 +157,7 @@ class Game:
         self.player.update(events, self.render_image)
 
         # Blitting
-        self.render_image.convert()  # optimize image after drawing on it
+        self.render_image.surface.convert()  # optimize image after drawing on it
     #TODO: Could remove the render_image surface and render everything on the cropped_surface first
     # That would require rendering the edges of the screen as player moves
         # Just blit a 720p rect of the render image onto a new surface and then do scaling up to window size
@@ -163,10 +165,10 @@ class Game:
                                 self.display_resolution[0], self.display_resolution[1])
         cropped_surface = pg.Surface((self.display_resolution[0], self.display_resolution[1]))
         # blit onto the cropped size surface and scale it up to the window size
-        cropped_surface.blit(self.render_image, (0, 0), draw_area)
+        cropped_surface.blit(self.render_image.surface, (0, 0), draw_area)
         resized_image = pg.transform.scale(cropped_surface, (self.render_scale[0], self.render_scale[1]))
         # blit the scaled image onto the screen display.
-        self.screen.blit(resized_image, (0,0))
+        self.screen.surface.blit(resized_image, (0,0))
         # pg.Surface.blit(self.screen, self.render_image, (0, 0), draw_area)
 
 
@@ -196,3 +198,18 @@ class Clear_Spaces(set):
 
 
 
+class Pickle:
+    def __init__(self, surface):
+        self.surface = surface
+        self.name = "Pickle"
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        surface = state.pop("surface")
+        state["surface_string"] = (pg.image.tostring(surface, "RGB"), surface.get_size())
+        return state
+
+    def __setstate__(self, state):
+        surface_string, size = state.pop("surface_string")
+        state["surface"] = pg.image.fromstring(surface_string, size, "RGB")
+        self.__dict__.update(state)
