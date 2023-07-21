@@ -16,7 +16,7 @@ from multiprocessing.pool import ThreadPool as tp
 
 
 
-async def main():
+def main():
     pg.init()
     window_size = [1920, 1080]  # [2560, 1440]
     display_resolution = [1280, 720]  # [2560, 1440] # [640, 360]
@@ -56,6 +56,7 @@ async def main():
         if not game.physics_processing:
             print('\t\t\tcreating physics thread')
             Thread(target=game.update_physics, args=()).start()
+            # asyncio.run(game.update_physics())
 
         game.update(level=level, timer=timer, events=events)
 
@@ -63,4 +64,5 @@ async def main():
     pg.quit()
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    main()
