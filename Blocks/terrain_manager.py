@@ -168,6 +168,7 @@ class Terrain_Manager:
                 collided = self.move(block, next_x, next_y)
                 if collided:
                     break
+                # TODO: Is this correct with dynamic velocity?
                 if total_x != 0:
                     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
                 if total_y != 0:
