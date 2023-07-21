@@ -13,7 +13,7 @@ import asyncio
 
 
 display_res = []
-frames_til_grounded = 600  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 400  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # EMPTY = 0
 # OCCUPIED = 1
@@ -103,34 +103,36 @@ class Terrain_Manager:
 
 
 #TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
-    def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
-        if block.type.name == 'sand':
-            return self.solid_slide(block)
-        elif block.type.name == 'water':
-            return self.water_slide(block)
+    def check_slide(self, x: int, y: int, type_name: str, block_id: int) -> int:
+        # int -1 for slide left, 1 slide right, 0 no slide
+        if type_name == 'sand':
+            return self.solid_slide(x, y, block_id)
+        elif type_name == 'water':
+            return self.water_slide(x, y, block_id)
 
-    def solid_slide(self, block) -> int:
-        # dir = 1 if random.random() < 0.5 else -1
-        dir = 1 if self.random_bits[block.id] == 1 else -1  # Improvement?
-        if self.matrix[(block.position[0] + dir, block.position[1] + 1)] == -1:  # EMPTY:
+    def solid_slide(self,  x: int, y: int, block_id: int) -> int:
+        dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
+        if self.matrix[(x + dir, y + 1)] == -1:  # EMPTY:
             return dir
-        elif self.matrix[(block.position[0] - dir, block.position[1] + 1)] == -1:  # EMPTY:
+        elif self.matrix[(x - dir, y + 1)] == -1:  # EMPTY:
             return -dir
         return 0
 
-    def water_slide(self, block) -> int:
+    def water_slide(self, x: int, y: int, block_id: int) -> int:
         dir = 1 if random.random() < 0.5 else -1
-        if block.vert_velocity > 0:
-            return 0
-        under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
-        side_block_id = self.matrix[(block.position[0] + dir, block.position[1])]
-        while under_block_id != -1 and side_block_id == -1:
-            #  more than 1 deep. try to spread out. Do it all in 1 frame to sim water
-            block.position = (block.position[0] + dir, block.position[1])
-            under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
-            side_block_id = self.matrix[(block.position[0] + dir, block.position[1])]
+        under_block_id = self.matrix[x, y + 1]
+        side_block_id = self.matrix[x + dir, y]
+        # side_count = dir
+        # while under_block_id != -1 and side_block_id == -1:
+        #     #  more than 1 deep. try to spread out. Do it all in 1 frame to sim water
+        #     side_count += dir
+        #     two_under_block_id = self.matrix[x + side_count, y + 2]
+        #     side_block_id = self.matrix[x + side_count, y]
         # Found a spot where there isn't water beneath
-        block.position = (block.position[0] + dir, block.position[1] + 1)
+        if under_block_id != -1 and side_block_id == -1:
+            return dir
+        elif under_block_id != -1 and self.matrix[x - dir, y + 1] == -1:
+            return dir
         return 0
 
 
@@ -195,9 +197,16 @@ class Terrain_Manager:
         if collision:  # collided. Check if it should slide to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
-            slide = self.check_slide(block)
+            slide = self.check_slide(x=block.position[0], y=block.position[1], type_name=block.type.name,
+                                     block_id=block.id)
             if slide != 0:
-                self.slide(block, slide)
+                # self.slide(block, slide)
+                block.horiz_velocity = slide * slide_factor  # * self.game.physics_lag_frames
+                self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
+                self.game.spaces_to_clear.add_pos(block.position)
+                new_y = 0 if block.type.name == 'water' else 1
+                block.position = (block.position[0] + slide, block.position[1] + new_y)
+                self.matrix[block.position[0], block.position[1]] = block.id
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
         self.matrix[block.position[0], block.position[1]] = -1
@@ -237,16 +246,16 @@ class Terrain_Manager:
         return int(x), int(y)
 
 
-
-    def slide(self, block: Block, slide: int) -> None:
-                                                    # * self.game.physics_lag_frames
-        block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
-        self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
-        self.game.spaces_to_clear.add_pos(block.position)
-        block.position = (block.position[0] + slide, block.position[1] + 1)
-        self.matrix[block.position[0], block.position[1]] = block.id
-        return
-
+    #
+    # def slide(self, block: Block, slide: int) -> None:
+    #                                                 # * self.game.physics_lag_frames
+    #     block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
+    #     self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
+    #     self.game.spaces_to_clear.add_pos(block.position)
+    #     block.position = (block.position[0] + slide, block.position[1] + 1)
+    #     self.matrix[block.position[0], block.position[1]] = block.id
+    #     return
+    #
 
     # def flow(self, block: Block, flow: (int, int))-> None:
 
