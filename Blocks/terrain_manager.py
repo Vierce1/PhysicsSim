@@ -50,6 +50,7 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
+        self.pool = mp.Pool(4)
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -69,27 +70,9 @@ class Terrain_Manager:
 
 
 
+
     async def update(self) -> None:
-        # # split blocks into groups max count = 10000
-        # block_chunks = []
-        # step = 1000
-        # block_list = list(self.blocks)
-        # for i in range(0, len(block_list), step):
-        #     block_chunks.append(set(block_list[i:i + step]))
-        # for chunk in block_chunks:
-        #     Thread(target=self.update_block_chunk, args=(chunk,)).start()
-            # thread.start()
-            # pool = mp.Pool(4)
-            # self.block_updates = pool.map(self.update_blocks, self.blocks)
-            # pool.close()
-            # pool.join()
-
-        for block in set(self.blocks):  # use a copy of the set for safe multi threading
-            await self.update_blocks(block=block)
-
-
-        # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
-        # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
+        self.pool.map(self.update_blocks, self.blocks)
 
         self.inactive_blocks.update({b for b in set(self.blocks) if not b.collision_detection})
         # self.blocks = self.inactive_blocks.difference(coll_blocks)
@@ -99,9 +82,6 @@ class Terrain_Manager:
         # print(len(self.blocks))
 
 
-    # def update_block_chunk(self, block_chunk: set[Block]):
-    #     for block in block_chunk:
-    #         asyncio.run(self.update_blocks(block=block))
 
 
 
@@ -166,7 +146,7 @@ class Terrain_Manager:
 
 
     # Particle functions
-    async def update_blocks(self, block: Block):
+    def update_blocks(self, block: Block):
         if block.collision_detection:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False

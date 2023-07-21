@@ -11,8 +11,7 @@ from Blocks.block_type import *
 from Blocks import terrain_gen, terrain_manager
 import gc
 from threading import Thread
-
-from multiprocessing.pool import ThreadPool as tp
+from multiprocessing import Pool
 
 
 
@@ -37,6 +36,7 @@ async def main():
 
 
 
+    # pool = Pool()
     print('\n\nGame Loaded')
     while game_running:
         clock.tick(30)  # Limit to 30fps. This is the most consistent method and don't see drops when limiting
@@ -56,6 +56,7 @@ async def main():
         if not game.physics_processing:
             print('\t\t\tcreating physics thread')
             Thread(target=game.update_physics, args=()).start()
+
 
         game.update(level=level, timer=timer, events=events)
 
