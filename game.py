@@ -22,6 +22,7 @@ class Game:
         self.delay = .033  # 1000/85  # slowing the delay = more things happening each frame... which hurts fps
         gc.disable()
         self.render_image = pg.Surface((0, 0))  # for drawing world size + blit. Will be resized for the level
+        self.render_dict = []  #  tuples for position:color to draw
         self.spaces_to_clear = Clear_Spaces(self)  # set()
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
@@ -35,7 +36,6 @@ class Game:
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
         self.physics_processing = False
-        self.physics_task = None
 
 
     def setup(self, level: int) -> Level:
@@ -128,7 +128,9 @@ class Game:
         #TODO: Draw black/tiles if position is outside the bounds of the render image
         self.spaces_to_clear.clear()
 
-        # self.render_image.blit(self.backdrop, (0, 0))
+
+        [self.render_image.set_at(pos, color) for pos, color in self.render_dict]
+        self.render_dict.clear()
 
 
 

@@ -84,9 +84,9 @@ class Terrain_Manager:
 
 # Physics
     def check_pos_collide(self, position: (int, int)) -> bool:
-        if position[1] == self.ground:
-            return True
-        return self.matrix[position] != -1
+        # if position[1] == self.ground:
+        #     return True
+        return self.matrix[position] != -1 or position[1] == self.ground
 
 
 #TODO: Remove and change player to use check_pos_collide
@@ -97,25 +97,25 @@ class Terrain_Manager:
 
 
 #TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
-    def check_slide(self, block) -> (int, int):  # int -1 for slide left, 1 slide right, 0 no slide
+    def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
         if block.type.name == 'sand':
             return self.solid_slide(block)
         elif block.type.name == 'water':
             return self.water_slide(block)
 
-    def solid_slide(self, block) -> (int, int):  # is returning tuple slow?
+    def solid_slide(self, block) -> int:
         # dir = 1 if random.random() < 0.5 else -1
         dir = 1 if self.random_bits[block.id] == 1 else -1  # Improvement?
         if self.matrix[(block.position[0] + dir, block.position[1] + 1)] == -1:  # EMPTY:
-            return (dir, 1)
+            return dir
         elif self.matrix[(block.position[0] - dir, block.position[1] + 1)] == -1:  # EMPTY:
-            return (-dir, 1)
-        return (0,0)
+            return -dir
+        return 0
 
-    def water_slide(self, block) -> (int, int): # int -1 for slide left, 1 slide right, 0 no slide
+    def water_slide(self, block) -> int:
         dir = 1 if random.random() < 0.5 else -1
         if block.vert_velocity > 0:
-            return (0,0)
+            return 0
         under_block_id = self.matrix[(block.position[0]), block.position[1] + 1]
         side_block_id = self.matrix[(block.position[0] + dir, block.position[1])]
         while under_block_id != -1 and side_block_id == -1:
@@ -125,7 +125,7 @@ class Terrain_Manager:
             side_block_id = self.matrix[(block.position[0] + dir, block.position[1])]
         # Found a spot where there isn't water beneath
         block.position = (block.position[0] + dir, block.position[1] + 1)
-        return (0, 0)
+        return 0
 
 
     def check_slope(self, position: (int, int), direction: int) -> bool:
@@ -163,14 +163,14 @@ class Terrain_Manager:
                 total_x -= total_x / abs(total_x) if total_x != 0 else 0  # decrement by 1 in correct direction
                 total_y -= total_y / abs(total_y) if total_y != 0 else 0  # but stop if it gets to zero
 
-
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
 
         elif block in self.blocks:
             self.blocks.remove(block)
 
-        self.render_image.set_at(block.position, block.type.color)
+        # self.render_image.set_at(block.position, block.type.color)
+        self.game.render_dict.append((block.position, block.type.color))
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
@@ -185,7 +185,7 @@ class Terrain_Manager:
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
             slide = self.check_slide(block)
-            if slide != (0,0):
+            if slide != 0:
                 self.slide(block, slide)
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
@@ -216,13 +216,14 @@ class Terrain_Manager:
 
 
 
-    def slide(self, block: Block, slide: (int, int)) -> None:
-        block.horiz_velocity = slide[0] * slide_factor  # don't add velocity. Don't need it and it causes issues
+    def slide(self, block: Block, slide: int) -> None:
+        block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
         self.game.spaces_to_clear.add_pos(block.position)  # Slower with more particles updating
-        block.position = (block.position[0] + slide[0], block.position[1] + slide[0])
+        block.position = (block.position[0] + slide, block.position[1] + 1)
         self.matrix[block.position[0], block.position[1]] = block.id
         return
+
 
     # def flow(self, block: Block, flow: (int, int))-> None:
 
