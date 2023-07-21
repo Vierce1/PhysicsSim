@@ -1,3 +1,4 @@
+import multiprocess_physics
 from Blocks.block import Block
 import Blocks.block_type as block_type
 from quadtree import Quadtree_Node, Quadtree
@@ -6,10 +7,10 @@ import math
 import sys
 import random
 from collections import defaultdict
-import multiprocessing.dummy as mp
 from multiprocessing import Pool
 from threading import Thread
 import asyncio
+from multiprocess_physics import MP_Physics
 
 
 display_res = []
@@ -50,7 +51,9 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
-        self.pool = mp.Pool()
+        self.mpp = MP_Physics()
+        self.mpp.tm = self
+        self.mpp.blocks = self.blocks
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -72,8 +75,11 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        self.pool.map(self.update_blocks, self.blocks)
-
+        await self.mpp.update(self.blocks)
+        # pool = Pool(4)
+        # pool.map(self.update_blocks, (self, set(self.blocks)))
+        # pool.close()
+        # pool.join()
         self.end_frame_unground()
         # print(len(self.blocks))
 

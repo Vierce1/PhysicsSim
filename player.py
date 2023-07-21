@@ -41,7 +41,7 @@ class Player:
 
 
     def fall(self) -> bool:
-        grounded = self.terrain_manager.check_under((self.position[0], self.rect.bottom + 1))
+        grounded = self.terrain_manager.mpp.check_under((self.position[0], self.rect.bottom + 1))
         if not grounded:
             self.game.spaces_to_clear.add_pos(self.position)
             self.position = (self.position[0], self.position[1] + 1)
@@ -102,7 +102,7 @@ class Player:
     def move(self, direction, render_image):
         change = direction
         # Check if need to go up slope first
-        if self.terrain_manager.check_slope(self.position, direction):
+        if self.terrain_manager.mpp.check_slope(self.position, direction):
             change = (change[0], change[1] - 1)
         self.game.spaces_to_clear.add_pos(self.position)  # Not working?
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
@@ -128,7 +128,7 @@ class Player:
         blocks = self.terrain_manager.destroyable_blocks
         # don't bother inserting location. We just want to get the neighboring objects
         # Now that I save the block ID in the matrix don't really need quadtree... see explode
-        quadtree_node = self.terrain_manager.insert_object_quadtree(None, location[0], location[1])
+        quadtree_node = self.terrain_manager.mpp.insert_object_quadtree(None, location[0], location[1])
         if not quadtree_node or not quadtree_node.objects:
             return
         in_range_blocks = quadtree_node.objects
@@ -140,7 +140,7 @@ class Player:
                 continue
             # get distance
             if help.get_blocks_in_dist(pos=location, block_list={block}, distance=self.destroy_distance):
-                self.terrain_manager.destroy_block(block)
+                self.terrain_manager.mpp.destroy_block(block)
 
 
     def explode(self, location: (int, int), destroy_radius: int, force_radius: int, force: int):
@@ -156,14 +156,14 @@ class Player:
                     block = self.terrain_manager.all_blocks[id]
                     if location[0] - destroy_radius < x < location[0] + destroy_radius \
                       and location[1] - destroy_radius < y < location[1] + destroy_radius:
-                        self.terrain_manager.destroy_block(block)
+                        self.terrain_manager.mpp.destroy_block(block)
                         continue
 
                     # horiz = -1 if x < location[0] else 1
                     # verti = -1 if y < location[1] else 1
                     horiz = round(location[0] - x / force_radius * force)
                     verti = round(location[1] - y / force_radius * force)
-                    self.terrain_manager.trigger_ungrounding(block)
+                    self.terrain_manager.mpp.trigger_ungrounding(block)
                     block.collision_detection = True
                     block.grounded_timer = 0
                     block.horiz_velocity = horiz

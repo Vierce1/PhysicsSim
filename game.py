@@ -12,6 +12,7 @@ from level import *
 import psutil
 import gc
 import sys
+from multiprocessing import Pool
 
 
 class Game:
@@ -35,7 +36,7 @@ class Game:
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
         self.physics_processing = False
-        self.physics_task = None
+
 
 
     def setup(self, level: int) -> Level:
@@ -116,7 +117,7 @@ class Game:
 
     def update_physics(self):
         self.physics_processing = True
-        self.terrain_manager.update()
+        asyncio.run(self.terrain_manager.update())
         self.physics_processing = False
 
 
@@ -133,8 +134,8 @@ class Game:
 
 
         # # visualization
-        pg.draw.line(self.render_image, (0, 0, 255), (0, self.terrain_manager.ground),
-                     (2400, self.terrain_manager.ground))  # Ground
+        # pg.draw.line(self.render_image, (0, 0, 255), (0, self.terrain_manager.ground),
+        #              (2400, self.terrain_manager.ground))  # Ground
         # for q in self.quadtree_nodes:
         #     color = (255, 255, 255) # if len(q.objects) == 0 else (255, 0, 0)
         #     pg.draw.line(self.render_image, color, (q.x, q.y), (q.x + q.width, q.y))
@@ -152,7 +153,7 @@ class Game:
                 self.terrain_manager.blocks.update(spawn_blocks)
 
 
-        self.player.update(events, self.render_image)
+        # self.player.update(events, self.render_image)
 
         # Blitting
         self.render_image.convert()  # optimize image after drawing on it

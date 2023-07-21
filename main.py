@@ -55,8 +55,8 @@ async def main():
 
         if not game.physics_processing:
             print('\t\t\tcreating physics thread')
-            # Thread(target=game.update_physics, args=()).start()
-            game.update_physics()
+            Thread(target=game.update_physics, args=()).start()
+            # game.update_physics()
 
 
         game.update(level=level, timer=timer, events=events)
@@ -64,5 +64,5 @@ async def main():
 
     pg.quit()
 
-
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())
