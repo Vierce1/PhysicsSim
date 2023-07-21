@@ -71,10 +71,12 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        self.pool.map(self.update_blocks, self.blocks)
+        # self.pool.map(self.update_blocks, self.blocks)
 
-        # for block in set(self.blocks):  # use a copy of the set for safe multi threading
+        for block in set(self.blocks):  # use a copy of the set for safe multi threading
         #     await self.update_blocks(block=block)
+            self.pool.Process(target=self.update_blocks, args=(block,), ctx=mp.get_context())
+
         self.end_frame_unground()
 
         # print(len(self.blocks))
