@@ -73,10 +73,6 @@ class Terrain_Manager:
 
     async def update(self) -> None:
         self.pool.map(self.update_blocks, self.blocks)
-
-
-        # self.blocks = self.inactive_blocks.difference(coll_blocks)
-        self.blocks = {b for b in set(self.blocks) if b.collision_detection}
         self.end_frame_unground()
 
         # print(len(self.blocks))
@@ -151,6 +147,7 @@ class Terrain_Manager:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
+                self.blocks.remove(block)
 
             # update velocities
             if block.vert_velocity < self.terminal_velocity:
@@ -173,7 +170,11 @@ class Terrain_Manager:
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
 
+        elif block in self.blocks:
+            self.blocks.remove(block)
+
         self.render_image.set_at(block.position, block.type.color)
+
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
@@ -196,6 +197,7 @@ class Terrain_Manager:
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
             self.inactive_blocks.add(block)
+            self.blocks.remove(block)
             block.grounded_timer = 9999
         block.position = next_pos
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED

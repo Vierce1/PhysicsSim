@@ -58,6 +58,7 @@ async def main():
             Thread(target=game.update_physics, args=()).start()
 
 
+
         game.update(level=level, timer=timer, events=events)
 
 
