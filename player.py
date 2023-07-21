@@ -71,6 +71,10 @@ class Player:
             pos_change = (pos_change[0], -1 * self.move_speed)
         if keys[pg.K_s]:
             pos_change = (pos_change[0], 1 * self.move_speed)
+        if keys[pg.K_q]:
+            self.position = self.get_rect_pos(self.position, (0, -25))
+            self.game.update_plane_shift((0, 25), self.position)
+            self.vertical_speed = 0
         if keys[pg.K_SPACE] and self.button_timer > self.button_cooldown:
             self.button_timer = 0
             mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,

@@ -24,6 +24,7 @@ class Game:
         self.render_image = pg.Surface((0, 0))  # for drawing world size + blit. Will be resized for the level
         self.render_dict = set()  #  tuples for position:color to draw
         self.spaces_to_clear = Clear_Spaces(self)  # set()
+        self.spaces_to_erase = set()
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
@@ -114,6 +115,31 @@ class Game:
 
 
 
+#     def set_colors(self, clear_spaces: set):
+#         for pos in clear_spaces:
+#             color = self.render_image.get_at(pos)
+#             ghost_colors = []
+#             for c in color:
+#                 new_color = c + 40 if c + 40 <= 255 else 255
+#                 ghost_colors.append(new_color)
+#             # ghost_color = (color[0] + 40, color[1] + 40, color[2] + 40)
+#             self.render_image.set_at(pos, (ghost_colors[0], ghost_colors[1], ghost_colors[2]))
+#         self.spaces_to_erase = clear_spaces
+#
+#     def erase_colors(self, erase_spaces: set):
+#         for pos in erase_spaces:
+#             self.render_image.set_at(pos, self.backdrop_surface.get_at(pos))
+#
+#     def ghost(self, spaces: set):
+#         for pos in spaces:
+#             color = self.render_image.get_at(pos)
+
+    def clear_spaces(self, clear_spaces: set):
+        # check if block has moved into that position
+        for pos in clear_spaces:
+            empty = self.terrain_manager.matrix[pos] == -1
+            if empty:
+                self.render_image.set_at(pos, self.backdrop_surface.get_at(pos))
 
     def update_physics(self):
         self.physics_processing = True
@@ -126,10 +152,12 @@ class Game:
         render_spots = set(self.render_dict)
         self.render_dict.clear()  # clear it immediately. Slower blocks will be drawn next frame.
 
-        # self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
-        # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
         # Update now blank spaces with the backdrop
-        [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in set(self.spaces_to_clear)]
+        # TODO: Weed out spaces that are now occuipied by other blocks
+        self.clear_spaces(set(self.spaces_to_clear))
+        # [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in set(self.spaces_to_clear)]
+        # self.erase_colors(set(self.spaces_to_erase))
+        # self.set_colors(set(self.spaces_to_clear))
         #TODO: Draw black/tiles if position is outside the bounds of the render image
         self.spaces_to_clear.clear()
 

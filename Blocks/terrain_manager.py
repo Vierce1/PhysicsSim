@@ -84,7 +84,7 @@ class Terrain_Manager:
 
 # Physics
     def check_pos_collide(self, x: int, y: int) -> bool:
-        return self.matrix[x,y] != -1 or y == self.ground
+        return self.matrix[x,y] != -1 or y >= self.ground
 
 
 #TODO: Remove and change player to use check_pos_collide
@@ -139,7 +139,7 @@ class Terrain_Manager:
     # Particle functions
     async def update_blocks(self, block: Block):
         if block.collision_detection:
-            if block.grounded_timer >= frames_til_grounded:
+            if block.grounded_timer >= frames_til_grounded:  # * self.game.physics_lag_frames
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
                 self.blocks.remove(block)
@@ -152,15 +152,18 @@ class Terrain_Manager:
                 block.horiz_velocity -= horiz_step
 
             # move through all spaces based on velocity
-            total_x = block.horiz_velocity
-            total_y = block.vert_velocity
+            total_x = block.horiz_velocity * self.game.physics_lag_frames
+            total_y = block.vert_velocity * self.game.physics_lag_frames
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
+                # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
                 collided = self.move(block, next_x, next_y)
                 if collided:
                     break
-                total_x -= total_x / abs(total_x) if total_x != 0 else 0  # decrement by 1 in correct direction
-                total_y -= total_y / abs(total_y) if total_y != 0 else 0  # but stop if it gets to zero
+                if total_x != 0:
+                    total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
+                if total_y != 0:
+                    total_y -= 1 if total_y > 0 else -1
 
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
@@ -168,7 +171,6 @@ class Terrain_Manager:
         elif block in self.blocks:
             self.blocks.remove(block)
 
-        # self.render_image.set_at(block.position, block.type.color)
         self.game.render_dict.add((block.position, block.type.color))
 
 
@@ -205,14 +207,6 @@ class Terrain_Manager:
         # returns a position based on velocity, trimmed down to -1 to +1 in any direction
         x = total_x
         y = total_y
-        if x < 0:
-            x = -1
-        elif x > 0:
-            x = 1
-        if y < 0:
-            y = -1
-        elif y > 0:
-            y = 1
         if self.game.physics_lag_frames > 1:  # physics rendering lagging. Skip some checks
             if total_x > 1:
                 x = min(self.game.physics_lag_frames * x, total_x)
@@ -222,6 +216,15 @@ class Terrain_Manager:
                 y = min(self.game.physics_lag_frames * y, total_y)
             elif total_y < -1:
                 y = max(self.game.physics_lag_frames * y, total_y)
+        else:
+            if x < 0:
+                x = -1
+            elif x > 0:
+                x = 1
+            if y < 0:
+                y = -1
+            elif y > 0:
+                y = 1
         return int(x), int(y)
 
 
@@ -249,13 +252,15 @@ class Terrain_Manager:
 
 
 #TODO: There may be more finetuning to reduce checks on same positions
+# Can I move this to the main thread?
     def trigger_ungrounding(self, block: Block) -> None:
         # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
             for y in range(-1, 1):  # Updated from 2. Theoretically shouldn't need to check down
                 pos = (block.position[0] + x, block.position[1] + y)
                 # add the position to the set to check if there's an ungroundable block at end of sequence
-                if pos not in self.current_unground_chain_checks:  # did we check it already this chain?
+                if pos != block.position and pos not in self.current_unground_chain_checks:
+                    # did we check it already this chain?
                     self.unground_pos_checks.add(pos)
                 self.current_unground_chain_checks.add(pos)
 
