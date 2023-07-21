@@ -95,10 +95,15 @@ class Terrain_Manager:
 
     def chain_fall_check(self, x: int, y: int) -> int:  # , y_vel: int
         for i in range(1, 11):
+            if y + i >= self.ground:
+                return i - 1
             block_id = self.matrix[x, y + i]
+            if block_id != -1 and not self.all_blocks[block_id].collision_detection:
+                return i - 1
             if block_id == -1:
                 continue
-            return self.all_blocks[block_id].chain_fall_counter + i
+            return self.all_blocks[block_id].chain_fall_counter + i - 1
+        return 9
 
 
 
@@ -161,20 +166,19 @@ class Terrain_Manager:
                 block.horiz_velocity -= horiz_step
 
             # move through all spaces based on velocity
-            total_x = block.horiz_velocity * self.game.physics_lag_frames
-            total_y = block.vert_velocity * self.game.physics_lag_frames
+            total_x = block.horiz_velocity #* self.game.physics_lag_frames
+            total_y = block.vert_velocity# * self.game.physics_lag_frames
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
                 collided = self.move(block, next_x, next_y)
                 if collided:
                     break
-                total_x -= next_x
-                total_y -= next_y
-                # if total_x != 0:
-                #     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
-                # if total_y != 0:
-                #     total_y -= 1 if total_y > 0 else -1
+
+                if total_x != 0:
+                    total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
+                if total_y != 0:
+                    total_y -= 1 if total_y > 0 else -1
 
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
@@ -195,11 +199,16 @@ class Terrain_Manager:
         new_x, new_y = block.position[0] + x_step, block.position[1] + y_step
 
         collision = False
-        if block.chain_fall_counter == 0:
+        if block.chain_fall_counter <= 0:
             if block.vert_velocity > 0 and block.horiz_velocity == 0:
                 block.chain_fall_counter = self.chain_fall_check(block.position[0], block.position[1])
+                if block.chain_fall_counter == 0:
+                    collision = True
             else:
                 collision = self.check_pos_collide(new_x, new_y)
+
+        if block.chain_fall_counter > 0:
+            block.chain_fall_counter -= 1
 
         if collision:  # collided. Check if it should slide to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
@@ -225,24 +234,24 @@ class Terrain_Manager:
         # returns a position based on velocity, trimmed down to -1 to +1 in any direction
         x = total_x
         y = total_y
-        if self.game.physics_lag_frames > 1:  # physics rendering lagging. Skip some checks
-            if total_x > 1:
-                x = min(self.game.physics_lag_frames * x, total_x)
-            elif total_x < -1:
-                x = max(self.game.physics_lag_frames * x, total_x)
-            if total_y > 1:
-                y = min(self.game.physics_lag_frames * y, total_y)
-            elif total_y < -1:
-                y = max(self.game.physics_lag_frames * y, total_y)
-        else:
-            if x < 0:
-                x = -1
-            elif x > 0:
-                x = 1
-            if y < 0:
-                y = -1
-            elif y > 0:
-                y = 1
+        # if self.game.physics_lag_frames > 1:  # physics rendering lagging. Skip some checks
+        #     if total_x > 1:
+        #         x = min(self.game.physics_lag_frames * x, total_x)
+        #     elif total_x < -1:
+        #         x = max(self.game.physics_lag_frames * x, total_x)
+        #     if total_y > 1:
+        #         y = min(self.game.physics_lag_frames * y, total_y)
+        #     elif total_y < -1:
+        #         y = max(self.game.physics_lag_frames * y, total_y)
+        # else:
+        if x < 0:
+            x = -1
+        elif x > 0:
+            x = 1
+        if y < 0:
+            y = -1
+        elif y > 0:
+            y = 1
         return int(x), int(y)
 
 
