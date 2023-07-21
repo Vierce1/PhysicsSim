@@ -22,7 +22,7 @@ class Game:
         self.delay = .033  # 1000/85  # slowing the delay = more things happening each frame... which hurts fps
         gc.disable()
         self.render_image = pg.Surface((0, 0))  # for drawing world size + blit. Will be resized for the level
-        self.render_dict = []  #  tuples for position:color to draw
+        self.render_dict = set()  #  tuples for position:color to draw
         self.spaces_to_clear = Clear_Spaces(self)  # set()
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
@@ -36,6 +36,7 @@ class Game:
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
         self.physics_processing = False
+        self.physics_lag_frames = 0  # how many frames behind the GUI the physics rendering is
 
 
     def setup(self, level: int) -> Level:
@@ -121,6 +122,10 @@ class Game:
 
 
     def update(self, level: Level, timer: int, events: list[pg.event.Event]):
+        # Take a copy of the spots to render in case physics rendering is lagging
+        render_spots = set(self.render_dict)
+        self.render_dict.clear()  # clear it immediately. Slower blocks will be drawn next frame.
+
         # self.render_image.fill((0, 0, 0))  # For higher # of particles, this is faster
         # [self.render_image.set_at(pos, (0, 0, 0)) for pos in self.spaces_to_clear]
         # Update now blank spaces with the backdrop
@@ -129,8 +134,7 @@ class Game:
         self.spaces_to_clear.clear()
 
 
-        [self.render_image.set_at(pos, color) for pos, color in self.render_dict]
-        self.render_dict.clear()
+        [self.render_image.set_at(pos, color) for pos, color in render_spots]
 
 
 

@@ -83,10 +83,8 @@ class Terrain_Manager:
 
 
 # Physics
-    def check_pos_collide(self, position: (int, int)) -> bool:
-        # if position[1] == self.ground:
-        #     return True
-        return self.matrix[position] != -1 or position[1] == self.ground
+    def check_pos_collide(self, x: int, y: int) -> bool:
+        return self.matrix[x,y] != -1 or y == self.ground
 
 
 #TODO: Remove and change player to use check_pos_collide
@@ -150,7 +148,8 @@ class Terrain_Manager:
             if block.vert_velocity < self.terminal_velocity:
                 block.vert_velocity += self.gravity
             if block.horiz_velocity != 0:
-                block.horiz_velocity -= int(block.horiz_velocity / abs(block.horiz_velocity))
+                horiz_step = 1 if block.horiz_velocity > 0 else -1
+                block.horiz_velocity -= horiz_step
 
             # move through all spaces based on velocity
             total_x = block.horiz_velocity
@@ -170,7 +169,7 @@ class Terrain_Manager:
             self.blocks.remove(block)
 
         # self.render_image.set_at(block.position, block.type.color)
-        self.game.render_dict.append((block.position, block.type.color))
+        self.game.render_dict.add((block.position, block.type.color))
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
@@ -178,8 +177,9 @@ class Terrain_Manager:
             block.horiz_velocity = 0
             block.vert_velocity = 0
             return True
-        next_pos = (block.position[0] + x_step, block.position[1] + y_step)
-        collision = self.check_pos_collide(next_pos)
+
+        new_x, new_y = block.position[0] + x_step, block.position[1] + y_step
+        collision = self.check_pos_collide(new_x, new_y)
 
         if collision:  # collided. Check if it should slide to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
@@ -194,8 +194,9 @@ class Terrain_Manager:
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
             block.grounded_timer = 9999
             self.inactive_blocks.add(block)
-            self.blocks.remove(block)
-        block.position = next_pos
+            if block in self.blocks:
+                self.blocks.remove(block)
+        block.position = (new_x, new_y)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return False
 
@@ -212,6 +213,15 @@ class Terrain_Manager:
             y = -1
         elif y > 0:
             y = 1
+        if self.game.physics_lag_frames > 1:  # physics rendering lagging. Skip some checks
+            if total_x > 1:
+                x = min(self.game.physics_lag_frames * x, total_x)
+            elif total_x < -1:
+                x = max(self.game.physics_lag_frames * x, total_x)
+            if total_y > 1:
+                y = min(self.game.physics_lag_frames * y, total_y)
+            elif total_y < -1:
+                y = max(self.game.physics_lag_frames * y, total_y)
         return int(x), int(y)
 
 

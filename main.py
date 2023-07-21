@@ -52,11 +52,12 @@ async def main():
                 game_running = False
 
 
-
         if not game.physics_processing:
             print('\t\t\tcreating physics thread')
             Thread(target=game.update_physics, args=()).start()
+            game.physics_lag_frames = 0
 
+        game.physics_lag_frames += 1
         game.update(level=level, timer=timer, events=events)
 
 
