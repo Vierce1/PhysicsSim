@@ -93,11 +93,12 @@ class Terrain_Manager:
             return True
         return self.matrix[(position[0], position[1] + 1)] != -1
 
-    # def chain_fall_check(self, x: int, y: int) -> int:  # , y_vel: int
-    #     for i in range(1, 11):
-    #         block_id = self.matrix[x, y + i]
-    #         if block_id == -1:
-    #             continue
+    def chain_fall_check(self, x: int, y: int) -> int:  # , y_vel: int
+        for i in range(1, 11):
+            block_id = self.matrix[x, y + i]
+            if block_id == -1:
+                continue
+            return self.all_blocks[block_id].chain_fall_counter + i
 
 
 
@@ -168,10 +169,12 @@ class Terrain_Manager:
                 collided = self.move(block, next_x, next_y)
                 if collided:
                     break
-                if total_x != 0:
-                    total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
-                if total_y != 0:
-                    total_y -= 1 if total_y > 0 else -1
+                total_x -= next_x
+                total_y -= next_y
+                # if total_x != 0:
+                #     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
+                # if total_y != 0:
+                #     total_y -= 1 if total_y > 0 else -1
 
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
@@ -182,6 +185,7 @@ class Terrain_Manager:
         self.game.render_dict.add((block.position, block.type.color))
 
 
+#TODO avoid passing the actual block in?
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
         if block.position[1] == self.ground - 1:
             block.horiz_velocity = 0
@@ -189,7 +193,13 @@ class Terrain_Manager:
             return True
 
         new_x, new_y = block.position[0] + x_step, block.position[1] + y_step
-        collision = self.check_pos_collide(new_x, new_y)
+
+        collision = False
+        if block.chain_fall_counter == 0:
+            if block.vert_velocity > 0 and block.horiz_velocity == 0:
+                block.chain_fall_counter = self.chain_fall_check(block.position[0], block.position[1])
+            else:
+                collision = self.check_pos_collide(new_x, new_y)
 
         if collision:  # collided. Check if it should slide to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
