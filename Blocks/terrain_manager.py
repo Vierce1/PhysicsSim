@@ -74,7 +74,7 @@ class Terrain_Manager:
     async def update(self) -> None:
         self.pool.map(self.update_blocks, self.blocks)
 
-        self.inactive_blocks.update({b for b in set(self.blocks) if not b.collision_detection})
+
         # self.blocks = self.inactive_blocks.difference(coll_blocks)
         self.blocks = {b for b in set(self.blocks) if b.collision_detection}
         self.end_frame_unground()
@@ -195,6 +195,7 @@ class Terrain_Manager:
         self.matrix[block.position[0], block.position[1]] = -1
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
+            self.inactive_blocks.add(block)
             block.grounded_timer = 9999
         block.position = next_pos
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
