@@ -7,7 +7,7 @@ import sys
 import random
 from collections import defaultdict
 import multiprocessing.dummy as mp
-from multiprocessing import Pool
+# from multiprocessing import Pool
 from threading import Thread
 import asyncio
 
@@ -50,6 +50,7 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
+        # self.pool = mp.Pool()
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -70,6 +71,7 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
+        # self.pool.map(self.update_blocks, self.blocks)
         for block in set(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block=block)
         self.end_frame_unground()
