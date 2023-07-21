@@ -75,7 +75,7 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        await self.mpp.update(self.blocks)
+        await self.mpp.update(set(self.blocks))
         # pool = Pool(4)
         # pool.map(self.update_blocks, (self, set(self.blocks)))
         # pool.close()
