@@ -139,6 +139,7 @@ class Terrain_Manager:
             if block.grounded_timer >= frames_til_grounded:
                 block.collision_detection = False
                 self.inactive_blocks.add(block)
+                self.blocks.remove(block)
 
             # update velocities
             if block.vert_velocity < self.terminal_velocity:
@@ -160,6 +161,9 @@ class Terrain_Manager:
 
             if block.vert_velocity == 0:
                 block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
+
+        elif block in self.blocks:
+            self.blocks.remove(block)
 
         self.render_image.set_at(block.position, block.type.color)
 
@@ -184,6 +188,8 @@ class Terrain_Manager:
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
             block.grounded_timer = 9999
+            self.inactive_blocks.add(block)
+            self.blocks.remove(block)
         block.position = next_pos
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         return False
