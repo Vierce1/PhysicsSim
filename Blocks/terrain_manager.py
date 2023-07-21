@@ -50,6 +50,7 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
+        self.random_bits = []
         # self.pool = mp.Pool()
 
 
@@ -67,6 +68,7 @@ class Terrain_Manager:
         for i, b in enumerate(self.all_blocks):
             b.id = i
             self.matrix[b.position[0], b.position[1]] = b.id
+        self.random_bits = [random.randrange(0, 2) for _ in range(len(self.blocks))]
 
 
 
@@ -101,8 +103,9 @@ class Terrain_Manager:
         elif block.type.name == 'water':
             return self.water_slide(block)
 
-    def solid_slide(self, block) -> (int, int):
-        dir = 1 if random.random() < 0.5 else -1
+    def solid_slide(self, block) -> (int, int):  # is returning tuple slow?
+        # dir = 1 if random.random() < 0.5 else -1
+        dir = 1 if self.random_bits[block.id] == 1 else -1  # Improvement?
         if self.matrix[(block.position[0] + dir, block.position[1] + 1)] == -1:  # EMPTY:
             return (dir, 1)
         elif self.matrix[(block.position[0] - dir, block.position[1] + 1)] == -1:  # EMPTY:
