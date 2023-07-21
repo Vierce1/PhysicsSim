@@ -25,8 +25,8 @@ class Game:
         self.spaces_to_clear = Clear_Spaces(self)  # set()
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
-        self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
-                             display_resolution[1])
+        # self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
+        #                      display_resolution[1])
         self.quadtree_nodes = set()
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
@@ -47,7 +47,7 @@ class Game:
         # self.render_scale = (self.window_size[0] / level.world_size[0], self.window_size[1] / level.world_size[1])
         self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,
                                    ground_level=level.ground)
-        self.player.set_start_position(level.start_pos)
+        # self.player.set_start_position(level.start_pos)
         # self.player.render_width, self.player.render_height = level.world_size[0], level.world_size[1]
 
         # Set the plane shift to center the camera on the player's starting position
@@ -154,7 +154,7 @@ class Game:
                 self.terrain_manager.blocks.update(spawn_blocks)
 
 
-        self.player.update(events, self.render_image)
+        # self.player.update(events, self.render_image)
 
         # Blitting
         self.render_image.surface.convert()  # optimize image after drawing on it

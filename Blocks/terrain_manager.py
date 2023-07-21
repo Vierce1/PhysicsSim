@@ -72,10 +72,12 @@ class Terrain_Manager:
 
 
     def update(self) -> None:
+        # self.pool = Pool(4)
+        # self.pool.map(self.update_blocks, self.blocks)
         self.pool = Pool(4)
-        self.pool.map(self.update_blocks, self.blocks)
-        pool.close()
-        pool.join()
+        self.pool.map(multi_update_blocks, self.blocks)
+        self.pool.close()
+        self.pool.join()
 
         self.end_frame_unground()
         # print(len(self.blocks))
@@ -311,3 +313,7 @@ class Terrain_Manager:
     def insert_object_quadtree(self, obj, x: int, y: int) -> Quadtree_Node:  # use to put specific position in tree
         return self.quadtree.insert_object(obj=obj, x=x, y=y, start_node=self.quadtree.root_node)
         # now can access node.children to get neighboring objects
+
+
+def multi_update_blocks(block):
+    pass
