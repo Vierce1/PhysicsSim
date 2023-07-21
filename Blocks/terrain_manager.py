@@ -70,43 +70,11 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        # # split blocks into groups max count = 10000
-        # block_chunks = []
-        # step = 1000
-        # block_list = list(self.blocks)
-        # for i in range(0, len(block_list), step):
-        #     block_chunks.append(set(block_list[i:i + step]))
-        # for chunk in block_chunks:
-        #     Thread(target=self.update_block_chunk, args=(chunk,)).start()
-            # thread.start()
-            # pool = mp.Pool(4)
-            # self.block_updates = pool.map(self.update_blocks, self.blocks)
-            # pool.close()
-            # pool.join()
-
         for block in set(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block=block)
-
-
-        # coll_blocks = set(filter(lambda b: b.collision_detection, self.blocks))
-        # self.inactive_blocks.difference_update(self.blocks, coll_blocks)
-
-        self.inactive_blocks.update({b for b in set(self.blocks) if not b.collision_detection})
-        # self.blocks = self.inactive_blocks.difference(coll_blocks)
-        self.blocks = {b for b in set(self.blocks) if b.collision_detection}
         self.end_frame_unground()
 
         # print(len(self.blocks))
-
-
-    # def update_block_chunk(self, block_chunk: set[Block]):
-    #     for block in block_chunk:
-    #         asyncio.run(self.update_blocks(block=block))
-
-
-
-
-
 
 
 
