@@ -93,6 +93,14 @@ class Terrain_Manager:
             return True
         return self.matrix[(position[0], position[1] + 1)] != -1
 
+    # def chain_fall_check(self, x: int, y: int) -> int:  # , y_vel: int
+    #     for i in range(1, 11):
+    #         block_id = self.matrix[x, y + i]
+    #         if block_id == -1:
+    #             continue
+
+
+
 
 #TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
     def check_slide(self, block) -> int:  # int -1 for slide left, 1 slide right, 0 no slide
@@ -230,9 +238,10 @@ class Terrain_Manager:
 
 
     def slide(self, block: Block, slide: int) -> None:
+                                                    # * self.game.physics_lag_frames
         block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
-        self.game.spaces_to_clear.add_pos(block.position)  # Slower with more particles updating
+        self.game.spaces_to_clear.add_pos(block.position)
         block.position = (block.position[0] + slide, block.position[1] + 1)
         self.matrix[block.position[0], block.position[1]] = block.id
         return
@@ -252,7 +261,7 @@ class Terrain_Manager:
 
 
 #TODO: There may be more finetuning to reduce checks on same positions
-# Can I move this to the main thread?
+# Can I move this to the main thread? Modifying the blocks in multiple places won't work, maybe there's a solution.
     def trigger_ungrounding(self, block: Block) -> None:
         # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
