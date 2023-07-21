@@ -50,7 +50,7 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
-        self.pool = mp.Pool(4)
+        self.pool = mp.Pool()
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -73,8 +73,8 @@ class Terrain_Manager:
 
     async def update(self) -> None:
         self.pool.map(self.update_blocks, self.blocks)
-        self.end_frame_unground()
 
+        self.end_frame_unground()
         # print(len(self.blocks))
 
 

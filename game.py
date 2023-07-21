@@ -116,7 +116,7 @@ class Game:
 
     def update_physics(self):
         self.physics_processing = True
-        asyncio.run(self.terrain_manager.update())
+        self.terrain_manager.update()
         self.physics_processing = False
 
 
