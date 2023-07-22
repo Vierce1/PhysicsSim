@@ -1,9 +1,11 @@
+import random
+
 SAND = 0
 ROCK = 1
 DIRT = 2
 STATIC_SAND = 3
 WATER = 4
-
+GRAVEL = 5
 
 class Block_Type:
     def __init__(self):
@@ -28,7 +30,14 @@ class Block_Type:
             return Dirt()
         elif block_type == WATER:
             return Water()
-
+        elif block_type == GRAVEL:
+            rand = random.randrange(0, 3)
+            if rand == 0:
+                return Gravel_A()
+            elif rand == 1:
+                return Gravel_B()
+            else:
+                return Gravel_C()
 
 class Sand(Block_Type):
     def __init__(self):
@@ -58,6 +67,43 @@ class Rock(Block_Type):
         self.destroyable = False
         self.color = (160, 160, 160)
         self.friction = 0.8
+
+class Gravel(Block_Type):  # Inheritance seems pointless here since there are no methods to inherit.
+    def __init__(self):
+        super().__init__()
+        self.name = 'gravel'
+        self.rigid = False
+        self.destroyable = False
+        self.friction = 0.95
+
+
+class Gravel_A(Gravel):
+    def __init__(self):
+        super().__init__()
+        self.name = 'gravel'
+        self.rigid = False
+        self.destroyable = False
+        self.friction = 0.95
+        self.color = (130, 130, 130)
+
+class Gravel_B(Gravel):
+    def __init__(self):
+        super().__init__()
+        self.name = 'gravel'
+        self.rigid = False
+        self.destroyable = False
+        self.friction = 0.95
+        self.color = (165, 165, 165)
+
+class Gravel_C(Gravel):
+    def __init__(self):
+        super().__init__()
+        self.name = 'gravel'
+        self.rigid = False
+        self.destroyable = False
+        self.friction = 0.95
+        self.color = (52, 52, 52)
+
 
 class Dirt(Block_Type):
     def __init__(self):

@@ -37,7 +37,7 @@ class Level:
         self.world_size = world_size
         self.block_counts = block_counts
         self.bounds = bounds
-        self.block_types = []
+        self.block_types = block_types  # Now built at terrain generation step.
         self.timed_spawns = []  # create the list even if none so no if check needed in game.update
         self.start_pos = (start_pos[0], start_pos[1])
         self.ground = ground_level
@@ -48,9 +48,6 @@ class Level:
             self.timed_spawns = timed_spawns  # particles that spawn over time. Time in seconds
 
         else:  # Reading level. Create block types from the enums
-            for t in block_types:  # Block Types
-                tp = block_type.Block_Type().get_block_type(t)
-                self.block_types.append(tp)
             if timed_spawns:
                 # get the length of 1 of the fields, which will equate to length for all fields
                 for i in range(len(timed_spawns['block_types'])):

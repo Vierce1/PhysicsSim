@@ -105,10 +105,11 @@ class Terrain_Manager:
 #TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
     def check_slide(self, x: int, y: int, type_name: str, block_id: int) -> int:
         # int -1 for slide left, 1 slide right, 0 no slide
-        if type_name == 'sand':
+        if type_name == 'sand' or type_name == 'gravel':
             return self.solid_slide(x, y, block_id)
         elif type_name == 'water':
             return self.water_slide(x, y, block_id)
+
 
     def solid_slide(self,  x: int, y: int, block_id: int) -> int:
         dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
@@ -317,7 +318,7 @@ class Terrain_Manager:
         if len(self.unground_pos_checks) == 0:
             return None
         unground_blocks = set()
-        for pos in self.unground_pos_checks:
+        for pos in set(self.unground_pos_checks):
             # self.unground_count += 1
             block_id = self.matrix[(pos)]
             if block_id == -1:
