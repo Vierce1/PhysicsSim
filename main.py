@@ -53,7 +53,7 @@ async def main():
 
 
         if not game.physics_processing:
-            print('\t\t\tcreating physics thread')
+            print(f'\t\t\tcreating physics thread. physics behind by {game.physics_lag_frames} frames')
             Thread(target=game.update_physics, args=()).start()
             game.physics_lag_frames = 0
 
