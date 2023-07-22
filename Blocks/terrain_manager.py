@@ -10,6 +10,7 @@ import multiprocessing.dummy as mp
 # from multiprocessing import Pool
 from threading import Thread
 import asyncio
+from numba import jit
 
 
 display_res = []
@@ -127,6 +128,7 @@ class Terrain_Manager:
             return 0
 
 
+    # @jit(nopython=True)
     def solid_slide(self,  x: int, y: int, block_id: int) -> int:
         dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
         if self.matrix[(x + dir, y + 1)] == -1:  # EMPTY:
@@ -164,6 +166,7 @@ class Terrain_Manager:
 
 
     # Particle functions
+    # @jit(nopython=True)
     async def update_blocks(self, block: Block):
         if block.collision_detection:
     #TODO: somehow a small # of blocks are remaining in the active list and not going into inactive list

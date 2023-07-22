@@ -1,4 +1,5 @@
 import random
+# from numba.experimental import jitclass
 
 SAND = 0
 ROCK = 1
@@ -6,6 +7,7 @@ DIRT = 2
 STATIC_SAND = 3
 WATER = 4
 GRAVEL = 5
+
 
 class Block_Type:
     def __init__(self):
