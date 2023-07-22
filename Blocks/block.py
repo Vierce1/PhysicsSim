@@ -6,7 +6,7 @@ import Blocks.block_type
 
 class Block:
     # slots reduces size of object by only reserving enough memory to hold these values.
-    __slots__ = ('id', 'type', 'color_index', 'position', 'vert_velocity', 'horiz_velocity',
+    __slots__ = ('id', 'type', 'position', 'vert_velocity', 'horiz_velocity',
                  'collision_detection')
     def __init__(self, type: block_type.Block_Type, position: (int, int)):
         # print(sys.getsizeof(self ))
