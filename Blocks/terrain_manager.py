@@ -82,7 +82,7 @@ class Terrain_Manager:
             await self.update_blocks(block=block)
         self.end_frame_unground()
 
-        # print(len(self.blocks))
+        print(f'\t\t\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
 
 
 
@@ -154,10 +154,10 @@ class Terrain_Manager:
     # Particle functions
     async def update_blocks(self, block: Block):
         if block.collision_detection:
-            if block.grounded_timer >= frames_til_grounded:  # * self.game.physics_lag_frames
-                block.collision_detection = False
-                self.inactive_blocks.add(block)
-                self.blocks.remove(block)
+            # if block.grounded_timer >= frames_til_grounded:  # * self.game.physics_lag_frames
+            #     block.collision_detection = False
+            #     self.inactive_blocks.add(block)
+            #     self.blocks.remove(block)
 
             # update velocities
             if block.vert_velocity < self.terminal_velocity:
@@ -180,9 +180,6 @@ class Terrain_Manager:
                     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
                 if total_y != 0:
                     total_y -= 1 if total_y > 0 else -1
-
-            if block.vert_velocity == 0:
-                block.grounded_timer += 1  # Increment grounded timer to take inactive blocks out of set
 
         elif block in self.blocks:
             self.blocks.remove(block)
@@ -215,13 +212,16 @@ class Terrain_Manager:
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
                 self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
+            else:  # collided and is not sliding. Turn collision od
+                block.collision_detection = False
+                self.inactive_blocks.add(block)
+                self.blocks.remove(block)
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
         old_pos = block.position[0], block.position[1]
         self.matrix[old_pos] = -1
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
-            block.grounded_timer = 9999
             self.inactive_blocks.add(block)
             if block in self.blocks:
                 self.blocks.remove(block)
@@ -302,7 +302,6 @@ class Terrain_Manager:
             return
         next_frame_ungrounds = set()
         for block in unground_frame_blocks:
-            block.grounded_timer = 0
             self.blocks.add(block)
             if block in self.inactive_blocks:
                 self.inactive_blocks.remove(block)
