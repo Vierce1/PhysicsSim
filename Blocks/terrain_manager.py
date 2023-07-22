@@ -13,7 +13,7 @@ import asyncio
 
 
 display_res = []
-frames_til_grounded = 400  # how many frames a block must be stationary before being grounded
+frames_til_grounded = 1  # how many frames a block must be stationary before being grounded
 slide_factor = 1  # how fast blocks slide horizontally - currently unused
 # EMPTY = 0
 # OCCUPIED = 1
@@ -202,14 +202,18 @@ class Terrain_Manager:
             if slide != 0:
                 # self.slide(block, slide)
                 block.horiz_velocity = slide * slide_factor  # * self.game.physics_lag_frames
-                self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
+                old_pos = block.position[0], block.position[1]
+                self.matrix[old_pos] = -1  # EMPTY
+
                 self.game.spaces_to_clear.add_pos(block.position)
                 new_y = 0 if block.type.name == 'water' else 1
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
+                self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
-        self.matrix[block.position[0], block.position[1]] = -1
+        old_pos = block.position[0], block.position[1]
+        self.matrix[old_pos] = -1
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
             block.grounded_timer = 9999
@@ -218,6 +222,7 @@ class Terrain_Manager:
                 self.blocks.remove(block)
         block.position = (new_x, new_y)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
+        self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
         return False
 
 
@@ -266,19 +271,19 @@ class Terrain_Manager:
         self.game.spaces_to_clear.add_pos(block.position)
         # Now check all spaces around this block for ungroundable blocks. Note this will be called for all
         # blocks in the destruction zone
-        self.trigger_ungrounding(block)
+        self.trigger_ungrounding(block.position)
 
 
 
 #TODO: There may be more finetuning to reduce checks on same positions
 # Can I move this to the main thread? Modifying the blocks in multiple places won't work, maybe there's a solution.
-    def trigger_ungrounding(self, block: Block) -> None:
+    def trigger_ungrounding(self, position: (int, int)) -> None:
         # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
             for y in range(-1, 1):  # Updated from 2. Theoretically shouldn't need to check down
-                pos = (block.position[0] + x, block.position[1] + y)
+                pos = (position[0] + x, position[1] + y)
                 # add the position to the set to check if there's an ungroundable block at end of sequence
-                if pos != block.position and pos not in self.current_unground_chain_checks:
+                if pos != position:  #  and pos not in self.current_unground_chain_checks
                     # did we check it already this chain?
                     self.unground_pos_checks.add(pos)
                 self.current_unground_chain_checks.add(pos)
@@ -299,8 +304,9 @@ class Terrain_Manager:
             next_frame_ungrounds.add(block)
         # if len(unground_frame_blocks) > 0:
         #     print(f'unground this frame block count: {len(unground_frame_blocks)}')
-        for block in next_frame_ungrounds:  # now add the blocks to check next frame
-            self.trigger_ungrounding(block)
+    # Removing the chain. Blocks responsible for triggering all neighbors when they move.
+        # for block in next_frame_ungrounds:  # now add the blocks to check next frame
+        #     self.trigger_ungrounding(block)
         # if self.unground_count != 0:  # now only checking each block 1x
         #     print(f'unground count: {self.unground_count}')
 
