@@ -3,6 +3,7 @@ import random
 import world_helpers as help
 import Blocks.terrain_manager as tm
 
+
 class Player:
     def __init__(self, terrain_manager: tm.Terrain_Manager, game, screen_width, screen_height,
                  render_width, render_height):

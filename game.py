@@ -10,6 +10,7 @@ from particle_spawner import Particle_Spawner
 import world_helpers as help
 import psutil
 import gc
+import time
 import sys
 
 
@@ -117,9 +118,10 @@ class Game:
 
     def get_mouse_pos(self, scale_for_render: bool = True):
         if scale_for_render:
-            return help.get_scaled_pos(pg.mouse.get_pos(), self.plane_shift,
+            pos = help.get_scaled_pos(pg.mouse.get_pos(), self.plane_shift,
                             self.window_size[0], self.display_resolution[0],
                             self.window_size[1], self.display_resolution[1])
+            return pos
         else:
             return pg.mouse.get_pos()
 
