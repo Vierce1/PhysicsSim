@@ -1,14 +1,13 @@
 import asyncio
-
 import pygame as pg
 from pygame import time
 from pygame.locals import *
 from player import Player
-import Blocks
-from Blocks.block import Block
-from Blocks.block_type import *
 from Blocks import terrain_gen as tg, terrain_manager as tm
 from level import *
+from ui import User_Interface
+from particle_spawner import Particle_Spawner
+import world_helpers as help
 import psutil
 import gc
 import sys
@@ -33,11 +32,14 @@ class Game:
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
         self.render_scale = (self.window_size[0], self.window_size[1])
-        self.level: Level = None
+        self.level: Level
         self.backdrop = pg.image.load('background_1.png')
         self.backdrop_surface = pg.Surface((0,0))
         self.physics_processing = False
         self.physics_lag_frames = 0  # how many frames behind the GUI the physics rendering is
+        self.ui = User_Interface(particle_button_types=[], game=self)
+        self.mouse_pos = pg.mouse.get_pos()  # store this globally so classes can reference it
+        self.particle_spawner = Particle_Spawner(terrain_manager=self.terrain_manager, terrain_gen=self.terrain_gen)
 
 
     def setup(self, level: int) -> Level:
@@ -46,16 +48,13 @@ class Game:
         self.level = level
         self.render_image = pg.Surface(level.world_size)
         print(f'world size: {self.render_image.get_size()}')
-        # self.render_scale = (self.window_size[0] / level.world_size[0], self.window_size[1] / level.world_size[1])
         self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,
                                    ground_level=level.ground)
         self.player.set_start_position(level.start_pos)
-        # self.player.render_width, self.player.render_height = level.world_size[0], level.world_size[1]
 
         # Set the plane shift to center the camera on the player's starting position
         self.plane_shift = self.adjust_start_planeshift(level.start_pos, level.world_size)
         print(f'plane shift: {self.plane_shift}')
-        # self.plane_shift = (0, 0)
 
         # Create all particles
         level_blocks = set()
@@ -66,7 +65,11 @@ class Game:
             if blocks[0].type.destroyable:
                 self.terrain_manager.destroyable_blocks.update(blocks)
 
+        # create a new UI every level? or just update buttons as needed?
+        self.ui = User_Interface(particle_button_types=[block_type.SAND, block_type.GRAVEL, block_type.ROCK,
+                                                        block_type.WATER], game=self)
 
+        # Particle updating
         print(f'length of particles = {str(len(level_blocks))}')
         self.terrain_manager.blocks.update(level_blocks)  # have to add ALL blocks to this first so they draw on frame 1
         self.terrain_manager.all_blocks.extend(level_blocks)
@@ -87,10 +90,8 @@ class Game:
     def adjust_start_planeshift(self, start_pos: (int, int), world_size: (int, int)) -> (int, int):
         x_shift = start_pos[0] - self.display_resolution[0] / 2
         if x_shift < 0:  # player starting at a postion between 0 - display resolution [0]
-            print('Out of bounds LEFT')
             x_shift = 0
         elif start_pos[0] > world_size[0] - self.display_resolution[0] / 2:
-            print('Out of bounds RIGHT')
             x_shift = - (world_size[0] - self.display_resolution[0])
 
         y_shift = start_pos[1] - self.display_resolution[1] / 2
@@ -113,6 +114,14 @@ class Game:
             new_plane_shift = (new_plane_shift[0], self.plane_shift[1])  # Cancel y
         self.plane_shift = new_plane_shift
 
+
+    def get_mouse_pos(self, scale_for_render: bool = True):
+        if scale_for_render:
+            return help.get_scaled_pos(pg.mouse.get_pos(), self.plane_shift,
+                            self.window_size[0], self.display_resolution[0],
+                            self.window_size[1], self.display_resolution[1])
+        else:
+            return pg.mouse.get_pos()
 
 
 #     def set_colors(self, clear_spaces: set):
@@ -203,6 +212,8 @@ class Game:
         self.screen.blit(resized_image, (0,0))
         # pg.Surface.blit(self.screen, self.render_image, (0, 0), draw_area)
 
+        # Draw the UI last over everything else
+        self.ui.render_buttons(self.screen)
 
         # print(f'memory % usage: {psutil.virtual_memory().percent}')
         # print(f'cpu % usage: {psutil.cpu_percent()}')

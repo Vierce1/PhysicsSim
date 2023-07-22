@@ -21,6 +21,7 @@ class Player:
         self.destroy_distance = 8
         self.button_cooldown = 10
         self.button_timer = 0
+        self.particle_spawn_count = 10
 
     def set_start_position(self, start_pos: (int, int)):
         self.position = start_pos
@@ -77,18 +78,18 @@ class Player:
             self.vertical_speed = 0
         if keys[pg.K_SPACE] and self.button_timer > self.button_cooldown:
             self.button_timer = 0
-            mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
-                                            self.screen_width, self.render_width,
-                                            self.screen_height, self.render_height)
-            self.explode(location=mouse_pos, destroy_radius=6, force_radius=20, force=3)
+            mouse_pos = self.game.get_mouse_pos()
+            self.explode(location=mouse_pos, destroy_radius=1, force_radius=15, force=15)
 
         for event in events:
-            if event.type == pg.MOUSEBUTTONDOWN and self.button_timer > self.button_cooldown:
-                self.button_timer = 0
-                mouse_pos = help.get_scaled_pos(pg.mouse.get_pos(), self.game.plane_shift,
-                                                self.screen_width, self.render_width,
-                                                self.screen_height, self.render_height)
-                self.mouse_click(mouse_pos)
+            if event.type == pg.MOUSEBUTTONDOWN:
+                mouse_pos = self.game.get_mouse_pos(scale_for_render=True)
+                if event.button == 1 and self.button_timer > self.button_cooldown:  # left click
+                    self.button_timer = 0
+                    self.left_click(mouse_pos)
+        if pg.mouse.get_pressed(3)[2]:
+            mouse_pos = self.game.get_mouse_pos(scale_for_render=True)
+            self.right_click(mouse_pos)
 
 
         for y in range(self.size):
@@ -121,9 +122,16 @@ class Player:
         return distance < self.manipulation_distance
 
 
-    def mouse_click(self, mouse_pos: (int, int)):
-        print(f'click at {mouse_pos}')
+    def right_click(self, mouse_pos: (int, int)):
+        self.game.particle_spawner.spawn(x=mouse_pos[0], y=mouse_pos[1], count=self.particle_spawn_count)
+
+
+    def left_click(self, mouse_pos: (int, int)):
+        # Check if a button is covering this spot
+        if self.game.ui.check_if_button_in_pos(mouse_pos):
+            return
         if self.check_dist(mouse_pos):
+            print(f'click at {mouse_pos}')
             self.destroy(mouse_pos)
 
 
@@ -152,6 +160,7 @@ class Player:
             return
         print(f'space at {location}')
         # get blocks in radius around location point
+        #TODO: Make it a circular radius. Pi?
         location = (round(location[0]), round(location[1]))
         for x in range(location[0]-force_radius, location[0]+force_radius + 1):
             for y in range(location[1]-force_radius, location[1]+force_radius + 1):
@@ -163,13 +172,21 @@ class Player:
                         self.terrain_manager.destroy_block(block)
                         continue
 
-                    # horiz = -1 if x < location[0] else 1
-                    # verti = -1 if y < location[1] else 1
-                    horiz = round(location[0] - x / force_radius * force)
-                    verti = round(location[1] - y / force_radius * force)
+                    #TODO: Should this be revamped? Currently particles on the edges of the explosion get more force.
+                    # horiz = round((location[0] - x) / force_radius * force)
+                    # verti = round((location[1] - y) / force_radius * force)
+                    # middle gets full force. Doesn't work well.
+                    # horiz = round((force_radius - (location[0] - x)) / force_radius * force)
+                    # verti = round((force_radius - (location[1] - y)) / force_radius * force)
+                    # This is better but need to make it a circle. there needs to be some factor in here.
+                    horiz = -force if x < location[0] else force
+                    if -force_radius / 2 < location[0] - x < force_radius / 2:
+                        horiz = round(horiz / 2)
+                    verti = -force if y < location[1] else force
+                    if -force_radius / 2 < location[1] - y < force_radius / 2:
+                        verti = round(verti / 2)
                     self.terrain_manager.trigger_ungrounding(block.position)
                     block.collision_detection = True
-                    block.grounded_timer = 0
                     block.horiz_velocity = horiz
                     block.vert_velocity = verti
                     if block in self.terrain_manager.inactive_blocks:

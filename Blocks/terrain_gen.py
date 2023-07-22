@@ -13,13 +13,13 @@ class Terrain_Gen:
 
 
 #TODO: Draw a poly and fill it with blocks
-    def gen_terrain(self, block_count: int, block_type: Block_Type, bounds: (int, int, int, int)) -> list[Block]:
+    def gen_terrain(self, block_count: int, block_type: str, bounds: (int, int, int, int)) -> list[Block]:
         pixel_count = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2])
         if block_count / pixel_count < 1:  # particles do not fill entire bounds
-            return list(self.uniform(block_count,block_type, bounds))
+            return list(self.uniform(block_count, block_type, bounds))
         else:  # particles fill exactly bounds. Note can pass in 999999 as block count to force the fill method
             # print('fill bounds') # Pass in pixel_count to avoid over-generation
-            return list(self.fill_bounds(pixel_count,block_type, bounds))
+            return list(self.fill_bounds(pixel_count, block_type, bounds))
 
     def fill_bounds(self, block_count: int, block_type: str, bounds: (int, int, int, int)) -> set[Block]:
         generated_blocks = set()

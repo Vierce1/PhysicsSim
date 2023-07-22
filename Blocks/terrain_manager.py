@@ -74,6 +74,15 @@ class Terrain_Manager:
             self.matrix[b.position[0], b.position[1]] = b.id
         self.random_bits = [random.randrange(0, 2) for _ in range(len(self.blocks))]
 
+    def add_blocks_to_matrix(self, particles: list[Block]):
+        for p in particles:
+            p.id = len(self.all_blocks)
+            self.matrix[p.position[0], p.position[1]] = p.id
+            if p.type.destroyable:
+                self.destroyable_blocks.add(p)
+            self.blocks.add(p)  # have to add ALL blocks to this first so they draw on frame 1
+            self.all_blocks.append(p)
+        self.random_bits.extend([random.randrange(0, 2) for _ in range(len(particles))])
 
 
     async def update(self) -> None:
@@ -82,7 +91,8 @@ class Terrain_Manager:
             await self.update_blocks(block=block)
         self.end_frame_unground()
 
-        print(f'\t\t\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
+        print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
+        print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
 
 
 
@@ -113,6 +123,8 @@ class Terrain_Manager:
             return self.solid_slide(x, y, block_id)
         elif type_name == 'water':
             return self.water_slide(x, y, block_id)
+        else:
+            return 0
 
 
     def solid_slide(self,  x: int, y: int, block_id: int) -> int:
@@ -154,11 +166,8 @@ class Terrain_Manager:
     # Particle functions
     async def update_blocks(self, block: Block):
         if block.collision_detection:
-            # if block.grounded_timer >= frames_til_grounded:  # * self.game.physics_lag_frames
-            #     block.collision_detection = False
-            #     self.inactive_blocks.add(block)
-            #     self.blocks.remove(block)
-
+    #TODO: somehow a small # of blocks are remaining in the active list and not going into inactive list
+    # try level 1.
             # update velocities
             if block.vert_velocity < self.terminal_velocity:
                 block.vert_velocity += self.gravity
@@ -167,6 +176,7 @@ class Terrain_Manager:
                 block.horiz_velocity -= horiz_step
 
             # move through all spaces based on velocity
+    #TODO: When blocks are moving very fast this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
@@ -175,7 +185,8 @@ class Terrain_Manager:
                 collided = self.move(block, next_x, next_y)
                 if collided:
                     break
-                # TODO: Is this correct with dynamic velocity?
+                # TODO: Is this correct with dynamic velocity? I think i'm supposed to be subtracting the step amount.
+                # On level 1 water goes through the mud blocks which are 10 particles deep
                 if total_x != 0:
                     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
                 if total_y != 0:
@@ -183,16 +194,12 @@ class Terrain_Manager:
 
         elif block in self.blocks:
             self.blocks.remove(block)
+            self.inactive_blocks.add(block)
 
         self.game.render_dict.add((block.position, block.type.color))
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
-        # if block.position[1] == self.ground - 1:
-        #     block.horiz_velocity = 0
-        #     block.vert_velocity = 0
-        #     return True
-
         new_x, new_y = block.position[0] + x_step, block.position[1] + y_step
         collision = self.check_pos_collide(new_x, new_y)
 
@@ -214,8 +221,8 @@ class Terrain_Manager:
                 self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
             else:  # collided and is not sliding. Turn collision od
                 block.collision_detection = False
-                self.inactive_blocks.add(block)
-                self.blocks.remove(block)
+                # self.inactive_blocks.add(block)   # gets added in update_block
+                # self.blocks.remove(block)  # gets removed in update_block
             return True
         # Did not collide. Mark prev position empty & mark to fill with black
         old_pos = block.position[0], block.position[1]
@@ -223,8 +230,8 @@ class Terrain_Manager:
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
             self.inactive_blocks.add(block)
-            if block in self.blocks:
-                self.blocks.remove(block)
+            # if block in self.blocks:
+            #     self.blocks.remove(block)  # gets removed in update_block
         block.position = (new_x, new_y)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
