@@ -7,6 +7,7 @@ DIRT = 2
 STATIC_SAND = 3
 WATER = 4
 GRAVEL = 5
+MAGMA = 6
 
 
 class Block_Type:
@@ -19,6 +20,7 @@ class Block_Type:
         self.width = 1
         self.height = 1
         self.start_static = False
+        self.destructive = False   # lava. Destroys blocks it touches if they're destroyable
 
 
     def get_block_type(self, block_type):
@@ -40,13 +42,15 @@ class Block_Type:
                 return Gravel_B()
             else:
                 return Gravel_C()
+        elif block_type == MAGMA:
+            return Magma()
 
 class Sand(Block_Type):
     def __init__(self):
         super().__init__()
         self.name = 'sand'
         self.rigid = False
-        self.destroyable = False
+        self.destroyable = True
         self.color = (150,190,0)
         self.friction = 0.3
 
@@ -55,7 +59,7 @@ class Static_Sand(Block_Type):  # starts grounded until becoming ungrounded agai
         super().__init__()
         self.name = 'sand'
         self.rigid = False
-        self.destroyable = False
+        self.destroyable = True
         self.color = (150,190,0)
         self.friction = 0.3
         self.start_static = True
@@ -75,7 +79,7 @@ class Gravel(Block_Type):  # Inheritance seems pointless here since there are no
         super().__init__()
         self.name = 'gravel'
         self.rigid = False
-        self.destroyable = False
+        self.destroyable = True
         self.friction = 0.95
 
 
@@ -84,7 +88,7 @@ class Gravel_A(Gravel):
         super().__init__()
         self.name = 'gravel'
         self.rigid = False
-        self.destroyable = False
+        self.destroyable = True
         self.friction = 0.95
         self.color = (130, 130, 130)
 
@@ -93,7 +97,7 @@ class Gravel_B(Gravel):
         super().__init__()
         self.name = 'gravel'
         self.rigid = False
-        self.destroyable = False
+        self.destroyable = True
         self.friction = 0.95
         self.color = (165, 165, 165)
 
@@ -102,7 +106,7 @@ class Gravel_C(Gravel):
         super().__init__()
         self.name = 'gravel'
         self.rigid = False
-        self.destroyable = False
+        self.destroyable = True
         self.friction = 0.95
         self.color = (52, 52, 52)
 
@@ -122,7 +126,18 @@ class Water(Block_Type):
         super().__init__()
         self.name = 'water'
         self.rigid = False
-        self.destroyable = False
+        self.destroyable = True
         self.color = (0,120,255)
         self.friction = 0.1
+
+
+class Magma(Block_Type):
+    def __init__(self):
+        super().__init__()
+        self.name = 'magma'
+        self.rigid = False
+        self.destroyable = False
+        self.color = (255,85,0)
+        self.friction = 0.1
+        self.destructive = True
 

@@ -199,6 +199,10 @@ class Terrain_Manager:
             self.blocks.remove(block)
             self.inactive_blocks.add(block)
 
+        if block.type.destructive:
+            self.destructive(block.position[0], block.position[1])
+            # block.collision_detection = True  # need a better way
+
         self.game.render_dict.add((block.position, block.type.color))
 
 
@@ -279,6 +283,15 @@ class Terrain_Manager:
 
     # def flow(self, block: Block, flow: (int, int))-> None:
 
+
+    def destructive(self, x: int, y: int):
+        for x in range(x-1, x+2):
+            for y in range(y-1, y+2):
+                neighbor_id = self.matrix[x, y]
+                if neighbor_id >= 0:  # don't destroy ground
+                    neighbor = self.all_blocks[neighbor_id]
+                    if neighbor.type.destroyable:
+                        self.destroy_block(neighbor)
 
 
     def destroy_block(self, block: Block) -> None:
