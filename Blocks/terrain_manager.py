@@ -63,6 +63,10 @@ class Terrain_Manager:
         self.all_blocks.clear()
         self.inactive_blocks.clear()
         self.destroyable_blocks.clear()
+        # Fill ground w/ -2
+        for x in range(world_size[0]):
+            for y in range(self.ground, world_size[1]):
+                self.matrix[x, y] = -2
 
     def fill_matrix(self):  # will need new method for adding blocks after init
         for i, b in enumerate(self.all_blocks):
@@ -84,7 +88,7 @@ class Terrain_Manager:
 
 # Physics
     def check_pos_collide(self, x: int, y: int) -> bool:
-        return self.matrix[x,y] != -1 or y >= self.ground
+        return self.matrix[x,y] != -1 #  or y >= self.ground
 
 
 #TODO: Remove and change player to use check_pos_collide
@@ -187,10 +191,10 @@ class Terrain_Manager:
 
 
     def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
-        if block.position[1] == self.ground - 1:
-            block.horiz_velocity = 0
-            block.vert_velocity = 0
-            return True
+        # if block.position[1] == self.ground - 1:
+        #     block.horiz_velocity = 0
+        #     block.vert_velocity = 0
+        #     return True
 
         new_x, new_y = block.position[0] + x_step, block.position[1] + y_step
         collision = self.check_pos_collide(new_x, new_y)
