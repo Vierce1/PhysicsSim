@@ -87,9 +87,17 @@ class Player:
                 if event.button == 1 and self.button_timer > self.button_cooldown:  # left click
                     self.button_timer = 0
                     self.left_click(mouse_pos)
+            if event.type == pg.MOUSEMOTION:
+                dx, dy = event.rel
+                if (dx**2 + dy**2) > 5**2:
+                    self.particle_spawn_count = 25
+                else:
+                    self.particle_spawn_count = 10
         if pg.mouse.get_pressed(3)[2]:
             mouse_pos = self.game.get_mouse_pos(scale_for_render=True)
             self.right_click(mouse_pos)
+
+
 
 
         for y in range(self.size):
