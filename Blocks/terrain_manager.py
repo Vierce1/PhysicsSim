@@ -36,7 +36,7 @@ class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int, game):
         self.blocks = set()
         self.processing_blocks = False
-        self.inactive_blocks = set()
+        # self.inactive_blocks = set()
         self.destroyable_blocks = set()
         self.unground_pos_checks = set()
         self.current_unground_chain_checks = set()  # Set to keep track of pos already checked this chain
@@ -62,7 +62,7 @@ class Terrain_Manager:
         self.ground = ground_level
         self.blocks.clear()
         self.all_blocks.clear()
-        self.inactive_blocks.clear()
+        # self.inactive_blocks.clear()
         self.destroyable_blocks.clear()
         # Fill ground w/ -2
         for x in range(world_size[0]):
@@ -89,17 +89,19 @@ class Terrain_Manager:
     async def update(self) -> None:
         # self.pool.map(self.update_blocks, self.blocks)
         for block in set(self.blocks):  # use a copy of the set for safe multi threading
-            await self.update_blocks(block=block)
+            await self.update_blocks(block_id=block.id)
         self.end_frame_unground()
 
         print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
-        print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
+        # print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
 
 
 
-# Physics
+
+
+# Particle physics
     def check_pos_collide(self, x: int, y: int) -> bool:
-        return self.matrix[x,y] != -1 #  or y >= self.ground
+        return self.matrix[x,y] != -1
 
 
 #TODO: Remove and change player to use check_pos_collide
@@ -167,7 +169,8 @@ class Terrain_Manager:
 
     # Particle functions
     # @jit(nopython=True)
-    async def update_blocks(self, block: Block):
+    async def update_blocks(self, block_id: int):
+        block = self.all_blocks[block_id]
         if block.collision_detection:
     #TODO: somehow a small # of blocks are remaining in the active list and not going into inactive list
     # try level 1.
@@ -185,7 +188,7 @@ class Terrain_Manager:
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
-                collided = self.move(block, next_x, next_y)
+                collided = self.move(block.id, next_x, next_y)
                 if collided:
                     break
                 # TODO: Is this correct with dynamic velocity? I think i'm supposed to be subtracting the step amount.
@@ -197,7 +200,7 @@ class Terrain_Manager:
 
         elif block in self.blocks:
             self.blocks.remove(block)
-            self.inactive_blocks.add(block)
+            # self.inactive_blocks.add(block)
 
         if block.type.destructive:
             self.destructive(block.position[0], block.position[1])
@@ -206,7 +209,8 @@ class Terrain_Manager:
         self.game.render_dict.add((block.position, block.type.color))
 
 
-    def move(self, block: Block, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
+    def move(self, block_id: int, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
+        block = self.all_blocks[block_id]
         new_x, new_y = block.position[0] + x_step, block.position[1] + y_step
         collision = self.check_pos_collide(new_x, new_y)
 
@@ -214,7 +218,7 @@ class Terrain_Manager:
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
             slide = self.check_slide(x=block.position[0], y=block.position[1], type_name=block.type.name,
-                                     block_id=block.id)
+                                     block_id=block_id)
             if slide != 0:
                 # self.slide(block, slide)
                 block.horiz_velocity = slide * slide_factor  # * self.game.physics_lag_frames
@@ -236,7 +240,7 @@ class Terrain_Manager:
         self.matrix[old_pos] = -1
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
-            self.inactive_blocks.add(block)
+            # self.inactive_blocks.add(block)
             # if block in self.blocks:
             #     self.blocks.remove(block)  # gets removed in update_block
         block.position = (new_x, new_y)
@@ -294,7 +298,8 @@ class Terrain_Manager:
                         self.destroy_block(neighbor)
 
 
-    def destroy_block(self, block: Block) -> None:
+    def destroy_block(self, block_id: int) -> None:
+        block = self.all_blocks[block_id]
         self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
         self.game.spaces_to_clear.add_pos(block.position)
         # Now check all spaces around this block for ungroundable blocks. Note this will be called for all
@@ -326,8 +331,8 @@ class Terrain_Manager:
         next_frame_ungrounds = set()
         for block in unground_frame_blocks:
             self.blocks.add(block)
-            if block in self.inactive_blocks:
-                self.inactive_blocks.remove(block)
+            # if block in self.inactive_blocks:
+            #     self.inactive_blocks.remove(block)
             next_frame_ungrounds.add(block)
         # if len(unground_frame_blocks) > 0:
         #     print(f'unground this frame block count: {len(unground_frame_blocks)}')

@@ -161,7 +161,7 @@ class Player:
                 continue
             # get distance
             if help.get_blocks_in_dist(pos=location, block_list={block}, distance=self.destroy_distance):
-                self.terrain_manager.destroy_block(block)
+                self.terrain_manager.destroy_block(block.id)
 
 
     def explode(self, location: (int, int), destroy_radius: int, force_radius: int, force: int):
@@ -178,7 +178,7 @@ class Player:
                     block = self.terrain_manager.all_blocks[id]
                     if location[0] - destroy_radius < x < location[0] + destroy_radius \
                       and location[1] - destroy_radius < y < location[1] + destroy_radius:
-                        self.terrain_manager.destroy_block(block)
+                        self.terrain_manager.destroy_block(id)
                         continue
 
                     #TODO: Should this be revamped? Currently particles on the edges of the explosion get more force.
@@ -198,9 +198,9 @@ class Player:
                     block.collision_detection = True
                     block.horiz_velocity = horiz
                     block.vert_velocity = verti
-                    if block in self.terrain_manager.inactive_blocks:
-                        self.terrain_manager.blocks.add(block)
-                        self.terrain_manager.inactive_blocks.remove(block)
+                    # if block in self.terrain_manager.inactive_blocks:
+                    self.terrain_manager.blocks.add(block)
+                        # self.terrain_manager.inactive_blocks.remove(block)
 
 
 
