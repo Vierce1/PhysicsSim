@@ -72,12 +72,13 @@ class Game:
 
         # Particle updating
         print(f'length of particles = {str(len(level_blocks))}')
-        self.terrain_manager.blocks.update(level_blocks)  # have to add ALL blocks to this first so they draw on frame 1
+        [self.terrain_manager.blocks.append(block.id) for block in level_blocks]
+        # have to add ALL blocks to this first so they draw on frame 1
         self.terrain_manager.all_blocks.extend(level_blocks)
+        self.terrain_manager.fill_matrix()
         # Fill quadtree on load
         self.quadtree_nodes, created = self.terrain_manager.initialize_quadtree()
         # print(f'created {len(self.quadtree_nodes)} quadtree branch nodes')
-        self.terrain_manager.fill_matrix()
 
         # Backdrop sizing... revisit later
         self.backdrop.convert(self.render_image)
@@ -147,7 +148,7 @@ class Game:
 
     def clear_spaces(self, clear_spaces: set):
         # check if block has moved into that position
-        for pos in clear_spaces:
+        for pos in list(clear_spaces):
             empty = self.terrain_manager.matrix[pos] == -1
             if empty:
                 self.render_image.set_at(pos, self.backdrop_surface.get_at(pos))
@@ -160,12 +161,12 @@ class Game:
 
     def update(self, level: Level, timer: int, events: list[pg.event.Event]):
         # Take a copy of the spots to render in case physics rendering is lagging
-        render_spots = set(self.render_dict)
+        render_spots = list(self.render_dict)
         self.render_dict.clear()  # clear it immediately. Slower blocks will be drawn next frame.
 
         # Update now blank spaces with the backdrop
         # TODO: Weed out spaces that are now occuipied by other blocks
-        self.clear_spaces(set(self.spaces_to_clear))
+        self.clear_spaces(self.spaces_to_clear)
         # [self.render_image.set_at(pos, self.backdrop_surface.get_at(pos)) for pos in set(self.spaces_to_clear)]
         # self.erase_colors(set(self.spaces_to_erase))
         # self.set_colors(set(self.spaces_to_clear))
@@ -194,7 +195,7 @@ class Game:
                 spawn_blocks = self.terrain_gen.gen_terrain(block_count=ts.spawn_rate, block_type=ts.block_type,
                                                             bounds=ts.bounds)
                 # self.blocks.update(spawn_blocks)
-                self.terrain_manager.blocks.update(spawn_blocks)
+                [self.terrain_manager.blocks.add(block.id) for block in spawn_blocks]
 
 
         self.player.update(events, self.render_image)

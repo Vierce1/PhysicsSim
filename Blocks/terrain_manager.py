@@ -34,8 +34,7 @@ class Matrix(defaultdict):  # defaultdict will create items if try to get a valu
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int, game):
-        self.blocks = set()
-        self.processing_blocks = False
+        self.blocks = []  # set() start as a list til we update the block ids
         # self.inactive_blocks = set()
         self.destroyable_blocks = set()
         self.unground_pos_checks = set()
@@ -72,7 +71,10 @@ class Terrain_Manager:
         for i, b in enumerate(self.all_blocks):
             b.id = i
             self.matrix[b.position[0], b.position[1]] = b.id
+            self.blocks[i] = b.id
         self.random_bits = [random.randrange(0, 2) for _ in range(len(self.blocks))]
+        self.blocks = {b_id for b_id in self.blocks}
+        print(f'length = {len(self.blocks)}')
 
     def add_blocks_to_matrix(self, particles: list[Block]):
         for p in particles:
@@ -80,18 +82,18 @@ class Terrain_Manager:
             self.matrix[p.position[0], p.position[1]] = p.id
             if p.type.destroyable:
                 self.destroyable_blocks.add(p)
-            self.blocks.add(p)  # have to add ALL blocks to this first so they draw on frame 1
+            self.blocks.add(p.id)  # have to add ALL blocks to this first so they draw on frame 1
             self.all_blocks.append(p)
         self.random_bits.extend([random.randrange(0, 2) for _ in range(len(particles))])
 
 
     async def update(self) -> None:
         # self.pool.map(self.update_blocks, self.blocks)
-        for block in set(self.blocks):  # use a copy of the set for safe multi threading
-            await self.update_blocks(block_id=block.id)
+        for block_id in list(self.blocks):  # use a copy of the set for safe multi threading
+            await self.update_blocks(block_id=block_id)
         # self.end_frame_unground()
 
-        print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
+        # print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
         # print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
 
 
@@ -197,8 +199,8 @@ class Terrain_Manager:
                 if total_y != 0:
                     total_y -= 1 if total_y > 0 else -1
 
-        elif block in self.blocks:
-            self.blocks.remove(block)
+        elif block.id in self.blocks:
+            self.blocks.remove(block.id)
             # self.inactive_blocks.add(block)
 
         if block.type.destructive:
@@ -324,7 +326,7 @@ class Terrain_Manager:
                     # When this now active block moves it will activate its neighbors the following frame
                     if not block.type.rigid and not block.collision_detection:
                         block.collision_detection = True
-                        self.blocks.add(block)
+                        self.blocks.add(block_id)
                     # self.unground_pos_checks.add(check_pos)
 
 
@@ -348,7 +350,12 @@ class Terrain_Manager:
         if self.quadtree.initialized:
             return self.quadtree.all_quads, False
         else:
-            insert_blocks = {b for b in self.blocks if b.type.destroyable}  # only insert destroyable blocks
+            insert_blocks = set()
+            for b in self.blocks:
+                if self.all_blocks[b].type.destroyable:
+                    insert_blocks.add(self.all_blocks[b])
+            # insert_blocks = {self.all_blocks[b] for b in self.blocks if self.all_blocks[b].type.destroyable}
+            # only insert destroyable blocks
             print(f'quadtree particle insert count: {len(insert_blocks)}')
             # as blocks are always active upon load, then switch to inactive.
             return self.quadtree.create_tree(insert_blocks), True
