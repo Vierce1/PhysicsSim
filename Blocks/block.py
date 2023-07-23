@@ -26,3 +26,6 @@ class Ghost_Particle:
         self.parent_id = parent_id
         self.color = color
         # Do I need an id?
+
+    def update(self):
+        pass
