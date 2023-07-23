@@ -39,7 +39,6 @@ class Terrain_Manager:
         # self.inactive_blocks = set()
         self.destroyable_blocks = set()
         self.unground_pos_checks = set()
-        self.current_unground_chain_checks = set()  # Set to keep track of pos already checked this chain
         self.all_blocks = []  # do not remove from list so indices stay the same
         self.screen_width = screen_width
         self.screen_height = screen_height
@@ -90,7 +89,7 @@ class Terrain_Manager:
         # self.pool.map(self.update_blocks, self.blocks)
         for block in set(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block_id=block.id)
-        self.end_frame_unground()
+        # self.end_frame_unground()
 
         print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
         # print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
@@ -314,52 +313,33 @@ class Terrain_Manager:
         # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
             for y in range(-1, 1):  # Updated from 2. Theoretically shouldn't need to check down
-                pos = (position[0] + x, position[1] + y)
+                check_pos = (position[0] + x, position[1] + y)
                 # add the position to the set to check if there's an ungroundable block at end of sequence
-                if pos != position:  #  and pos not in self.current_unground_chain_checks
-                    # did we check it already this chain?
-                    self.unground_pos_checks.add(pos)
-                self.current_unground_chain_checks.add(pos)
+                if check_pos != position:
+                    block_id = self.matrix[check_pos]
+                    if block_id < 0:  # -1 or -2 for ground
+                        continue
+                    block = self.all_blocks[block_id]
+                    # Keep the ungrounding split up over multiple frames for performance.
+                    # When this now active block moves it will activate its neighbors the following frame
+                    if not block.type.rigid and not block.collision_detection:
+                        block.collision_detection = True
+                        self.blocks.add(block)
+                    # self.unground_pos_checks.add(check_pos)
 
 
-    def end_frame_unground(self) -> None:
-        unground_frame_blocks = self.get_unground_blocks()
-        # if not unground_frame_blocks:
-        #     self.current_unground_chain_checks.clear()  # Flush set, chain is complete.
-        #     # self.unground_count = 0
-        #     return
-        # # next_frame_ungrounds = set()
-        # for block in unground_frame_blocks:
-        #     self.blocks.add(block)
-            # if block in self.inactive_blocks:
-            #     self.inactive_blocks.remove(block)
-            # next_frame_ungrounds.add(block)
-        # if len(unground_frame_blocks) > 0:
-        #     print(f'unground this frame block count: {len(unground_frame_blocks)}')
-    # Removing the chain. Blocks responsible for triggering all neighbors when they move.
-        # for block in next_frame_ungrounds:  # now add the blocks to check next frame
-        #     self.trigger_ungrounding(block)
-        # if self.unground_count != 0:  # now only checking each block 1x
-        #     print(f'unground count: {self.unground_count}')
-
-
-#TODO: A block becomes ungrounded. Then grounded. Then another one next to it turns it back to ungrounded.#
-# Does this happen, and if so do I want it to happen?
-    def get_unground_blocks(self) -> None:
-        if len(self.unground_pos_checks) == 0:
-            return
-        # unground_blocks = set()
-        for pos in set(self.unground_pos_checks):
-            block_id = self.matrix[(pos)]
-            if block_id == -1:
-                continue
-            block = self.all_blocks[block_id]
-            if not block.type.rigid and not block.collision_detection:
-                block.collision_detection = True
-                # unground_blocks.add(block)
-                self.blocks.add(block)
-        self.unground_pos_checks.clear()
-        # return unground_blocks
+    # def end_frame_unground(self) -> None:
+    #     if len(self.unground_pos_checks) == 0:
+    #         return
+    #     for pos in self.unground_pos_checks:
+    #         block_id = self.matrix[(pos)]
+    #         if block_id == -1:
+    #             continue
+    #         block = self.all_blocks[block_id]
+    #         if not block.type.rigid and not block.collision_detection:
+    #             block.collision_detection = True
+    #             self.blocks.add(block)
+    #     # self.unground_pos_checks.clear()
 
 
 
