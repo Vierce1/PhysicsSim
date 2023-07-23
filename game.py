@@ -72,8 +72,8 @@ class Game:
 
         # Particle updating
         print(f'length of particles = {str(len(level_blocks))}')
-        [self.terrain_manager.blocks.append(block.id) for block in level_blocks]
         # have to add ALL blocks to this first so they draw on frame 1
+        [self.terrain_manager.blocks.add(block) for block in level_blocks]  # Add Blocks first. Convert to ID later
         self.terrain_manager.all_blocks.extend(level_blocks)
         self.terrain_manager.fill_matrix()
         # Fill quadtree on load

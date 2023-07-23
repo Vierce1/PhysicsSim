@@ -34,7 +34,7 @@ class Matrix(defaultdict):  # defaultdict will create items if try to get a valu
 
 class Terrain_Manager:
     def __init__(self, screen_width: int, screen_height: int, game):
-        self.blocks = []  # set() start as a list til we update the block ids
+        self.blocks = set()
         # self.inactive_blocks = set()
         self.destroyable_blocks = set()
         self.unground_pos_checks = set()
@@ -71,9 +71,8 @@ class Terrain_Manager:
         for i, b in enumerate(self.all_blocks):
             b.id = i
             self.matrix[b.position[0], b.position[1]] = b.id
-            self.blocks[i] = b.id
         self.random_bits = [random.randrange(0, 2) for _ in range(len(self.blocks))]
-        self.blocks = {b_id for b_id in self.blocks}
+        self.blocks = {block.id for block in self.blocks}
         print(f'length = {len(self.blocks)}')
 
     def add_blocks_to_matrix(self, particles: list[Block]):
