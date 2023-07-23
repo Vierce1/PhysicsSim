@@ -50,7 +50,7 @@ class Terrain_Manager:
         self.ground = 1200  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
-        self.pool = mp.Pool(4)
+        self.pool = mp.Pool(8)
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -71,11 +71,11 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        # self.pool.map(self.update_blocks, self.blocks)
+        self.pool.map(self.update_blocks, self.blocks)
 
-        for block in set(self.blocks):  # use a copy of the set for safe multi threading
+        # for block in set(self.blocks):  # use a copy of the set for safe multi threading
         #     await self.update_blocks(block=block)
-            self.pool.Process(target=self.update_blocks, args=(block,), ctx=mp.get_context())
+
 
         self.end_frame_unground()
 
