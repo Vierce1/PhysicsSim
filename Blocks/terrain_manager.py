@@ -1,4 +1,4 @@
-from Blocks.block import Block, Ghost_Particle
+from Blocks.block import Block, Trail
 import Blocks.block_type as block_type
 from quadtree import Quadtree_Node, Quadtree
 import pygame as pg
@@ -199,14 +199,9 @@ class Terrain_Manager:
                     total_y -= 1 if total_y > 0 else -1
 
             # Spawn ghost trail
-            if abs(block.vert_velocity) > 0:
-                last_pos = (int(block.position[0] - math.ceil(block.horiz_velocity / 5)) \
-                            , int(block.position[1] - math.ceil(block.vert_velocity / 5)))
-                color = (min(block.type.color[0] + 65, 255), min(block.type.color[0] + 65, 255),
-                         min(block.type.color[0] + 65, 255))
-                ghost = Ghost_Particle(position=last_pos, parent_id=block_id, color=color)
-                # self.matrix[last_pos]  # Don't need to fill the matrix
-                self.game.render_dict.add((last_pos, color))
+            # if not block.trail_created and abs(block.vert_velocity) > 0:
+            #     block.trail_created = True
+            #     self.create_trail(block_id)
 
         elif block.id in self.blocks:
             self.blocks.remove(block.id)
@@ -296,6 +291,15 @@ class Terrain_Manager:
     #
 
     # def flow(self, block: Block, flow: (int, int))-> None:
+
+
+    def create_trail(self, block_id: int):
+        block = self.all_blocks[block_id]
+        color = (min(block.type.color[0] + 65, 255), min(block.type.color[0] + 65, 255),
+                 min(block.type.color[0] + 65, 255))
+        trail = Trail(parent_id=block_id, color=color)
+        self.game.trails.add(trail)
+
 
 
     def destructive(self, x: int, y: int):

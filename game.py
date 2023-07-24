@@ -28,7 +28,7 @@ class Game:
         self.terrain_manager = tm.Terrain_Manager(self.display_resolution[0], self.display_resolution[1], self)
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
-                             display_resolution[1])
+                             display_resolution[1], self.render_image)
         self.quadtree_nodes = set()
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
@@ -41,6 +41,7 @@ class Game:
         self.ui = User_Interface(particle_button_types=[], game=self)
         self.mouse_pos = pg.mouse.get_pos()  # store this globally so classes can reference it
         self.particle_spawner = Particle_Spawner(terrain_manager=self.terrain_manager, terrain_gen=self.terrain_gen)
+        self.trails = set()
 
 
     def setup(self, level: int) -> Level:
@@ -52,6 +53,7 @@ class Game:
         self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,
                                    ground_level=level.ground)
         self.player.set_start_position(level.start_pos)
+        self.player.render_image = self.render_image
 
         # Set the plane shift to center the camera on the player's starting position
         self.plane_shift = self.adjust_start_planeshift(level.start_pos, level.world_size)
@@ -127,25 +129,6 @@ class Game:
             return pg.mouse.get_pos()
 
 
-#     def set_colors(self, clear_spaces: set):
-#         for pos in clear_spaces:
-#             color = self.render_image.get_at(pos)
-#             ghost_colors = []
-#             for c in color:
-#                 new_color = c + 40 if c + 40 <= 255 else 255
-#                 ghost_colors.append(new_color)
-#             # ghost_color = (color[0] + 40, color[1] + 40, color[2] + 40)
-#             self.render_image.set_at(pos, (ghost_colors[0], ghost_colors[1], ghost_colors[2]))
-#         self.spaces_to_erase = clear_spaces
-#
-#     def erase_colors(self, erase_spaces: set):
-#         for pos in erase_spaces:
-#             self.render_image.set_at(pos, self.backdrop_surface.get_at(pos))
-#
-#     def ghost(self, spaces: set):
-#         for pos in spaces:
-#             color = self.render_image.get_at(pos)
-
     def clear_spaces(self, clear_spaces: set):
         # check if block has moved into that position
         for pos in list(clear_spaces):
@@ -157,6 +140,16 @@ class Game:
         self.physics_processing = True
         asyncio.run(self.terrain_manager.update())
         self.physics_processing = False
+
+    def update_trails(self):
+        for trail in list(self.trails):
+            self.spaces_to_clear.add(trail.position)
+            pos = trail.update_pos(self.terrain_manager.all_blocks[trail.parent_id])
+            if not pos:
+                self.trails.remove(trail)
+                continue
+            self.render_dict.add((pos, trail.color))
+
 
 
     def update(self, level: Level, timer: int, events: list[pg.event.Event]):
@@ -175,7 +168,7 @@ class Game:
 
 
         [self.render_image.set_at(pos, color) for pos, color in render_spots]
-
+        self.update_trails()
 
 
         # # visualization
@@ -198,7 +191,7 @@ class Game:
                 [self.terrain_manager.blocks.add(block.id) for block in spawn_blocks]
 
 
-        self.player.update(events, self.render_image)
+        self.player.update(events)
 
         # Blitting
         self.render_image.convert()  # optimize image after drawing on it

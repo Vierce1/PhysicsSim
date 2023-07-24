@@ -6,9 +6,10 @@ import Blocks.terrain_manager as tm
 
 class Player:
     def __init__(self, terrain_manager: tm.Terrain_Manager, game, screen_width, screen_height,
-                 render_width, render_height):
+                 render_width, render_height, render_image: pg.Surface):
         self.terrain_manager = terrain_manager
         self.game = game
+        self.render_image = render_image
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.render_width = render_width
@@ -30,8 +31,8 @@ class Player:
         self.rect.x, self.rect.y = start_pos[0], start_pos[1]
 
 
-    def update(self, events, render_image):
-        self.accept_input(events=events, render_image=render_image)
+    def update(self, events):
+        self.accept_input(events=events, render_image=self.render_image)
         grounded = False
         for _ in range(self.vertical_speed):
             grounded = self.fall()
@@ -39,13 +40,13 @@ class Player:
             # TODO: Need to revamp this for gravity direction changes
             self.vertical_speed += self.terrain_manager.gravity
 
-        pg.draw.rect(surface=render_image, color=(255, 255, 255), rect=self.rect)
+        pg.draw.rect(surface=self.render_image, color=(255, 255, 255), rect=self.rect)
 
 
     def fall(self) -> bool:
         grounded = self.terrain_manager.check_under((self.position[0], self.rect.bottom + 1))
         if not grounded:
-            self.game.spaces_to_clear.add_pos(self.position)
+            [self.game.spaces_to_clear.add_pos(pos) for pos in self.get_covered_pixels()]
             self.position = (self.position[0], self.position[1] + 1)
             self.rect.y = self.position[1]
             self.game.update_plane_shift(change=(0, -1), player_pos=self.position)
@@ -58,8 +59,14 @@ class Player:
         # self.position = tuple(map(sum, zip(current_pos, change)))
         self.rect.x = current_pos[0] + change[0]
         self.rect.y = current_pos[1] + change[1]
-
         return (self.rect.x, self.rect.y)
+
+    def get_covered_pixels(self) -> list[(int, int)]:  # returns all pixels covered by player
+        pixels = []
+        for x in range(self.size):
+            for y in range(self.size):
+                pixels.append((self.position[0] + x, self.position[1] + y))
+        return pixels
 
 
     def accept_input(self, events, render_image: pg.display):
@@ -118,7 +125,7 @@ class Player:
         # Check if need to go up slope first
         if self.terrain_manager.check_slope(self.position, direction):
             change = (change[0], change[1] - 1)
-        self.game.spaces_to_clear.add_pos(self.position)  # Not working?
+        [self.game.spaces_to_clear.add_pos(pos) for pos in self.get_covered_pixels()]
         self.position = self.get_rect_pos(current_pos=self.position, change=change)
         # Update the camera position.
         # Alternative way would be to use the player's finite world position.
