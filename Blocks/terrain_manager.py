@@ -151,6 +151,7 @@ class Terrain_Manager:
         #     two_under_block_id = self.matrix[x + side_count, y + 2]
         #     side_block_id = self.matrix[x + side_count, y]
         # Found a spot where there isn't water beneath
+#TODO: Convert the all_blocks list to a custom python object (list) and on error return None
         if under_block_id != -1 and self.all_blocks[under_block_id].type.name == 'water':
             if self.matrix[x + dir, y] == -1:
                 return dir
@@ -187,6 +188,7 @@ class Terrain_Manager:
     #TODO: When blocks are moving very fast this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
+            slip_counter = block.type.slipperiness
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
@@ -194,9 +196,10 @@ class Terrain_Manager:
                 if collided:
                     break
                 # TODO: Is this correct with dynamic velocity? I think i'm supposed to be subtracting the step amount.
-                # On level 1 water goes through the mud blocks which are 10 particles deep
-                if total_x != 0:
+                slip_counter -= 1
+                if total_x != 0 and slip_counter == 0:
                     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
+                    slip_counter = block.type.slipperiness
                 if total_y != 0:
                     total_y -= 1 if total_y > 0 else -1
 
@@ -228,7 +231,8 @@ class Terrain_Manager:
                                      block_id=block_id)
             if slide != 0:
                 # self.slide(block, slide)
-                block.horiz_velocity = slide * slide_factor  # * self.game.physics_lag_frames
+#TODO: Going about this wrong...?
+                block.horiz_velocity += slide  # Might make block go for infinity?
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
 

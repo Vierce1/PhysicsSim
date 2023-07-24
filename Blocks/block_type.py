@@ -16,7 +16,7 @@ class Block_Type:
         self.rigid = True
         self.destroyable = False
         self.color = (0,0,0)
-        self.friction = 1  # slidieness. 1 = no sliding
+        self.slipperiness = 1  # slidieness. 1 = no sliding
         self.width = 1
         self.height = 1
         self.start_static = False
@@ -52,7 +52,7 @@ class Sand(Block_Type):
         self.rigid = False
         self.destroyable = True
         self.color = (150,190,0)
-        self.friction = 0.3
+        self.slipperiness = 2
 
 class Static_Sand(Block_Type):  # starts grounded until becoming ungrounded again
     def __init__(self):
@@ -61,7 +61,7 @@ class Static_Sand(Block_Type):  # starts grounded until becoming ungrounded agai
         self.rigid = False
         self.destroyable = True
         self.color = (150,190,0)
-        self.friction = 0.3
+        self.slipperiness = 2
         self.start_static = True
 
 
@@ -72,7 +72,7 @@ class Rock(Block_Type):
         self.rigid = True
         self.destroyable = False
         self.color = (160, 160, 160)
-        self.friction = 0.8
+        self.slipperiness = 0
 
 class Gravel(Block_Type):  # Inheritance seems pointless here since there are no methods to inherit.
     def __init__(self):
@@ -80,7 +80,7 @@ class Gravel(Block_Type):  # Inheritance seems pointless here since there are no
         self.name = 'gravel'
         self.rigid = False
         self.destroyable = True
-        self.friction = 0.95
+        self.slipperiness = 1
 
 
 class Gravel_A(Gravel):
@@ -89,7 +89,7 @@ class Gravel_A(Gravel):
         self.name = 'gravel'
         self.rigid = False
         self.destroyable = True
-        self.friction = 0.95
+        self.slipperiness = 1
         self.color = (130, 130, 130)
 
 class Gravel_B(Gravel):
@@ -98,7 +98,7 @@ class Gravel_B(Gravel):
         self.name = 'gravel'
         self.rigid = False
         self.destroyable = True
-        self.friction = 0.95
+        self.slipperiness = 1
         self.color = (165, 165, 165)
 
 class Gravel_C(Gravel):
@@ -107,7 +107,7 @@ class Gravel_C(Gravel):
         self.name = 'gravel'
         self.rigid = False
         self.destroyable = True
-        self.friction = 0.95
+        self.slipperiness = 1
         self.color = (52, 52, 52)
 
 
@@ -118,7 +118,7 @@ class Dirt(Block_Type):
         self.rigid = True
         self.destroyable = True
         self.color = (70,38,0)
-        self.friction = 0.3
+        self.slipperiness = 1
 
 
 class Water(Block_Type):
@@ -128,7 +128,7 @@ class Water(Block_Type):
         self.rigid = False
         self.destroyable = True
         self.color = (0,120,255)
-        self.friction = 0.1
+        self.slipperiness = 5
 
 
 class Magma(Block_Type):
@@ -138,6 +138,6 @@ class Magma(Block_Type):
         self.rigid = False
         self.destroyable = False
         self.color = (255,85,0)
-        self.friction = 0.1
+        self.slipperiness = 3
         self.destructive = True
 
