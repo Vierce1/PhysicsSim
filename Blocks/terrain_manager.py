@@ -140,9 +140,10 @@ class Terrain_Manager:
         return 0
 
     def water_slide(self, x: int, y: int, block_id: int) -> int:
-        dir = 1 if random.random() < 0.5 else -1
+        # dir = 1 if random.random() < 0.5 else -1
+        dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
         under_block_id = self.matrix[x, y + 1]
-        side_block_id = self.matrix[x + dir, y]
+        # side_block_id = self.matrix[x + dir, y]
         # side_count = dir
         # while under_block_id != -1 and side_block_id == -1:
         #     #  more than 1 deep. try to spread out. Do it all in 1 frame to sim water
@@ -150,10 +151,11 @@ class Terrain_Manager:
         #     two_under_block_id = self.matrix[x + side_count, y + 2]
         #     side_block_id = self.matrix[x + side_count, y]
         # Found a spot where there isn't water beneath
-        if under_block_id != -1 and side_block_id == -1:
-            return dir
-        elif under_block_id != -1 and self.matrix[x - dir, y + 1] == -1:
-            return dir
+        if under_block_id != -1 and self.all_blocks[under_block_id].type.name == 'water':
+            if self.matrix[x + dir, y] == -1:
+                return dir
+            elif self.matrix[x - dir, y + 1] == -1:
+                return dir
         return 0
 
 
