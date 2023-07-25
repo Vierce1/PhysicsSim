@@ -227,7 +227,7 @@ class Terrain_Manager:
             self.destructive(block.position[0], block.position[1])
             # block.collision_detection = True  # need a better way
 
-        self.game.render_dict.add((block.position, self.game.block_type_list[block.type].color))
+        self.game.render_dict.add((block.position, self.game.block_type_list[block.type].get_color()))
 
 
     def move(self, block_id: int, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop

@@ -24,10 +24,17 @@ class Block_Type:
         self.rigid = True
         self.destroyable = False
         self.color = (0,0,0)
+        self.colors = None
         # self.slipperiness = 1  # slidieness. 1 = no sliding
         self.slide_grade = (1, 1)  # x,y tolerance. If no block is in x+1, y+1, it will slide
         self.start_static = False
         self.destructive = False   # lava. Destroys blocks it touches if they're destroyable
+
+
+    def get_color(self):
+        if self.colors:
+            return self.colors[random.randrange(len(self.colors))]
+        return self.color
 
 
     def get_block_type(self, block_type):
@@ -42,13 +49,14 @@ class Block_Type:
         elif block_type == WATER:
             return Water()
         elif block_type == GRAVEL:
-            rand = random.randrange(0, 3)
-            if rand == 0:
-                return Gravel_A()
-            elif rand == 1:
-                return Gravel_B()
-            else:
-                return Gravel_C()
+            return Gravel()
+            # rand = random.randrange(0, 3)
+            # if rand == 0:
+            #     return Gravel_A()
+            # elif rand == 1:
+            #     return Gravel_B()
+            # else:
+            #     return Gravel_C()
         elif block_type == MAGMA:
             return Magma()
 
@@ -83,16 +91,7 @@ class Rock(Block_Type):
         self.color = (160, 160, 160)
         self.slide_grade = (0, 0)
 
-class Gravel(Block_Type):  # Inheritance seems pointless here since there are no methods to inherit.
-    def __init__(self):
-        super().__init__()
-        self.name = 'gravel'
-        self.rigid = False
-        self.destroyable = True
-        self.slide_grade = (1, 3)
-
-
-class Gravel_A(Gravel):  # All that changes is the color, so for everything else can just access Gravel() / GRAVEL
+class Gravel(Block_Type):
     def __init__(self):
         super().__init__()
         self.name = 'gravel'
@@ -100,24 +99,36 @@ class Gravel_A(Gravel):  # All that changes is the color, so for everything else
         self.destroyable = True
         self.slide_grade = (1, 3)
         self.color = (130, 130, 130)
+        self.colors = [(130, 130, 130), (165, 165, 165), (52, 52, 52)]
 
-class Gravel_B(Gravel):
-    def __init__(self):
-        super().__init__()
-        self.name = 'gravel'
-        self.rigid = False
-        self.destroyable = True
-        self.slide_grade = (1, 3)
-        self.color = (165, 165, 165)
 
-class Gravel_C(Gravel):
-    def __init__(self):
-        super().__init__()
-        self.name = 'gravel'
-        self.rigid = False
-        self.destroyable = True
-        self.slide_grade = (1, 3)
-        self.color = (52, 52, 52)
+
+# class Gravel_A(Gravel):  # All that changes is the color, so for everything else can just access Gravel() / GRAVEL
+#     def __init__(self):
+#         super().__init__()
+#         self.name = 'gravel'
+#         self.rigid = False
+#         self.destroyable = True
+#         self.slide_grade = (1, 3)
+#         self.color = (130, 130, 130)
+#
+# class Gravel_B(Gravel):
+#     def __init__(self):
+#         super().__init__()
+#         self.name = 'gravel'
+#         self.rigid = False
+#         self.destroyable = True
+#         self.slide_grade = (1, 3)
+#         self.color = (165, 165, 165)
+#
+# class Gravel_C(Gravel):
+#     def __init__(self):
+#         super().__init__()
+#         self.name = 'gravel'
+#         self.rigid = False
+#         self.destroyable = True
+#         self.slide_grade = (1, 3)
+#         self.color = (52, 52, 52)
 
 
 class Dirt(Block_Type):
