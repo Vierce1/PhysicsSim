@@ -72,7 +72,7 @@ class Game:
 
         # create a new UI every level? or just update buttons as needed?
         self.ui = User_Interface(particle_button_types=[block_type.SAND, block_type.GRAVEL, block_type.ROCK,
-                                                        block_type.WATER], game=self)
+                                block_type.MUD, block_type.WATER, block_type.MAGMA], game=self)
 
         # Particle updating
         print(f'length of particles = {str(len(level_blocks))}')

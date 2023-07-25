@@ -206,7 +206,7 @@ class Player:
                     block.horiz_velocity = horiz
                     block.vert_velocity = verti
                     # if block in self.terrain_manager.inactive_blocks:
-                    self.terrain_manager.blocks.add(block)
+                    self.terrain_manager.blocks.add(block.id)
                         # self.terrain_manager.inactive_blocks.remove(block)
 
 

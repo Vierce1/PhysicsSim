@@ -119,6 +119,8 @@ class Terrain_Manager:
 #TODO: Convert the all_blocks list to a custom python object (list)
 # and on error return None to eliminate the extra step
 
+
+#TODO: The shallower a block type's slide grade is, the more blocks get eaten...
     def check_slope(self, block_id: int, b_type: int, position: (int, int)) -> int:
         # returns int -1 for slide left, 1 slide right, 0 no slide
         direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
@@ -137,7 +139,7 @@ class Terrain_Manager:
         # returns int -1 for flow left, 1 flow right, 0 no flow
         # Liquid: 0 y difference, ensure block below is liquid
         under_block_id = self.matrix[position[0], position[1] + 1]
-        if under_block_id != -2 and self.all_blocks[under_block_id].type == block_type.WATER:
+        if under_block_id != -2 and self.game.block_type_list[self.all_blocks[under_block_id].type].liquid:
             # Now check if the direction is good
             direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
             if self.matrix[position[0] + direction, position[1]] == -1:
@@ -225,10 +227,9 @@ class Terrain_Manager:
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
                 self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
-            else:  # collided and is not sliding. Turn collision od
-                block.collision_detection = False
-                # self.inactive_blocks.add(block)   # gets added in update_block
-                # self.blocks.remove(block)  # gets removed in update_block
+            else:  # collided and is not sliding. Turn collision off
+                if not b_type.destructive or (b_type.destructive and block.destroy_counter == -1):
+                    block.collision_detection = False
             return True
 
         # Did not collide. Mark prev position empty & mark to fill with black
@@ -292,14 +293,23 @@ class Terrain_Manager:
 
 
 
+# destructive blocks take a # of frames to destroy a neighboring block, based on their type
     def destructive(self, x: int, y: int):
-        for x in range(x-1, x+2):
-            for y in range(y-1, y+2):
-                neighbor_id = self.matrix[x, y]
-                if neighbor_id >= 0:  # don't destroy ground
-                    neighbor = self.all_blocks[neighbor_id]
-                    if neighbor.type.destroyable:
-                        self.destroy_block(neighbor)
+        block = self.all_blocks[self.matrix[x,y]]  # Fix this
+        block.destroy_counter += 1
+        if block.destroy_counter >= self.game.block_type_list[block.type].destroy_count:
+            block.destroy_counter = 0
+            destroyed_count = 0
+            for x in range(x-1, x+2):
+                for y in range(y-1, y+2):
+                    neighbor_id = self.matrix[x, y]
+                    if neighbor_id >= 0:  # don't destroy ground
+                        neighbor = self.all_blocks[neighbor_id]
+                        if self.game.block_type_list[neighbor.type].destroyable:
+                            self.destroy_block(neighbor_id)
+                            destroyed_count += 1
+            if destroyed_count == 0:  # no blocks destroyed, count it as grounded now
+                block.destroy_counter = -1
 
 
     def destroy_block(self, block_id: int) -> None:

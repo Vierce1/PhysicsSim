@@ -8,12 +8,13 @@ STATIC_SAND = 3
 WATER = 4
 GRAVEL = 5
 MAGMA = 6
+MUD = 7
 
 
 class Block_Type_Instance_List(list):   # holds 1 instance of each block type to access properties
     def __init__(self):
         super(Block_Type_Instance_List).__init__()
-        for i in range(7):  # Update this when add block types
+        for i in range(8):  # Update this when add block types
             self.append(Block_Type().get_block_type(i))
 
 
@@ -28,6 +29,7 @@ class Block_Type:
         self.slide_grade = (1, 1)  # x,y tolerance. If no block is in x+1, y+1, it will slide
         self.start_static = False
         self.destructive = False   # lava. Destroys blocks it touches if they're destroyable
+        self.destroy_count = 5
 
 
     def get_color(self):
@@ -51,6 +53,8 @@ class Block_Type:
             return Gravel()
         elif block_type == MAGMA:
             return Magma()
+        elif block_type == MUD:
+            return Mud()
 
 
 
@@ -62,7 +66,7 @@ class Sand(Block_Type):
         self.liquid = False
         self.destroyable = True
         self.color = (150,190,0)
-        self.slide_grade = (1, 1)
+        self.slide_grade = (3, 1)
 
 class Static_Sand(Block_Type):  # starts grounded until becoming ungrounded again
     def __init__(self):
@@ -93,7 +97,7 @@ class Gravel(Block_Type):
         self.rigid = False
         self.liquid = False
         self.destroyable = True
-        self.slide_grade = (1, 3)
+        self.slide_grade = (1, 1)
         self.color = (130, 130, 130)
         self.colors = [(130, 130, 130), (165, 165, 165), (52, 52, 52)]
 
@@ -107,6 +111,17 @@ class Dirt(Block_Type):
         self.destroyable = True
         self.color = (70,38,0)
         self.slide_grade = (1, 1)
+
+class Mud(Block_Type):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mud'
+        self.rigid = False
+        self.liquid = False
+        self.destroyable = True
+        self.color = (45,25,0)
+        self.slide_grade = (1, 4)
+
 
 
 # Liquids
@@ -133,4 +148,4 @@ class Magma(Block_Type):
         self.color = (255,85,0)
         # self.slide_grade = (4, 1)
         self.destructive = True
-
+        self.destroy_count = 500  # Keep this really high. It creates an additive effect

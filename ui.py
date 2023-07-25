@@ -84,6 +84,14 @@ class Particle_Button:
             colors['normal'] = '#2a71f6'
             colors['hover'] = '#76c0ea'
             colors['pressed'] = '#001e56'
+        elif b_type.name == 'mud':
+            colors['normal'] = '#382716'
+            colors['hover'] = '#827160'
+            colors['pressed'] = '#1f1104'
+        elif b_type.name == 'magma':
+            colors['normal'] = '#cf4311'
+            colors['hover'] = '#d68060'
+            colors['pressed'] = '#80290a'
         return colors
 
     def set_pressed(self):
