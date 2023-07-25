@@ -120,11 +120,12 @@ class Terrain_Manager:
 
 
 #TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
-    def check_slide(self, x: int, y: int, type_name: str, block_id: int) -> int:
+#ALSO, probably want to split the functions at Move for block types?
+    def check_slide(self, x: int, y: int, b_type: int, block_id: int) -> int:
         # int -1 for slide left, 1 slide right, 0 no slide
-        if type_name == 'sand' or type_name == 'gravel':
+        if b_type == block_type.SAND or b_type == block_type.GRAVEL:
             return self.solid_slide(x, y, block_id)
-        elif type_name == 'water':
+        elif b_type == block_type.WATER:
             return self.water_slide(x, y, block_id)
         else:
             return 0
@@ -152,7 +153,7 @@ class Terrain_Manager:
         #     side_block_id = self.matrix[x + side_count, y]
         # Found a spot where there isn't water beneath
 #TODO: Convert the all_blocks list to a custom python object (list) and on error return None
-        if under_block_id != -1 and self.all_blocks[under_block_id].type.name == 'water':
+        if under_block_id != -1 and self.all_blocks[under_block_id].type == block_type.WATER:
             if self.matrix[x + dir, y] == -1:
                 return dir
             elif self.matrix[x - dir, y + 1] == -1:
@@ -188,7 +189,7 @@ class Terrain_Manager:
     #TODO: When blocks are moving very fast this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
-            slip_counter = block.type.slipperiness
+            slip_counter = self.game.block_type_list[block.type].slipperiness
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
@@ -199,7 +200,7 @@ class Terrain_Manager:
                 slip_counter -= 1
                 if total_x != 0 and slip_counter == 0:
                     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
-                    slip_counter = block.type.slipperiness
+                    slip_counter = self.game.block_type_list[block.type].slipperiness
                 if total_y != 0:
                     total_y -= 1 if total_y > 0 else -1
 
@@ -212,11 +213,11 @@ class Terrain_Manager:
             self.blocks.remove(block.id)
             # self.inactive_blocks.add(block)
 
-        if block.type.destructive:
+        if self.game.block_type_list[block.type].destructive:
             self.destructive(block.position[0], block.position[1])
             # block.collision_detection = True  # need a better way
 
-        self.game.render_dict.add((block.position, block.type.color))
+        self.game.render_dict.add((block.position, self.game.block_type_list[block.type].color))
 
 
     def move(self, block_id: int, x_step: int, y_step: int) -> bool:  # returns collided, to end the movement loop
@@ -227,7 +228,8 @@ class Terrain_Manager:
         if collision:  # collided. Check if it should slide to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
-            slide = self.check_slide(x=block.position[0], y=block.position[1], type_name=block.type.name,
+            slide = self.check_slide(x=block.position[0], y=block.position[1],
+                                     b_type=block.type,
                                      block_id=block_id)
             if slide != 0:
                 # self.slide(block, slide)
@@ -237,7 +239,7 @@ class Terrain_Manager:
                 self.matrix[old_pos] = -1  # EMPTY
 
                 self.game.spaces_to_clear.add_pos(block.position)
-                new_y = 0 if block.type.name == 'water' else 1
+                new_y = 0 if block.type == block_type.WATER else 1
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
                 self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
@@ -301,8 +303,9 @@ class Terrain_Manager:
 
     def create_trail(self, block_id: int):
         block = self.all_blocks[block_id]
-        color = (min(block.type.color[0] + 65, 255), min(block.type.color[0] + 65, 255),
-                 min(block.type.color[0] + 65, 255))
+        color = (min(self.game.block_type_list[block.type].color[0] + 65, 255),
+                 min(self.game.block_type_list[block.type].color[0] + 65, 255),
+                 min(self.game.block_type_list[block.type].color[0] + 65, 255))
         trail = Trail(parent_id=block_id, color=color)
         self.game.trails.add(trail)
 
@@ -343,7 +346,7 @@ class Terrain_Manager:
                     block = self.all_blocks[block_id]
                     # Keep the ungrounding split up over multiple frames for performance.
                     # When this now active block moves it will activate its neighbors the following frame
-                    if not block.type.rigid and not block.collision_detection:
+                    if not self.game.block_type_list[block.type].rigid and not block.collision_detection:
                         block.collision_detection = True
                         self.blocks.add(block_id)
                     # self.unground_pos_checks.add(check_pos)
@@ -371,7 +374,7 @@ class Terrain_Manager:
         else:
             insert_blocks = set()
             for b in self.blocks:
-                if self.all_blocks[b].type.destroyable:
+                if self.game.block_type_list[self.all_blocks[b].type].destroyable:
                     insert_blocks.add(self.all_blocks[b])
             # insert_blocks = {self.all_blocks[b] for b in self.blocks if self.all_blocks[b].type.destroyable}
             # only insert destroyable blocks

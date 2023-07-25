@@ -252,15 +252,15 @@ class Quadtree:
     def check_block_in_quad(self, block, node: Quadtree_Node) -> bool:
         # Updated to have a buffer. Blocks added to multiple quadtree nodes if they are close to the border
         # This allows inter-leaf collision
-        right = block.position[0] + block.type.width + (1 * block.type.width)
+        right = block.position[0] + 1
         # left = block.rect.left - (1 * block.type.width)
-        top = block.position[1] - block.type.height + (1 * block.type.height)
+        top = block.position[1] - 1
         # bottom = block.rect.bottom - (1 * block.rect.height)
 
         #TODO: Vett this formula
-        top_dist = node.y - (block.position[1] - block.type.height + block.type.height)
+        top_dist = node.y - (block.position[1] - 1)
 
-        if node.y >= top >= (node.y - node.height - block.type.height) \
+        if node.y >= top >= (node.y - node.height - 1) \
           and node.x <= right <= node.x + node.width:
                 # and (right >= quadtree.x and left <= quadtree.x + quadtree.width):
             # if top_dist < block.type.height:  # in multiple leaves vertically

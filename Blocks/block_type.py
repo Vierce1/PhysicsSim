@@ -10,6 +10,14 @@ GRAVEL = 5
 MAGMA = 6
 
 
+class Block_Type_Instance_List(list):   # holds 1 instance of each block type to access properties
+    def __init__(self):
+        super(Block_Type_Instance_List).__init__()
+        for i in range(7):
+            self.append(Block_Type().get_block_type(i))
+        # self.extend(Sand(), Rock(), Dirt(), Static_Sand(), Water(), Gravel(), Magma())
+
+
 class Block_Type:
     def __init__(self):
         self.name = 'base'
@@ -17,8 +25,6 @@ class Block_Type:
         self.destroyable = False
         self.color = (0,0,0)
         self.slipperiness = 1  # slidieness. 1 = no sliding
-        self.width = 1
-        self.height = 1
         self.start_static = False
         self.destructive = False   # lava. Destroys blocks it touches if they're destroyable
 
@@ -44,6 +50,8 @@ class Block_Type:
                 return Gravel_C()
         elif block_type == MAGMA:
             return Magma()
+
+
 
 class Sand(Block_Type):
     def __init__(self):
@@ -83,7 +91,7 @@ class Gravel(Block_Type):  # Inheritance seems pointless here since there are no
         self.slipperiness = 1
 
 
-class Gravel_A(Gravel):
+class Gravel_A(Gravel):  # All that changes is the color, so for everything else can just access Gravel() / GRAVEL
     def __init__(self):
         super().__init__()
         self.name = 'gravel'

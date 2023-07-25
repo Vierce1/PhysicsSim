@@ -164,7 +164,7 @@ class Player:
             in_range_blocks.update(child.objects)
         # print(f'neighboring objects: {len(in_range_blocks)}')
         for block in in_range_blocks:
-            if not block.type.destroyable:
+            if not self.game.block_type_list[block.type].destroyable:
                 continue
             # get distance
             if help.get_blocks_in_dist(pos=location, block_list={block}, distance=self.destroy_distance):
