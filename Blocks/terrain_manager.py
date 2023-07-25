@@ -120,54 +120,63 @@ class Terrain_Manager:
 
 
 #TODO: Somehow sand can overwrite dirt when flowing down a slope and hitting the sloped ceiling
-#ALSO, probably want to split the functions at Move for block types?
-    def check_slide(self, x: int, y: int, b_type: int, block_id: int) -> int:
-        # int -1 for slide left, 1 slide right, 0 no slide
-        if b_type == block_type.SAND or b_type == block_type.GRAVEL:
-            return self.solid_slide(x, y, block_id)
-        elif b_type == block_type.WATER:
-            return self.water_slide(x, y, block_id)
-        else:
-            return 0
+# #ALSO, probably want to split the functions at Move for block types?
 
-
-    # @jit(nopython=True)
-    def solid_slide(self,  x: int, y: int, block_id: int) -> int:
-        dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
-        if self.matrix[(x + dir, y + 1)] == -1:  # EMPTY:
-            return dir
-        elif self.matrix[(x - dir, y + 1)] == -1:  # EMPTY:
-            return -dir
-        return 0
-
-    def water_slide(self, x: int, y: int, block_id: int) -> int:
-        # dir = 1 if random.random() < 0.5 else -1
-        dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
-        under_block_id = self.matrix[x, y + 1]
-        # side_block_id = self.matrix[x + dir, y]
-        # side_count = dir
-        # while under_block_id != -1 and side_block_id == -1:
-        #     #  more than 1 deep. try to spread out. Do it all in 1 frame to sim water
-        #     side_count += dir
-        #     two_under_block_id = self.matrix[x + side_count, y + 2]
-        #     side_block_id = self.matrix[x + side_count, y]
-        # Found a spot where there isn't water beneath
-#TODO: Convert the all_blocks list to a custom python object (list) and on error return None
-        if under_block_id != -1 and self.all_blocks[under_block_id].type == block_type.WATER:
-            if self.matrix[x + dir, y] == -1:
-                return dir
-            elif self.matrix[x - dir, y + 1] == -1:
-                return dir
-        return 0
+#     def check_slide(self, x: int, y: int, b_type: int, block_id: int) -> int:
+#         # int -1 for slide left, 1 slide right, 0 no slide
+#         if b_type == block_type.SAND or b_type == block_type.GRAVEL:
+#             return self.solid_slide(x, y, block_id)
+#         elif b_type == block_type.WATER:
+#             return self.water_slide(x, y, block_id)
+#         else:
+#             return 0
+#
+#
+#     # @jit(nopython=True)
+#     def solid_slide(self,  x: int, y: int, block_id: int) -> int:
+#         dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
+#         if self.matrix[(x + dir, y + 1)] == -1:  # EMPTY:
+#             return dir
+#         elif self.matrix[(x - dir, y + 1)] == -1:  # EMPTY:
+#             return -dir
+#         return 0
+#
+#     def water_slide(self, x: int, y: int, block_id: int) -> int:
+#         # dir = 1 if random.random() < 0.5 else -1
+#         dir = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
+#         under_block_id = self.matrix[x, y + 1]
+#         # side_block_id = self.matrix[x + dir, y]
+#         # side_count = dir
+#         # while under_block_id != -1 and side_block_id == -1:
+#         #     #  more than 1 deep. try to spread out. Do it all in 1 frame to sim water
+#         #     side_count += dir
+#         #     two_under_block_id = self.matrix[x + side_count, y + 2]
+#         #     side_block_id = self.matrix[x + side_count, y]
+#         # Found a spot where there isn't water beneath
+# #TODO: Convert the all_blocks list to a custom python object (list) and on error return None
+#         if under_block_id != -1 and self.all_blocks[under_block_id].type == block_type.WATER:
+#             if self.matrix[x + dir, y] == -1:
+#                 return dir
+#             elif self.matrix[x - dir, y + 1] == -1:
+#                 return dir
+#         return 0
 
 
     def check_slope(self, block_id: int, b_type: int, position: (int, int)) -> int:
         # returns int -1 for slide left, 1 slide right, 0 no slide
+        # Add a check for Liquids that checks if another liquid is in the under block spot
         direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
         slide_grade = self.game.block_type_list[b_type].slide_grade
         x, y = position[0] + direction * slide_grade[0], position[1] + slide_grade[1]
         if self.matrix[x,y] == -1:  # Do i need to check the spaces beteen block and the slide grade check spot?
-            return direction
+            if b_type == block_type.WATER: # Liquids check 0 y difference, so need to ensure block below is liquid
+                under_block_id = self.matrix[position[0], position[1] + 1]
+                if self.all_blocks[under_block_id].type == block_type.WATER:  # under_block_id != -1 and
+                    return direction
+                else:
+                    return 0
+            else:
+                return direction
         else:
             x = position[0] - direction * slide_grade[0]
             if self.matrix[x, y] == -1:
@@ -244,7 +253,6 @@ class Terrain_Manager:
                 block.horiz_velocity += slide  # Doesn't matter right now, adding more than 1 would
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
-
                 self.game.spaces_to_clear.add_pos(block.position)
                 new_y = 0 if block.type == block_type.WATER else 1
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
@@ -343,7 +351,7 @@ class Terrain_Manager:
     def trigger_ungrounding(self, position: (int, int)) -> None:
         # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
-            for y in range(-1, 1):  # Updated from 2. Theoretically shouldn't need to check down
+            for y in range(-2, 1):  # Updated from 2. Theoretically shouldn't need to check down
                 check_pos = (position[0] + x, position[1] + y)
                 # add the position to the set to check if there's an ungroundable block at end of sequence
                 if check_pos != position:

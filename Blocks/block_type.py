@@ -50,13 +50,6 @@ class Block_Type:
             return Water()
         elif block_type == GRAVEL:
             return Gravel()
-            # rand = random.randrange(0, 3)
-            # if rand == 0:
-            #     return Gravel_A()
-            # elif rand == 1:
-            #     return Gravel_B()
-            # else:
-            #     return Gravel_C()
         elif block_type == MAGMA:
             return Magma()
 
@@ -102,35 +95,6 @@ class Gravel(Block_Type):
         self.colors = [(130, 130, 130), (165, 165, 165), (52, 52, 52)]
 
 
-
-# class Gravel_A(Gravel):  # All that changes is the color, so for everything else can just access Gravel() / GRAVEL
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'gravel'
-#         self.rigid = False
-#         self.destroyable = True
-#         self.slide_grade = (1, 3)
-#         self.color = (130, 130, 130)
-#
-# class Gravel_B(Gravel):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'gravel'
-#         self.rigid = False
-#         self.destroyable = True
-#         self.slide_grade = (1, 3)
-#         self.color = (165, 165, 165)
-#
-# class Gravel_C(Gravel):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'gravel'
-#         self.rigid = False
-#         self.destroyable = True
-#         self.slide_grade = (1, 3)
-#         self.color = (52, 52, 52)
-
-
 class Dirt(Block_Type):
     def __init__(self):
         super().__init__()
@@ -141,6 +105,7 @@ class Dirt(Block_Type):
         self.slide_grade = (1, 1)
 
 
+# Liquids
 class Water(Block_Type):
     def __init__(self):
         super().__init__()
@@ -148,7 +113,7 @@ class Water(Block_Type):
         self.rigid = False
         self.destroyable = True
         self.color = (0,120,255)
-        self.slide_grade = (6, 1)
+        self.slide_grade = (1, 0)  # Slide grade works for solids, but not really for liquids
 
 
 class Magma(Block_Type):
