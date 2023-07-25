@@ -123,7 +123,7 @@ class Player:
     def move(self, direction, render_image):
         change = direction
         # Check if need to go up slope first
-        if self.terrain_manager.check_slope(self.position, direction):
+        if self.terrain_manager.check_walk_slope(self.position, direction):
             change = (change[0], change[1] - 1)
         [self.game.spaces_to_clear.add_pos(pos) for pos in self.get_covered_pixels()]
         self.position = self.get_rect_pos(current_pos=self.position, change=change)

@@ -79,7 +79,7 @@ class Terrain_Manager:
         for p in particles:
             p.id = len(self.all_blocks)
             self.matrix[p.position[0], p.position[1]] = p.id
-            if p.type.destroyable:
+            if self.game.block_type_list[p.type].destroyable:
                 self.destroyable_blocks.add(p)
             self.blocks.add(p.id)  # have to add ALL blocks to this first so they draw on frame 1
             self.all_blocks.append(p)
@@ -161,13 +161,25 @@ class Terrain_Manager:
         return 0
 
 
-    def check_slope(self, position: (int, int), direction: int) -> bool:
-        if self.matrix[(position[0] + direction[0], position[1])] != -1 \
-                and self.matrix[(position[0] + direction[0], position[1] - 1)] == -1:  # EMPTY:
+    def check_slope(self, block_id: int, b_type: int, position: (int, int)) -> int:
+        # returns int -1 for slide left, 1 slide right, 0 no slide
+        direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
+        slide_grade = self.game.block_type_list[b_type].slide_grade
+        x, y = position[0] + direction * slide_grade[0], position[1] + slide_grade[1]
+        if self.matrix[x,y] == -1:  # Do i need to check the spaces beteen block and the slide grade check spot?
+            return direction
+        else:
+            x = position[0] - direction * slide_grade[0]
+            if self.matrix[x, y] == -1:
+                return -direction
+            else:
+                return 0
+
+    def check_walk_slope(self, player_pos: (int, int), direction: int):
+        if self.matrix[(player_pos[0] + direction[0], player_pos[1])] != -1 \
+                and self.matrix[(player_pos[0] + direction[0], player_pos[1] - 1)] == -1:  # EMPTY:
             return True
         return False
-
-
 
 
 
@@ -189,7 +201,7 @@ class Terrain_Manager:
     #TODO: When blocks are moving very fast this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
-            slip_counter = self.game.block_type_list[block.type].slipperiness
+            # slip_counter = self.game.block_type_list[block.type].slipperiness
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
@@ -197,10 +209,8 @@ class Terrain_Manager:
                 if collided:
                     break
                 # TODO: Is this correct with dynamic velocity? I think i'm supposed to be subtracting the step amount.
-                slip_counter -= 1
-                if total_x != 0 and slip_counter == 0:
+                if total_x != 0:
                     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
-                    slip_counter = self.game.block_type_list[block.type].slipperiness
                 if total_y != 0:
                     total_y -= 1 if total_y > 0 else -1
 
@@ -228,13 +238,10 @@ class Terrain_Manager:
         if collision:  # collided. Check if it should slide to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
-            slide = self.check_slide(x=block.position[0], y=block.position[1],
-                                     b_type=block.type,
-                                     block_id=block_id)
+            # slide = self.check_slide(x=block.position[0], y=block.position[1], b_type=block.type, block_id=block_id)
+            slide = self.check_slope(block_id=block_id, b_type=block.type, position=block.position)
             if slide != 0:
-                # self.slide(block, slide)
-#TODO: Going about this wrong...?
-                block.horiz_velocity += slide  # Might make block go for infinity?
+                block.horiz_velocity += slide  # Doesn't matter right now, adding more than 1 would
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
 
