@@ -11,14 +11,14 @@ class Block:
     # slots reduces size of object by only reserving enough memory to hold these values.
     __slots__ = ('id', 'type', 'position', 'vert_velocity', 'horiz_velocity',
                  'collision_detection', 'trail_created')
-    def __init__(self, type: block_type.Block_Type, position: (int, int)):
+    def __init__(self, type: int, position: (int, int)):
         # print(sys.getsizeof(self ))
         self.id = 0
         self.type = type
         self.position = position
         self.vert_velocity = 0
         self.horiz_velocity = 0
-        self.collision_detection = not type.rigid  # False for rigid=True blocks
+        self.collision_detection = True  # False for rigid=True blocks. Set in terrain gen
         self.trail_created = False
 
 

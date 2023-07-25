@@ -30,7 +30,7 @@ class Level_Getter:
 
 # noinspection PyTypeChecker
 class Level:
-    def __init__(self, id: int, block_counts: list[int], block_types: list[str],
+    def __init__(self, id: int, block_counts: list[int], block_types: list[int],
             bounds: list[(int,int,int,int)], world_size: (int, int) = (1280, 720), start_pos: (int, int) = (200,200),
             ground_level: int = 1200, timed_spawns=None, writing: bool = False):
         self.id = id
@@ -61,7 +61,7 @@ class Level:
 
 class Timed_Spawn:
     def __init__(self, b_type: block_type.Block_Type, spawn_rate: int, time: int, bounds: (int, int, int, int)):
-        self.block_type = block_type.Block_Type().get_block_type(b_type)
+        self.block_type = block_type
         self.spawn_rate = spawn_rate
         self.time = time
         self.bounds = bounds

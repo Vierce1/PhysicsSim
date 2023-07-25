@@ -4,6 +4,7 @@ from pygame import time
 from pygame.locals import *
 from player import Player
 from Blocks import terrain_gen as tg, terrain_manager as tm
+from Blocks.block_type import Block_Type_Instance_List
 from level import *
 from ui import User_Interface
 from particle_spawner import Particle_Spawner
@@ -42,6 +43,7 @@ class Game:
         self.mouse_pos = pg.mouse.get_pos()  # store this globally so classes can reference it
         self.particle_spawner = Particle_Spawner(terrain_manager=self.terrain_manager, terrain_gen=self.terrain_gen)
         self.trails = set()
+        self.block_type_list = Block_Type_Instance_List()  # holds 1 instance of each block type for referencing values
 
 
     def setup(self, level: int) -> Level:
@@ -65,7 +67,7 @@ class Game:
             blocks = self.terrain_gen.gen_terrain(block_count=level.block_counts[i],
                                 block_type=level.block_types[i], bounds=level.bounds[i])
             level_blocks.update(blocks)
-            if blocks[0].type.destroyable:
+            if self.block_type_list[blocks[0].type].destroyable:
                 self.terrain_manager.destroyable_blocks.update(blocks)
 
         # create a new UI every level? or just update buttons as needed?
