@@ -171,10 +171,9 @@ class Terrain_Manager:
                 block.horiz_velocity -= horiz_step
 
             # move through all spaces based on velocity
-    #TODO: When blocks are moving very fast this causes them to go way too far w/ explosions
+    #TODO: When blocks are moving very fast (due to lag) this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
-            # slip_counter = self.game.block_type_list[block.type].slipperiness
             for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
@@ -187,19 +186,17 @@ class Terrain_Manager:
                 if total_y != 0:
                     total_y -= 1 if total_y > 0 else -1
 
-            # Spawn ghost trail
+            # Spawn particle trail
             # if not block.trail_created and abs(block.vert_velocity) > 0:
             #     block.trail_created = True
             #     self.create_trail(block_id)
 
         elif block.id in self.blocks:
             self.blocks.remove(block.id)
-            # self.inactive_blocks.add(block)
 
         b_type = self.game.block_type_list[block.type]
         if b_type.destructive:
-            self.destructive(block.position[0], block.position[1])
-            # block.collision_detection = True  # need a better way
+            self.destructive(block, block.position[0], block.position[1])
 
         self.game.render_dict.add((block.position, b_type.get_color()))
 
@@ -223,7 +220,7 @@ class Terrain_Manager:
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
                 self.game.spaces_to_clear.add_pos(block.position)
-                new_y = 0 if block.type == block_type.WATER else 1
+                new_y = 0 if b_type.liquid else 1
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
                 self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
@@ -269,19 +266,6 @@ class Terrain_Manager:
         return int(x), int(y)
 
 
-    #
-    # def slide(self, block: Block, slide: int) -> None:
-    #                                                 # * self.game.physics_lag_frames
-    #     block.horiz_velocity = slide * slide_factor  # don't add velocity. Don't need it and it causes issues
-    #     self.matrix[block.position[0], block.position[1]] = -1  # EMPTY
-    #     self.game.spaces_to_clear.add_pos(block.position)
-    #     block.position = (block.position[0] + slide, block.position[1] + 1)
-    #     self.matrix[block.position[0], block.position[1]] = block.id
-    #     return
-    #
-
-    # def flow(self, block: Block, flow: (int, int))-> None:
-
 
     def create_trail(self, block_id: int):
         block = self.all_blocks[block_id]
@@ -294,8 +278,7 @@ class Terrain_Manager:
 
 
 # destructive blocks take a # of frames to destroy a neighboring block, based on their type
-    def destructive(self, x: int, y: int):
-        block = self.all_blocks[self.matrix[x,y]]  # Fix this
+    def destructive(self, block: Block, x: int, y: int):
         block.destroy_counter += 1
         if block.destroy_counter >= self.game.block_type_list[block.type].destroy_count:
             block.destroy_counter = 0
@@ -303,7 +286,7 @@ class Terrain_Manager:
             for x in range(x-1, x+2):
                 for y in range(y-1, y+2):
                     neighbor_id = self.matrix[x, y]
-                    if neighbor_id >= 0:  # don't destroy ground
+                    if neighbor_id >= 0 and neighbor_id != block.id:  # don't destroy ground or self
                         neighbor = self.all_blocks[neighbor_id]
                         if self.game.block_type_list[neighbor.type].destroyable:
                             self.destroy_block(neighbor_id)

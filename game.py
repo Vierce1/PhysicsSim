@@ -233,7 +233,7 @@ class Clear_Spaces(set):
         try:
             self.game.render_image.get_at(pos)
         except:
-            print('failed to add position for clearing')
+            # print('failed to add position for clearing')
             return True
         self.add(pos)
 
