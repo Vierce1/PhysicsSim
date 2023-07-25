@@ -44,7 +44,7 @@ class Player:
 
 
     def fall(self) -> bool:
-        grounded = self.terrain_manager.check_under((self.position[0], self.rect.bottom + 1))
+        grounded = self.terrain_manager.check_under_player((self.position[0], self.rect.bottom + 1))
         if not grounded:
             [self.game.spaces_to_clear.add_pos(pos) for pos in self.get_covered_pixels()]
             self.position = (self.position[0], self.position[1] + 1)

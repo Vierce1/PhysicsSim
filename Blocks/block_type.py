@@ -13,9 +13,8 @@ MAGMA = 6
 class Block_Type_Instance_List(list):   # holds 1 instance of each block type to access properties
     def __init__(self):
         super(Block_Type_Instance_List).__init__()
-        for i in range(7):
+        for i in range(7):  # Update this when add block types
             self.append(Block_Type().get_block_type(i))
-        # self.extend(Sand(), Rock(), Dirt(), Static_Sand(), Water(), Gravel(), Magma())
 
 
 class Block_Type:
@@ -25,7 +24,7 @@ class Block_Type:
         self.destroyable = False
         self.color = (0,0,0)
         self.colors = None
-        # self.slipperiness = 1  # slidieness. 1 = no sliding
+        self.liquid = False
         self.slide_grade = (1, 1)  # x,y tolerance. If no block is in x+1, y+1, it will slide
         self.start_static = False
         self.destructive = False   # lava. Destroys blocks it touches if they're destroyable
@@ -60,6 +59,7 @@ class Sand(Block_Type):
         super().__init__()
         self.name = 'sand'
         self.rigid = False
+        self.liquid = False
         self.destroyable = True
         self.color = (150,190,0)
         self.slide_grade = (1, 1)
@@ -69,6 +69,7 @@ class Static_Sand(Block_Type):  # starts grounded until becoming ungrounded agai
         super().__init__()
         self.name = 'sand'
         self.rigid = False
+        self.liquid = False
         self.destroyable = True
         self.color = (150,190,0)
         self.slide_grade = (1, 1)
@@ -80,6 +81,7 @@ class Rock(Block_Type):
         super().__init__()
         self.name = 'rock'
         self.rigid = True
+        self.liquid = False
         self.destroyable = False
         self.color = (160, 160, 160)
         self.slide_grade = (0, 0)
@@ -89,6 +91,7 @@ class Gravel(Block_Type):
         super().__init__()
         self.name = 'gravel'
         self.rigid = False
+        self.liquid = False
         self.destroyable = True
         self.slide_grade = (1, 3)
         self.color = (130, 130, 130)
@@ -100,20 +103,24 @@ class Dirt(Block_Type):
         super().__init__()
         self.name = 'dirt'
         self.rigid = True
+        self.liquid = False
         self.destroyable = True
         self.color = (70,38,0)
         self.slide_grade = (1, 1)
 
 
 # Liquids
+#TODO: Solid blocks should fall through liquids. They screw up liquid flowing when land on top
+# Need to tint them blue (or whatever color the liquid is)
 class Water(Block_Type):
     def __init__(self):
         super().__init__()
         self.name = 'water'
         self.rigid = False
+        self.liquid = True
         self.destroyable = True
         self.color = (0,120,255)
-        self.slide_grade = (1, 0)  # Slide grade works for solids, but not really for liquids
+        # self.slide_grade = (1, 0)  # Slide grade works for solids, but not really for liquids
 
 
 class Magma(Block_Type):
@@ -121,8 +128,9 @@ class Magma(Block_Type):
         super().__init__()
         self.name = 'magma'
         self.rigid = False
+        self.liquid = True
         self.destroyable = False
         self.color = (255,85,0)
-        self.slide_grade = (4, 1)
+        # self.slide_grade = (4, 1)
         self.destructive = True
 
