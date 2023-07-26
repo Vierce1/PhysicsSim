@@ -123,6 +123,10 @@ class Terrain_Manager:
 #TODO: The shallower a block type's slide grade is, the more blocks get eaten...
     def check_slope(self, block_id: int, b_type: int, position: (int, int)) -> int:
         # returns int -1 for slide left, 1 slide right, 0 no slide
+        under_block_id = self.matrix[position[0], position[1] + 1]
+        under_block = self.all_blocks[under_block_id]
+        if under_block.sliding:
+            return 0
         direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
         slide_grade = self.game.block_type_list[b_type].slide_grade
         x, y = position[0] + direction * slide_grade[0], position[1] + slide_grade[1]
