@@ -9,6 +9,14 @@ class Environment:
     def get_wind(self):
         return self.wind
 
-    # def wind_blow(self, active_blocks: [Block]):
-    #     for block in active_blocks:
-    #         block.horiz_velocity += self.wind
+
+    
+    
+class Energy_Field:
+    def __init__(self):
+        pass
+    
+class Black_Hole(Energy_Field):
+    def __init__(self):
+        super().__init__()
+    
