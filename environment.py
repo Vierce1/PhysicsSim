@@ -1,12 +1,6 @@
 from Blocks.block import Block
 
 
-BLACK_HOLE = 1
-SMALL_BLACK_HOLE = 2
-LARGE_BLACK_HOLE = 3
-REPULSOR = 4
-
-
 class Environment:
     def __init__(self, wind: int):
         self.wind = wind
@@ -16,7 +10,15 @@ class Environment:
         return self.wind
 
 
-    
+
+BLACK_HOLE = 1
+SMALL_BLACK_HOLE = 2
+LARGE_BLACK_HOLE = 3
+REPULSOR = 4
+
+def get_field(field_num: int, position: (int, int)):
+    if field_num == BLACK_HOLE:
+        return Black_Hole(position)
     
 class Energy_Field:
     def __init__(self):
@@ -26,9 +28,10 @@ class Energy_Field:
 
     
 class Black_Hole(Energy_Field):
-    def __init__(self):
+    def __init__(self, position: (int, int)):
         super().__init__()
         print(self.energy)
         self.energy = 10
+        self.position = position
         self.event_horizon = 20
 

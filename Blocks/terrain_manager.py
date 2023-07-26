@@ -261,7 +261,8 @@ class Terrain_Manager:
                 # out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
                 # if out_of_bounds:
                 #     block.collision_detection = False
-                new_y = 0 if b_type.liquid else 1
+                # new_y = 0 if b_type.liquid else 1
+                new_y = 0
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
                 self.trigger_ungrounding(block_id, old_pos)  # trigger ungrounding in previous position
