@@ -51,6 +51,7 @@ class Level:
             self.block_types = block_types
         # Timed Spawn example format:  [{"block_types":[SAND, SAND], "times":[10, 23], "bounds":[(0,1,2,3), (4,4,4,4)}]
             self.timed_spawns = timed_spawns  # particles that spawn over time. Time in seconds
+            self.energy_fields = energy_fields
 
         else:  # Reading level. Create block types from the enums
             if timed_spawns:

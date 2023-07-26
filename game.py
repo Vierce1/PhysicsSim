@@ -31,7 +31,7 @@ class Game:
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
                              display_resolution[1], self.render_image)
-        self.environ = Environment(wind=0)
+        self.environ = Environment(wind=0, energy_fields=None)
         self.quadtree_nodes = set()
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
@@ -52,7 +52,7 @@ class Game:
         # Level reading and creation
         level = Level_Getter().get_level(level=level)
         self.level = level
-        self.environ = Environment(wind=level.wind)
+        self.environ = Environment(wind=level.wind, energy_fields=level.energy_fields)
         self.render_image = pg.Surface(level.world_size)
         print(f'world size: {self.render_image.get_size()}')
         self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,

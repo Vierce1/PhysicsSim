@@ -1,5 +1,6 @@
 from Blocks.block import Block, Trail
 import Blocks.block_type as block_type
+from environment import *
 from quadtree import Quadtree_Node, Quadtree
 import pygame as pg
 import math
@@ -64,6 +65,7 @@ class Terrain_Manager:
         self.blocks.clear()
         self.all_blocks.clear()
         self.destroyable_blocks.clear()
+        [self.insert_field_quadtree(energy_field) for energy_field in self.game.environ.energy_fields]
         # Fill ground w/ -2
         for x in range(world_size[0]):
             for y in range(self.ground, world_size[1]):
@@ -402,3 +404,14 @@ class Terrain_Manager:
     def insert_object_quadtree(self, obj, x: int, y: int) -> Quadtree_Node:  # use to put specific position in tree
         return self.quadtree.insert_object(obj=obj, x=x, y=y, start_node=self.quadtree.root_node)
         # now can access node.children to get neighboring objects
+
+
+# Energy fields
+# How to determine blocks in the energy field radii? Quadtree?
+    def insert_field_quadtree(self, energy_field: Energy_Field):
+        node = self.insert_object_quadtree(obj=energy_field, x=energy_field.position[0], y=energy_field.position[1])
+        energy_field.quad_node = node
+        print(f'quad node: {node.x}, {node.y}')
+
+    def get_energy_field_blocks(self, energy_field: Energy_Field):
+        pass
