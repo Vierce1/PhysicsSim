@@ -6,6 +6,7 @@ from player import Player
 from Blocks import terrain_gen as tg, terrain_manager as tm
 from Blocks.block_type import Block_Type_Instance_List
 from level import *
+from environment import Environment
 from ui import User_Interface
 from particle_spawner import Particle_Spawner
 import world_helpers as help
@@ -30,6 +31,7 @@ class Game:
         self.terrain_gen = tg.Terrain_Gen(self.terrain_manager)
         self.player = Player(self.terrain_manager, self, window_size[0], window_size[1], display_resolution[0],
                              display_resolution[1], self.render_image)
+        self.environ = Environment(wind=0)
         self.quadtree_nodes = set()
         self.plane_shift = (0, 0)  # x,y shift to apply to blit. Starts on the zero-point of the world.
                                     # Updates as player moves.
@@ -56,6 +58,7 @@ class Game:
                                    ground_level=level.ground)
         self.player.set_start_position(level.start_pos)
         self.player.render_image = self.render_image
+        self.environ = Environment(wind=level.wind)
 
         # Set the plane shift to center the camera on the player's starting position
         self.plane_shift = self.adjust_start_planeshift(level.start_pos, level.world_size)
@@ -189,8 +192,7 @@ class Game:
             if timer > ts.time:
                 spawn_blocks = self.terrain_gen.gen_terrain(block_count=ts.spawn_rate, block_type=ts.block_type,
                                                             bounds=ts.bounds)
-                # self.blocks.update(spawn_blocks)
-                [self.terrain_manager.blocks.add(block.id) for block in spawn_blocks]
+                self.terrain_manager.add_blocks_to_matrix(spawn_blocks)
 
 
         self.player.update(events)

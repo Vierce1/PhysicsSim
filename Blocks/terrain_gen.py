@@ -46,8 +46,6 @@ class Terrain_Gen:
         generated_blocks = set()
         xs = uniform.rvs(loc=bounds[0], scale=bounds[1] - bounds[0], size=block_count)
         ys = uniform.rvs(loc=bounds[2], scale=bounds[3] - bounds[2], size=block_count)
-        x = bounds[0]
-        y = bounds[2]
         b_type_object = Block_Type_Instance_List()[b_type]
         for x, y in zip(xs, ys):
             pos = (round(x), round(y))
