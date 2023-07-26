@@ -14,10 +14,10 @@ class Particle_Spawner:
         # create the blocks
         # Should probably set up a queue and any particles still in queue when player stops pressing button don't spawn
         count = math.ceil(count / self.tm.game.physics_lag_frames)
+        # particles = self.tg.gen_terrain(block_count=count, block_type=self.particle_type,  # Spawn 1 particle
+        #                                 bounds=(round(x - 1), round(x + 1), round(y - 1),
+        #                                         round(y + 1)))
         particles = self.tg.gen_terrain(block_count=count, block_type=self.particle_type,
-                                        bounds=(round(x - 1), round(x + 1), round(y - 1),
-                                                round(y + 1)))
-        # particles = self.tg.gen_terrain(block_count=count, block_type=self.particle_type,
-        #                     bounds=(round(x - count/4),round(x + count/4), round(y - count/4), round(y + count/4)))
+                            bounds=(round(x - count/4),round(x + count/4), round(y - count/4), round(y + count/4)))
         # add them to the matrix & the various lists
         self.tm.add_blocks_to_matrix(particles)

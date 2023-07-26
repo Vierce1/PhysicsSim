@@ -165,8 +165,7 @@
   ],
   "timed_spawns": {
    "block_types": [
-    0,
-    7
+    0
    ],
    "spawn_rate": [
     2,

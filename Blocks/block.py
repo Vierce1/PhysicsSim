@@ -12,6 +12,7 @@ class Block:
     __slots__ = ('id', 'type', 'position', 'vert_velocity', 'horiz_velocity',
                  'collision_detection',  # 'trail_created',
                  'destroy_counter', 'sliding')
+                  # 'time_falling')
     def __init__(self, type: int, position: (int, int)):
         # print(sys.getsizeof(self ))
         self.id = 0
@@ -23,6 +24,7 @@ class Block:
         # self.trail_created = False
         self.destroy_counter = 0
         self.sliding = False
+        # self.time_falling = 0
 
 
 class Trail:

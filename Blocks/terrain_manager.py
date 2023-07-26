@@ -52,6 +52,7 @@ class Terrain_Manager:
         self.quadtree = Quadtree(0, 0)
         self.random_bits = []
         # self.pool = mp.Pool()
+        self.time_count_avgs = []
 
 
     def setup(self, render_image, world_size: (int, int), ground_level: int):
@@ -88,14 +89,17 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        # if self.game.level.wind != 0:
-        #     # active_blocks = [self.all_blocks[b] for b in self.blocks if self.all_blocks[b].collision_detection]
-        #     self.game.environ.wind_blow(self.blocks)
+        # self.time_count_avgs.clear()
 
         for block_id in list(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block_id=block_id)
 
-
+        # if len(self.time_count_avgs) > 0:  # Timing block falling
+        #     average = 0
+        #     for t in self.time_count_avgs:
+        #         average += t
+        #     average /= len(self.time_count_avgs)
+        #     print(f'average: {average}')
         # print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
         # print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
 
@@ -174,6 +178,9 @@ class Terrain_Manager:
         block = self.all_blocks[block_id]
         b_type = self.game.block_type_list[block.type]
         if block.collision_detection:
+            # if block.type == block_type.SAND:  # Timing block falling
+            #     block.time_falling += 1 * self.game.physics_lag_frames
+            #     self.time_count_avgs.append(block.time_falling)
             # Having this here ensures spaces get cleared properly
             out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
             if out_of_bounds:
@@ -193,11 +200,14 @@ class Terrain_Manager:
 
 
             # move through all spaces based on velocity
-    #TODO: When blocks are moving very fast (due to lag) this causes them to go way too far w/ explosions
+    #TODO: Problems:
+        #1. Blocks split into forks when lagging
+        #2. Blocks still moving slow when lagging
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
             # print(f'{block_id} total :  {total_x}  / {total_y}')
-            for _ in range(0, max(abs(total_y), abs(total_x))):
+            # for _ in range(0, max(abs(total_y), abs(total_x))):
+            while total_y != 0 or total_x != 0:
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
                 # print(f'{block_id} :     {next_x} / {next_y}')

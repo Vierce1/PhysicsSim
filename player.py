@@ -24,8 +24,8 @@ class Player:
         self.button_cooldown = 10
         self.button_timer = 0
         self.particle_spawn_count = 10
-        self.base_particle_spawn_count = 1
-        self.high_rate_particle_spawn_count = 25
+        self.base_particle_spawn_count = 10
+        self.high_rate_particle_spawn_count = 20
 
     def set_start_position(self, start_pos: (int, int)):
         self.position = start_pos
