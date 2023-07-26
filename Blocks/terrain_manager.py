@@ -141,7 +141,7 @@ class Terrain_Manager:
 
 
 #TODO: What if liquids don't pile up, they try to push the lowest blocks outward?
-    def check_liquid_flow(self, block_id: int, position: (int, int)):
+    def check_liquid_flow(self, block_id: int, position: (int, int)) -> int:
         # returns int -1 for flow left, 1 flow right, 0 no flow
         # Liquid: 0 y difference, ensure block below is liquid
         under_block_id = self.matrix[position[0], position[1] + 1]
@@ -155,6 +155,41 @@ class Terrain_Manager:
                 elif self.matrix[position[0] - direction, position[1]] == -1:
                     return -direction
         return 0
+
+    def get_bottom_liquid_block(self, x: int, y: int) -> (int,int):
+        liquid = self.game.block_type_list[self.all_blocks[self.matrix[x,y+1]].type].liquid
+        step = 0
+        while liquid:
+            step += 10
+            liquid = self.game.block_type_list[self.all_blocks[self.matrix[x,y+step]].type].liquid
+        # Found a non-liquid block. Move back up by 1 til find the last liquid
+        block = self.all_blocks[self.matrix[x,y+step]]
+        while not self.game.block_type_list[block.type].liquid:
+            step -= 1
+            block = self.all_blocks[self.matrix[x,y+step]]
+        return block.position
+
+    def get_side_liquid_blocks(self, x: int, y: int) -> [(int, int)]:
+        left = self.all_blocks[self.matrix[x,y]]
+        right = self.all_blocks[self.matrix[x,y]]
+        left_step = 10
+        right_step = 10
+        while self.game.block_type_list[left.type].liquid or self.game.block_type_list[right.type].liquid:
+            left = self.all_blocks[self.matrix[x - left_step, y]]
+            if self.game.block_type_list[left.type].liquid:
+                left_step += 10
+            right = self.all_blocks[self.matrix[x + right_step, y]]
+            if self.game.block_type_list[right.type].liquid:
+                right_step += 10
+        # Found non-liquid blocks in both directions. Step back by 1 til find the edge of the liquid
+        while not self.game.block_type_list[left.type].liquid or not self.game.block_type_list[right.type].liquid:
+            left = self.all_blocks[self.matrix[x - left_step, y]]
+            if not self.game.block_type_list[left.type].liquid:
+                left_step -= 1
+            right = self.all_blocks[self.matrix[x + right_step, y]]
+            if not self.game.block_type_list[right.type].liquid:
+                right_step -= 1
+        return [left.position, right.position]
 
 
     def check_walk_slope(self, player_pos: (int, int), direction: int):
@@ -222,6 +257,10 @@ class Terrain_Manager:
             b_type = self.game.block_type_list[block.type]
             if b_type.liquid:
                 slide = self.check_liquid_flow(block_id=block_id, position=block.position)
+                low_liq_x, low_liq_y = self.get_bottom_liquid_block(block.position[0], block.position[1])
+                side_liquids = self.get_side_liquid_blocks(low_liq_x, low_liq_y)
+                self.push_liquid_out(side_liquids[0][0], side_liquids[0][1], -1)
+                self.push_liquid_out(side_liquids[1][0], side_liquids[1][1], +1)
             else:
                 slide = self.check_slope(block_id=block_id, b_type=block.type, position=block.position)
             if slide != 0:
@@ -338,19 +377,9 @@ class Terrain_Manager:
                     # self.unground_pos_checks.add(check_pos)
 
 
-    # def end_frame_unground(self) -> None:
-    #     if len(self.unground_pos_checks) == 0:
-    #         return
-    #     for pos in self.unground_pos_checks:
-    #         block_id = self.matrix[(pos)]
-    #         if block_id == -1:
-    #             continue
-    #         block = self.all_blocks[block_id]
-    #         if not block.type.rigid and not block.collision_detection:
-    #             block.collision_detection = True
-    #             self.blocks.add(block)
-    #     # self.unground_pos_checks.clear()
-
+    def push_liquid_out(self, x: int, y: int, direction: int):  # Just add horizontal velocity to either side
+        block = self.all_blocks[self.matrix[x,y]]
+        block.horiz_velocity += direction
 
 
 # Quadtree structure used for destroyable particles only, to find particles within destroy radius
