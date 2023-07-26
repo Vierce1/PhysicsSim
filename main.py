@@ -28,7 +28,7 @@ async def main():
 
 
     game = Game(window_size=window_size, display_resolution=display_resolution, screen=screen)  # main game functions
-    level = game.setup(level=2)
+    level = game.setup(level=1)
 
     clock = time.Clock()
     timer = 0

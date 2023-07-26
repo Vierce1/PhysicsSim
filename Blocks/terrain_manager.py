@@ -174,7 +174,12 @@ class Terrain_Manager:
         block = self.all_blocks[block_id]
         b_type = self.game.block_type_list[block.type]
         if block.collision_detection:
-    #TODO: somehow a small # of blocks are remaining in the active list and not going into inactive list
+
+            out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
+            if out_of_bounds:
+                block.collision_detection = False
+
+        #TODO: somehow a small # of blocks are remaining in the active list and not going into inactive list
     # try level 1.
             # update velocities
             if block.vert_velocity < self.terminal_velocity:
@@ -191,18 +196,23 @@ class Terrain_Manager:
     #TODO: When blocks are moving very fast (due to lag) this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
-            for _ in range(0, max(abs(block.vert_velocity), abs(block.horiz_velocity))):
+            for _ in range(0, max(abs(total_y), abs(total_x))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
                 collided = self.move(block.id, next_x, next_y)
                 if collided:
                     break
-                # TODO: Is this correct with dynamic velocity? I think i'm supposed to be subtracting the step amount.
+
                 if total_x != 0:
-                    total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
-                    # total_x -= next_x if total_x > 0 else -next_x  # decrement by 1 in correct direction
+                    if -1 < total_x / self.game.physics_lag_frames < 1:
+                        total_x -= 1 if total_x > 0 else -1
+                    else:
+                        total_x -= self.game.physics_lag_frames if total_x > 0 else -self.game.physics_lag_frames
                 if total_y != 0:
-                    total_y -= 1 if total_y > 0 else -1
+                    if -1 < total_x / self.game.physics_lag_frames < 1:
+                        total_y -= 1 if total_y > 0 else -1
+                    else:
+                        total_y -= self.game.physics_lag_frames if total_y > 0 else -self.game.physics_lag_frames
 
             # Spawn particle trail
             # if not block.trail_created and abs(block.vert_velocity) > 0:
@@ -236,13 +246,13 @@ class Terrain_Manager:
                 block.horiz_velocity += slide  # Doesn't matter right now, adding more than 1 would
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
-                out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
-                if out_of_bounds:
-                    block.collision_detection = False
+                # out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
+                # if out_of_bounds:
+                #     block.collision_detection = False
                 new_y = 0 if b_type.liquid else 1
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
-                self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
+                self.trigger_ungrounding(block_id, old_pos)  # trigger ungrounding in previous position
             else:  # collided and is not sliding. Turn collision off
                 if not b_type.destructive or (b_type.destructive and block.destroy_counter == -1):
                     block.collision_detection = False
@@ -252,11 +262,11 @@ class Terrain_Manager:
         # Did not collide. Mark prev position empty & mark to fill with black
         old_pos = block.position[0], block.position[1]
         self.matrix[old_pos] = -1
-        if self.game.spaces_to_clear.add_pos(block.position):
-            block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
+        # if self.game.spaces_to_clear.add_pos(block.position):
+        #     block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
         block.position = (new_x, new_y)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
-        self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
+        self.trigger_ungrounding(block_id, old_pos)  # trigger ungrounding in previous position
         block.sliding = False
         return False
 
@@ -267,13 +277,13 @@ class Terrain_Manager:
         y = total_y
         if self.game.physics_lag_frames > 1:  # physics rendering lagging. Skip some checks
             if total_x > 1:
-                x = min(self.game.physics_lag_frames * x, total_x)
+                x = min(self.game.physics_lag_frames, total_x)
             elif total_x < -1:
-                x = max(self.game.physics_lag_frames * x, total_x)
+                x = max(self.game.physics_lag_frames, total_x)
             if total_y > 1:
-                y = min(self.game.physics_lag_frames * y, total_y)
+                y = min(self.game.physics_lag_frames, total_y)
             elif total_y < -1:
-                y = max(self.game.physics_lag_frames * y, total_y)
+                y = max(self.game.physics_lag_frames, total_y)
         else:
             if x < 0:
                 x = -1
@@ -321,13 +331,13 @@ class Terrain_Manager:
         self.game.spaces_to_clear.add_pos(block.position)
         # Now check all spaces around this block for ungroundable blocks. Note this will be called for all
         # blocks in the destruction zone
-        self.trigger_ungrounding(block.position)
+        self.trigger_ungrounding(block_id, block.position)
 
 
 
 #TODO: There may be more finetuning to reduce checks on same positions
 # Can I move this to the main thread? Modifying the blocks in multiple places won't work, maybe there's a solution.
-    def trigger_ungrounding(self, position: (int, int)) -> None:
+    def trigger_ungrounding(self, id: int, position: (int, int)) -> None:
         # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
             for y in range(-2, 1):  # Updated from 2. Theoretically shouldn't need to check down
@@ -335,7 +345,7 @@ class Terrain_Manager:
                 # add the position to the set to check if there's an ungroundable block at end of sequence
                 if check_pos != position:
                     block_id = self.matrix[check_pos]
-                    if block_id < 0:  # -1 or -2 for ground
+                    if block_id < 0 or block_id == id:  # -1 or -2 for ground
                         continue
                     block = self.all_blocks[block_id]
                     # Keep the ungrounding split up over multiple frames for performance.
