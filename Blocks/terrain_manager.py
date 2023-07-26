@@ -96,7 +96,7 @@ class Terrain_Manager:
             await self.update_blocks(block_id=block_id)
 
 
-        print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
+        # print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
         # print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
 
 
@@ -174,7 +174,7 @@ class Terrain_Manager:
         block = self.all_blocks[block_id]
         b_type = self.game.block_type_list[block.type]
         if block.collision_detection:
-
+            # Having this here ensures spaces get cleared properly
             out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
             if out_of_bounds:
                 block.collision_detection = False
@@ -184,21 +184,23 @@ class Terrain_Manager:
             # update velocities
             if block.vert_velocity < self.terminal_velocity:
                 block.vert_velocity += self.gravity
-            if block.horiz_velocity != 0:
+
+            if self.wind != 0 and abs(block.horiz_velocity) <= abs(self.wind / b_type.weight):
+                block.horiz_velocity += 1  # Add wind step til hit max wind velocity
+            elif block.horiz_velocity != 0:
                 horiz_step = 1 if block.horiz_velocity > 0 else -1
                 block.horiz_velocity -= horiz_step
 
-
-            if self.wind != 0 and abs(block.horiz_velocity) <= abs(self.wind / b_type.weight):
-                block.horiz_velocity = round(self.wind / b_type.weight)
 
             # move through all spaces based on velocity
     #TODO: When blocks are moving very fast (due to lag) this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
+            # print(f'{block_id} total :  {total_x}  / {total_y}')
             for _ in range(0, max(abs(total_y), abs(total_x))):
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
+                # print(f'{block_id} :     {next_x} / {next_y}')
                 collided = self.move(block.id, next_x, next_y)
                 if collided:
                     break

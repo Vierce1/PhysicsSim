@@ -24,6 +24,8 @@ class Player:
         self.button_cooldown = 10
         self.button_timer = 0
         self.particle_spawn_count = 10
+        self.base_particle_spawn_count = 1
+        self.high_rate_particle_spawn_count = 25
 
     def set_start_position(self, start_pos: (int, int)):
         self.position = start_pos
@@ -98,9 +100,9 @@ class Player:
             if event.type == pg.MOUSEMOTION:
                 dx, dy = event.rel
                 if (dx**2 + dy**2) > 5**2:
-                    self.particle_spawn_count = 25
+                    self.particle_spawn_count = self.high_rate_particle_spawn_count
                 else:
-                    self.particle_spawn_count = 10
+                    self.particle_spawn_count = self.base_particle_spawn_count
         if pg.mouse.get_pressed(3)[2]:
             mouse_pos = self.game.get_mouse_pos(scale_for_render=True)
             self.right_click(mouse_pos)
