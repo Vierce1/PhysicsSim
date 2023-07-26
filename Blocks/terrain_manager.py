@@ -87,12 +87,15 @@ class Terrain_Manager:
 
 
     async def update(self) -> None:
-        # self.pool.map(self.update_blocks, self.blocks)
+        # if self.game.level.wind != 0:
+        #     # active_blocks = [self.all_blocks[b] for b in self.blocks if self.all_blocks[b].collision_detection]
+        #     self.game.environ.wind_blow(self.blocks)
+
         for block_id in list(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block_id=block_id)
-        # self.end_frame_unground()
 
-        # print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
+
+        print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
         # print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
 
 
@@ -178,6 +181,10 @@ class Terrain_Manager:
                 horiz_step = 1 if block.horiz_velocity > 0 else -1
                 block.horiz_velocity -= horiz_step
 
+            wind = self.game.environ.get_wind()
+            if abs(block.horiz_velocity) <= abs(wind):
+                block.horiz_velocity = wind
+
             # move through all spaces based on velocity
     #TODO: When blocks are moving very fast (due to lag) this causes them to go way too far w/ explosions
             total_x = block.horiz_velocity * self.game.physics_lag_frames
@@ -228,7 +235,9 @@ class Terrain_Manager:
                 block.horiz_velocity += slide  # Doesn't matter right now, adding more than 1 would
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
-                self.game.spaces_to_clear.add_pos(block.position)
+                out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
+                if out_of_bounds:
+                    block.collision_detection = False
                 new_y = 0 if b_type.liquid else 1
                 block.position = (block.position[0] + slide, block.position[1] + new_y)
                 self.matrix[block.position[0], block.position[1]] = block.id
@@ -244,7 +253,6 @@ class Terrain_Manager:
         self.matrix[old_pos] = -1
         if self.game.spaces_to_clear.add_pos(block.position):
             block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
-
         block.position = (new_x, new_y)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
