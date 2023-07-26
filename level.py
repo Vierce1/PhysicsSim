@@ -1,5 +1,6 @@
 from Blocks.block import Block
 import Blocks.block_type as block_type
+from environment import *
 import json
 from types import SimpleNamespace
 
@@ -18,6 +19,7 @@ class Level_Getter:
                                      block_types=level['block_types'], bounds=level['bounds'],
                                      world_size=level['world_size'], start_pos=level['start_pos'],
                                      ground_level=level['ground'], wind=level['wind'],
+                                     energy_fields=level['energy_fields'],
                                      timed_spawns=level['timed_spawns']))
         # [print(l.bounds) for l in self.levels]
 
@@ -31,8 +33,9 @@ class Level_Getter:
 # noinspection PyTypeChecker
 class Level:
     def __init__(self, id: int, block_counts: list[int], block_types: list[int],
-            bounds: list[(int,int,int,int)], world_size: (int, int) = (1280, 720), start_pos: (int, int) = (200,200),
-            ground_level: int = 1200, wind: int = 0, timed_spawns=None, writing: bool = False):
+                 bounds: list[(int,int,int,int)], world_size: (int, int) = (1280, 720), start_pos: (int, int) = (200,200),
+                 ground_level: int = 1200, wind: int = 0, energy_fields: dict[int, (int,int)] = None,
+                 timed_spawns=None, writing: bool = False):
         self.id = id
         self.world_size = world_size
         self.block_counts = block_counts
@@ -42,6 +45,7 @@ class Level:
         self.start_pos = (start_pos[0], start_pos[1])
         self.ground = ground_level
         self.wind = wind
+        self.energy_fields = energy_fields
 
         if writing:  # Creating json. Don't convert to objects
             self.block_types = block_types
