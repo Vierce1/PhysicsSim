@@ -52,13 +52,13 @@ class Game:
         # Level reading and creation
         level = Level_Getter().get_level(level=level)
         self.level = level
+        self.environ = Environment(wind=level.wind)
         self.render_image = pg.Surface(level.world_size)
         print(f'world size: {self.render_image.get_size()}')
         self.terrain_manager.setup(render_image=self.render_image, world_size=level.world_size,
                                    ground_level=level.ground)
         self.player.set_start_position(level.start_pos)
         self.player.render_image = self.render_image
-        self.environ = Environment(wind=level.wind)
 
         # Set the plane shift to center the camera on the player's starting position
         self.plane_shift = self.adjust_start_planeshift(level.start_pos, level.world_size)

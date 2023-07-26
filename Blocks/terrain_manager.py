@@ -47,6 +47,7 @@ class Terrain_Manager:
         self.gravity = 1
         self.terminal_velocity = 20
         self.ground = 1200  # redefined by level
+        self.wind = 0  # redefined by level
         self.matrix = Matrix(width=0, height=0)
         self.quadtree = Quadtree(0, 0)
         self.random_bits = []
@@ -58,9 +59,9 @@ class Terrain_Manager:
         self.matrix = Matrix(width=world_size[0], height=world_size[1])
         self.quadtree = Quadtree(world_size[0], world_size[1])
         self.ground = ground_level
+        self.wind = self.game.environ.get_wind()
         self.blocks.clear()
         self.all_blocks.clear()
-        # self.inactive_blocks.clear()
         self.destroyable_blocks.clear()
         # Fill ground w/ -2
         for x in range(world_size[0]):
@@ -171,6 +172,7 @@ class Terrain_Manager:
     # @jit(nopython=True)
     async def update_blocks(self, block_id: int):
         block = self.all_blocks[block_id]
+        b_type = self.game.block_type_list[block.type]
         if block.collision_detection:
     #TODO: somehow a small # of blocks are remaining in the active list and not going into inactive list
     # try level 1.
@@ -181,9 +183,9 @@ class Terrain_Manager:
                 horiz_step = 1 if block.horiz_velocity > 0 else -1
                 block.horiz_velocity -= horiz_step
 
-            wind = self.game.environ.get_wind()
-            if abs(block.horiz_velocity) <= abs(wind):
-                block.horiz_velocity = wind
+
+            if self.wind != 0 and abs(block.horiz_velocity) <= abs(self.wind / b_type.weight):
+                block.horiz_velocity = round(self.wind / b_type.weight)
 
             # move through all spaces based on velocity
     #TODO: When blocks are moving very fast (due to lag) this causes them to go way too far w/ explosions
@@ -210,7 +212,6 @@ class Terrain_Manager:
         elif block.id in self.blocks:
             self.blocks.remove(block.id)
 
-        b_type = self.game.block_type_list[block.type]
         if b_type.destructive:
             self.destructive(block, block.position[0], block.position[1])
 

@@ -29,7 +29,8 @@ class Block_Type:
         self.slide_grade = (1, 1)  # x,y tolerance. If no block is in x+1, y+1, it will slide
         self.start_static = False
         self.destructive = False   # lava. Destroys blocks it touches if they're destroyable
-        self.destroy_count = 5
+        self.destroy_count = 50
+        self.weight = 1  # controls how easily it gets blown by wind. Divide wind by this value
 
 
     def get_color(self):
@@ -67,6 +68,7 @@ class Sand(Block_Type):
         self.destroyable = True
         self.color = (150,190,0)
         self.slide_grade = (3, 1)
+        self.weight = 1
 
 class Static_Sand(Block_Type):  # starts grounded until becoming ungrounded again
     def __init__(self):
@@ -78,6 +80,7 @@ class Static_Sand(Block_Type):  # starts grounded until becoming ungrounded agai
         self.color = (150,190,0)
         self.slide_grade = (1, 1)
         self.start_static = True
+        self.weight = 1
 
 
 class Rock(Block_Type):
@@ -89,6 +92,7 @@ class Rock(Block_Type):
         self.destroyable = False
         self.color = (160, 160, 160)
         self.slide_grade = (0, 0)
+        self.weight = 5
 
 class Gravel(Block_Type):
     def __init__(self):
@@ -100,7 +104,7 @@ class Gravel(Block_Type):
         self.slide_grade = (1, 1)
         self.color = (130, 130, 130)
         self.colors = [(130, 130, 130), (165, 165, 165), (52, 52, 52)]
-
+        self.weight = 3
 
 class Dirt(Block_Type):
     def __init__(self):
@@ -111,6 +115,7 @@ class Dirt(Block_Type):
         self.destroyable = True
         self.color = (70,38,0)
         self.slide_grade = (1, 1)
+        self.weight = 2
 
 class Mud(Block_Type):
     def __init__(self):
@@ -121,10 +126,11 @@ class Mud(Block_Type):
         self.destroyable = True
         self.color = (45,25,0)
         self.slide_grade = (1, 4)
+        self.weight = 3
 
 
 
-# Liquids
+    # Liquids
 #TODO: Solid blocks should fall through liquids. They screw up liquid flowing when land on top
 # Need to tint them blue (or whatever color the liquid is)
 class Water(Block_Type):
@@ -136,6 +142,7 @@ class Water(Block_Type):
         self.destroyable = True
         self.color = (0,120,255)
         # self.slide_grade = (1, 0)  # Slide grade works for solids, but not really for liquids
+        self.weight = 1
 
 
 class Magma(Block_Type):
@@ -149,3 +156,4 @@ class Magma(Block_Type):
         # self.slide_grade = (4, 1)
         self.destructive = True
         self.destroy_count = 25  # Keep this really high. It creates an additive effect
+        self.weight = 4
