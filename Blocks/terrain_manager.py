@@ -135,18 +135,22 @@ class Terrain_Manager:
             else:
                 return 0
 
+
     def check_liquid_flow(self, block_id: int, position: (int, int)):
         # returns int -1 for flow left, 1 flow right, 0 no flow
         # Liquid: 0 y difference, ensure block below is liquid
         under_block_id = self.matrix[position[0], position[1] + 1]
-        if under_block_id != -2 and self.game.block_type_list[self.all_blocks[under_block_id].type].liquid:
-            # Now check if the direction is good
-            direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
-            if self.matrix[position[0] + direction, position[1]] == -1:
-                return direction
-            elif self.matrix[position[0] - direction, position[1]] == -1:
-                return -direction
+        if under_block_id != -2:
+            under_block = self.all_blocks[under_block_id]
+            if self.game.block_type_list[under_block.type].liquid and not under_block.sliding:
+                # Now check if the direction is good
+                direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
+                if self.matrix[position[0] + direction, position[1]] == -1:
+                    return direction
+                elif self.matrix[position[0] - direction, position[1]] == -1:
+                    return -direction
         return 0
+
 
     def check_walk_slope(self, player_pos: (int, int), direction: int):
         if self.matrix[(player_pos[0] + direction[0], player_pos[1])] != -1 \
@@ -183,6 +187,7 @@ class Terrain_Manager:
                 # TODO: Is this correct with dynamic velocity? I think i'm supposed to be subtracting the step amount.
                 if total_x != 0:
                     total_x -= 1 if total_x > 0 else -1  # decrement by 1 in correct direction
+                    # total_x -= next_x if total_x > 0 else -next_x  # decrement by 1 in correct direction
                 if total_y != 0:
                     total_y -= 1 if total_y > 0 else -1
 
@@ -209,13 +214,13 @@ class Terrain_Manager:
         if collision:  # collided. Check if it should slide/flow to either side + down 1
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
-            slide = 0
             b_type = self.game.block_type_list[block.type]
             if b_type.liquid:
                 slide = self.check_liquid_flow(block_id=block_id, position=block.position)
             else:
                 slide = self.check_slope(block_id=block_id, b_type=block.type, position=block.position)
             if slide != 0:
+                block.sliding = True
                 block.horiz_velocity += slide  # Doesn't matter right now, adding more than 1 would
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
@@ -227,6 +232,7 @@ class Terrain_Manager:
             else:  # collided and is not sliding. Turn collision off
                 if not b_type.destructive or (b_type.destructive and block.destroy_counter == -1):
                     block.collision_detection = False
+                    block.sliding = False
             return True
 
         # Did not collide. Mark prev position empty & mark to fill with black
@@ -238,6 +244,7 @@ class Terrain_Manager:
         block.position = (new_x, new_y)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         self.trigger_ungrounding(old_pos)  # trigger ungrounding in previous position
+        block.sliding = False
         return False
 
 
