@@ -156,7 +156,7 @@ class Terrain_Manager:
                     return -direction
         return 0
 
-    def get_bottom_liquid_block(self, x: int, y: int) -> (int,int):
+    def get_bottom_liquid_block(self, x: int, y: int) -> int:
         liquid = self.game.block_type_list[self.all_blocks[self.matrix[x,y+1]].type].liquid
         step = 0
         while liquid:
@@ -167,7 +167,8 @@ class Terrain_Manager:
         while not self.game.block_type_list[block.type].liquid:
             step -= 1
             block = self.all_blocks[self.matrix[x,y+step]]
-        return block.position
+        return step
+        # return block.position
 
     def get_side_liquid_blocks(self, x: int, y: int) -> [(int, int)]:
         left = self.all_blocks[self.matrix[x,y]]
@@ -252,15 +253,18 @@ class Terrain_Manager:
         collision = self.check_pos_collide(new_x, new_y)
 
         if collision:  # collided. Check if it should slide/flow to either side + down 1
-            block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
+            # block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
             b_type = self.game.block_type_list[block.type]
             if b_type.liquid:
                 slide = self.check_liquid_flow(block_id=block_id, position=block.position)
-                low_liq_x, low_liq_y = self.get_bottom_liquid_block(block.position[0], block.position[1])
-                side_liquids = self.get_side_liquid_blocks(low_liq_x, low_liq_y)
-                self.push_liquid_out(side_liquids[0][0], side_liquids[0][1], -1)
-                self.push_liquid_out(side_liquids[1][0], side_liquids[1][1], +1)
+                # low_liq_x, low_liq_y = self.get_bottom_liquid_block(block.position[0], block.position[1])
+                depth = min(self.get_bottom_liquid_block(block.position[0], block.position[1]), 5)
+                # block.horiz_velocity = depth * (x_step / max(abs(x_step), 1))
+                block.horiz_velocity = depth * -1 if self.random_bits[block_id] == 0 else 1
+                # side_liquids = self.get_side_liquid_blocks(low_liq_x, low_liq_y)
+                # self.push_liquid_out(side_liquids[0][0], side_liquids[0][1], -1)
+                # self.push_liquid_out(side_liquids[1][0], side_liquids[1][1], +1)
             else:
                 slide = self.check_slope(block_id=block_id, b_type=block.type, position=block.position)
             if slide != 0:
