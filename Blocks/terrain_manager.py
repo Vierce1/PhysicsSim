@@ -140,7 +140,6 @@ class Terrain_Manager:
                 return 0
 
 
-#TODO: What if liquids don't pile up, they try to push the lowest blocks outward?
     def check_liquid_flow(self, block_id: int, position: (int, int)):
         # returns int -1 for flow left, 1 flow right, 0 no flow
         # Liquid: 0 y difference, ensure block below is liquid
