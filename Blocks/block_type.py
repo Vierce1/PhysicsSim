@@ -153,7 +153,7 @@ class Magma(Block_Type):
         self.liquid = True
         self.destroyable = False
         self.color = (255,85,0)
-        # self.slide_grade = (4, 1)
+        self.slide_grade = (1,0)
         self.destructive = True
         self.destroy_count = 25  # Keep this really high. It creates an additive effect
         self.weight = 4

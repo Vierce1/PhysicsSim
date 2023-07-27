@@ -145,25 +145,22 @@ class Terrain_Manager:
 
 
 #TODO: The shallower a block type's slide grade is, the more blocks get eaten...
-    def check_slope(self, block_id: int, b_type: int, position: (int, int)) -> int:
+    def check_slope(self, block_id: int, b_type: int, position: (int, int), slide_grade: (int, int)) -> int:
         # returns int -1 for slide left, 1 slide right, 0 no slide
         under_block_id = self.matrix[position[0], position[1] + 1]
         under_block = self.all_blocks[under_block_id]
         if under_block.sliding:
             return 0
         direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
-        slide_grade = self.game.block_type_list[b_type].slide_grade
         x, y = position[0] + direction * slide_grade[0], position[1] + slide_grade[1]
-        if self.matrix[x,y] == -1: # and self.matrix[position[0] + direction, position[1] + 1] == -1:
+        if self.matrix[x,y] == -1:
             return direction
-        else: #if self.matrix[position[0] + direction, position[1] + 1] == -1:  # check other direction
+        else:  # check other direction
             x = position[0] - direction * slide_grade[0]
             if self.matrix[x, y] == -1:
                 return -direction
             else:
                 return 0
-        # else:
-        #     return 0
 
 
     def check_liquid_flow(self, block_id: int, position: (int, int)):
@@ -267,20 +264,20 @@ class Terrain_Manager:
             block.horiz_velocity = 0  # Ideally both axes would not necessarily go to zero
             block.vert_velocity = 0
             b_type = self.game.block_type_list[block.type]
+            slide_grade = b_type.slide_grade
             if b_type.liquid:
                 slide = self.check_liquid_flow(block_id=block_id, position=block.position)
             else:
-                slide = self.check_slope(block_id=block_id, b_type=block.type, position=block.position)
+                slide = self.check_slope(block_id=block_id, b_type=block.type, position=block.position,
+                                         slide_grade=slide_grade)
             if slide != 0:
                 block.sliding = True
                 block.horiz_velocity += slide  # Doesn't matter right now, adding more than 1 would
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
-                new_y = 0 if b_type.liquid else 1
-                # new_y = 0
-                # block.position = (block.position[0] + slide, block.position[1] + new_y)
-                block.position = (block.position[0] + slide * b_type.slide_grade[0],
-                                  block.position[1] + b_type.slide_grade[1])
+                # block.position = (block.position[0] + slide, block.position[1] + 1)
+                block.position = (block.position[0] + slide * slide_grade[0],
+                                  block.position[1] + slide_grade[1])
                 self.matrix[block.position[0], block.position[1]] = block.id
                 self.trigger_ungrounding(block_id, old_pos)  # trigger ungrounding in previous position
             else:  # collided and is not sliding. Turn collision off
