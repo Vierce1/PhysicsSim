@@ -141,7 +141,7 @@ class Water(Block_Type):
         self.liquid = True
         self.destroyable = True
         self.color = (0,120,255)
-        # self.slide_grade = (1, 0)  # Slide grade works for solids, but not really for liquids
+        self.slide_grade = (1, 0)  # Slide grade works for solids, but not really for liquids. Leave at 1,1
         self.weight = 1
 
 

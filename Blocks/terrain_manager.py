@@ -108,8 +108,17 @@ class Terrain_Manager:
         #     average /= len(self.time_count_avgs)
         #     print(f'average: {average}')
         # print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
-        # print(f'\t\t\t\t\t\t\t\t\t\tinactive block count: {len(self.inactive_blocks)}')
-
+        # print(f'\t\t\t\tall blocks: {len(self.all_blocks)}')
+        # if len(self.blocks) < 10:
+        #     matches = 0
+        #     for b in self.all_blocks:
+        #         for b2 in self.all_blocks:
+        #             if b == b2:
+        #                 continue
+        #             if b.position == b2.position:
+        #                 matches += 1
+        #     print(matches)
+        #     self.game.game_running = False
 
 
 
@@ -145,14 +154,16 @@ class Terrain_Manager:
         direction = 1 if self.random_bits[block_id] == 1 else -1  # Improvement?
         slide_grade = self.game.block_type_list[b_type].slide_grade
         x, y = position[0] + direction * slide_grade[0], position[1] + slide_grade[1]
-        if self.matrix[x,y] == -1:  # Do i need to check the spaces beteen block and the slide grade check spot?
+        if self.matrix[x,y] == -1: # and self.matrix[position[0] + direction, position[1] + 1] == -1:
             return direction
-        else:  # check other direction
+        else: #if self.matrix[position[0] + direction, position[1] + 1] == -1:  # check other direction
             x = position[0] - direction * slide_grade[0]
             if self.matrix[x, y] == -1:
                 return -direction
             else:
                 return 0
+        # else:
+        #     return 0
 
 
     def check_liquid_flow(self, block_id: int, position: (int, int)):
@@ -265,12 +276,11 @@ class Terrain_Manager:
                 block.horiz_velocity += slide  # Doesn't matter right now, adding more than 1 would
                 old_pos = block.position[0], block.position[1]
                 self.matrix[old_pos] = -1  # EMPTY
-                # out_of_bounds = self.game.spaces_to_clear.add_pos(block.position)
-                # if out_of_bounds:
-                #     block.collision_detection = False
-                # new_y = 0 if b_type.liquid else 1
-                new_y = 0
-                block.position = (block.position[0] + slide, block.position[1] + new_y)
+                new_y = 0 if b_type.liquid else 1
+                # new_y = 0
+                # block.position = (block.position[0] + slide, block.position[1] + new_y)
+                block.position = (block.position[0] + slide * b_type.slide_grade[0],
+                                  block.position[1] + b_type.slide_grade[1])
                 self.matrix[block.position[0], block.position[1]] = block.id
                 self.trigger_ungrounding(block_id, old_pos)  # trigger ungrounding in previous position
             else:  # collided and is not sliding. Turn collision off
@@ -282,8 +292,6 @@ class Terrain_Manager:
         # Did not collide. Mark prev position empty & mark to fill with black
         old_pos = block.position[0], block.position[1]
         self.matrix[old_pos] = -1
-        # if self.game.spaces_to_clear.add_pos(block.position):
-        #     block.collision_detection = False   # went out of bounds. Could just draw a square around map to avoid this
         block.position = (new_x, new_y)
         self.matrix[block.position[0], block.position[1]] = block.id  # OCCUPIED
         self.trigger_ungrounding(block_id, old_pos)  # trigger ungrounding in previous position
