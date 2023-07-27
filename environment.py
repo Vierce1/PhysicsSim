@@ -23,7 +23,6 @@ class Energy_Field:
 class Black_Hole(Energy_Field):
     def __init__(self, position: (int, int)):
         super().__init__()
-        print(self.energy)
         self.energy = 10
         self.position = position
         self.event_horizon = 20
@@ -32,7 +31,6 @@ class Black_Hole(Energy_Field):
 class Large_Black_Hole(Energy_Field):
     def __init__(self, position: (int, int)):
         super().__init__()
-        print(self.energy)
         self.energy = 50
         self.position = position
         self.event_horizon = 100
@@ -42,7 +40,7 @@ class Large_Black_Hole(Energy_Field):
 class Environment:
     def __init__(self, wind: int, energy_fields: [Energy_Field]):
         self.wind = wind
-        self.energy_fields = []
+        self.energy_fields = None
         if energy_fields:
             self.energy_fields = {e for e in energy_fields}
 

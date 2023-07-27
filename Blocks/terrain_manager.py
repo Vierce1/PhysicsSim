@@ -2,9 +2,7 @@ from Blocks.block import Block, Trail
 import Blocks.block_type as block_type
 from environment import *
 from quadtree import Quadtree_Node, Quadtree
-import pygame as pg
-import math
-import sys
+from scipy import spatial
 import random
 from collections import defaultdict
 import multiprocessing.dummy as mp
@@ -65,7 +63,7 @@ class Terrain_Manager:
         self.blocks.clear()
         self.all_blocks.clear()
         self.destroyable_blocks.clear()
-        [self.insert_field_quadtree(energy_field) for energy_field in self.game.environ.energy_fields]
+        # [self.insert_field_quadtree(energy_field) for energy_field in self.game.environ.energy_fields]
         # Fill ground w/ -2
         for x in range(world_size[0]):
             for y in range(self.ground, world_size[1]):
@@ -92,6 +90,13 @@ class Terrain_Manager:
 
     async def update(self) -> None:
         # self.time_count_avgs.clear()
+        # if self.game.environ.energy_fields and len(self.blocks) > 0:
+        #     affected_blocks = set()
+        #     for energy_field in self.game.environ.energy_fields:
+        #         affected_blocks = self.get_energy_field_blocks(energy_field)
+        #         for b in affected_blocks:
+        #             self.all_blocks[b].horiz_velocity += energy_field.energy
+
 
         for block_id in list(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block_id=block_id)
@@ -414,4 +419,13 @@ class Terrain_Manager:
         print(f'quad node: {node.x}, {node.y}')
 
     def get_energy_field_blocks(self, energy_field: Energy_Field):
-        pass
+        block_list = list(self.blocks)
+        block_dists = [self.all_blocks[b].position for b in block_list]
+        dists = spatial.distance.cdist([energy_field.position], block_dists)
+        affected_blocks = set()
+        for i, block in enumerate(block_list):  # indices should line up
+            if dists[0][i] < energy_field.event_horizon:
+                affected_blocks.add(block)
+        return affected_blocks
+
+

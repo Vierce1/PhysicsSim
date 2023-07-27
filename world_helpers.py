@@ -1,4 +1,6 @@
 import math
+from scipy import spatial
+from numba import jit
 
 
 def check_dist(pos_1: (int, int), pos_2: (int, int)) -> int:
@@ -20,3 +22,10 @@ def get_scaled_pos(position: (int, int), world_offset: (int, int), screen_width:
     ratio_y = (screen_height / render_height)
     converted_pos = (round(position[0] / ratio_x + world_offset[0]), round(position[1] / ratio_y + world_offset[1]))
     return converted_pos
+
+
+
+@jit(nopython=True)
+def get_c_dist(m1: [], m2: []):
+    dists = spatial.distance.cdist(m1, m2)
+    return dists
