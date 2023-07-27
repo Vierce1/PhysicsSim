@@ -92,6 +92,7 @@ class Game:
         self.backdrop_surface = pg.Surface(self.backdrop.get_size())
         self.backdrop_surface.blit(self.backdrop, (0,0))
         self.backdrop_surface = pg.transform.scale(self.backdrop_surface, (level.world_size[0], level.world_size[1]))
+        self.environ.render_energy_fields(self.backdrop_surface)
         self.render_image.blit(self.backdrop_surface, (0, 0))
         return level
 
@@ -136,9 +137,14 @@ class Game:
 
     def clear_spaces(self, clear_spaces: set):
         # check if block has moved into that position
+        #TODO: Don't add spaces if occupied same frame
         for pos in list(clear_spaces):
             empty = self.terrain_manager.matrix[pos] == -1
             if empty:
+                # e_field_color = self.environ.get_e_field_color_pos(pos)
+                # if e_field_color:
+                #     self.render_image.set_at(pos, e_field_color)
+                # else:
                 self.render_image.set_at(pos, self.backdrop_surface.get_at(pos))
 
     def update_physics(self):
@@ -170,7 +176,6 @@ class Game:
         # self.set_colors(set(self.spaces_to_clear))
         #TODO: Draw black/tiles if position is outside the bounds of the render image
         self.spaces_to_clear.clear()
-
 
         [self.render_image.set_at(pos, color) for pos, color in render_spots]
         self.update_trails()

@@ -2,9 +2,11 @@ from Blocks.block import Block, Trail
 import Blocks.block_type as block_type
 from environment import *
 from quadtree import Quadtree_Node, Quadtree
+import world_helpers as help
 from scipy import spatial
 import random
 from collections import defaultdict
+import timeit
 import multiprocessing.dummy as mp
 # from multiprocessing import Pool
 from threading import Thread
@@ -90,13 +92,10 @@ class Terrain_Manager:
 
     async def update(self) -> None:
         # self.time_count_avgs.clear()
-        # if self.game.environ.energy_fields and len(self.blocks) > 0:
-        #     affected_blocks = set()
-        #     for energy_field in self.game.environ.energy_fields:
-        #         affected_blocks = self.get_energy_field_blocks(energy_field)
-        #         for b in affected_blocks:
-        #             self.all_blocks[b].horiz_velocity += energy_field.energy
-
+        if self.game.environ.energy_fields and len(self.blocks) > 0:
+            self.energy_field_apply()
+            # time = timeit.Timer(self.energy_field_apply).timeit(1)
+            # print(f'time for {len(self.blocks)}  {time}')
 
         for block_id in list(self.blocks):  # use a copy of the set for safe multi threading
             await self.update_blocks(block_id=block_id)
@@ -109,16 +108,6 @@ class Terrain_Manager:
         #     print(f'average: {average}')
         # print(f'\t\t\t\t\t\t\t\t\tactive block count: {len(self.blocks)}')
         # print(f'\t\t\t\tall blocks: {len(self.all_blocks)}')
-        # if len(self.blocks) < 10:
-        #     matches = 0
-        #     for b in self.all_blocks:
-        #         for b2 in self.all_blocks:
-        #             if b == b2:
-        #                 continue
-        #             if b.position == b2.position:
-        #                 matches += 1
-        #     print(matches)
-        #     self.game.game_running = False
 
 
 
@@ -188,7 +177,6 @@ class Terrain_Manager:
 
 
     # Particle functions
-    # @jit(nopython=True)
     async def update_blocks(self, block_id: int):
         block = self.all_blocks[block_id]
         b_type = self.game.block_type_list[block.type]
@@ -213,15 +201,9 @@ class Terrain_Manager:
                 horiz_step = 1 if block.horiz_velocity > 0 else -1
                 block.horiz_velocity -= horiz_step
 
-
             # move through all spaces based on velocity
-    #TODO: Problems:
-        #1. Blocks split into forks when lagging
-        #2. Blocks still moving slow when lagging
             total_x = block.horiz_velocity * self.game.physics_lag_frames
             total_y = block.vert_velocity * self.game.physics_lag_frames
-            # print(f'{block_id} total :  {total_x}  / {total_y}')
-            # for _ in range(0, max(abs(total_y), abs(total_x))):
             while total_y != 0 or total_x != 0:
                 # Get the next position to check. If game is lagging, skip some checks. Otherwise use -1/1
                 next_x, next_y = self.get_step_velocity(total_x, total_y)
@@ -359,9 +341,6 @@ class Terrain_Manager:
         self.trigger_ungrounding(block_id, block.position)
 
 
-
-#TODO: There may be more finetuning to reduce checks on same positions
-# Can I move this to the main thread? Modifying the blocks in multiple places won't work, maybe there's a solution.
     def trigger_ungrounding(self, id: int, position: (int, int)) -> None:
         # Ungrounding should start from the lowest block so don't bother checking y > 0
         for x in range(-1, 2):
@@ -378,21 +357,6 @@ class Terrain_Manager:
                     if not self.game.block_type_list[block.type].rigid and not block.collision_detection:
                         block.collision_detection = True
                         self.blocks.add(block_id)
-                    # self.unground_pos_checks.add(check_pos)
-
-
-    # def end_frame_unground(self) -> None:
-    #     if len(self.unground_pos_checks) == 0:
-    #         return
-    #     for pos in self.unground_pos_checks:
-    #         block_id = self.matrix[(pos)]
-    #         if block_id == -1:
-    #             continue
-    #         block = self.all_blocks[block_id]
-    #         if not block.type.rigid and not block.collision_detection:
-    #             block.collision_detection = True
-    #             self.blocks.add(block)
-    #     # self.unground_pos_checks.clear()
 
 
 
@@ -417,20 +381,31 @@ class Terrain_Manager:
 
 
 # Energy fields
-# How to determine blocks in the energy field radii? Quadtree?
-    def insert_field_quadtree(self, energy_field: Energy_Field):
-        node = self.insert_object_quadtree(obj=energy_field, x=energy_field.position[0], y=energy_field.position[1])
-        energy_field.quad_node = node
-        print(f'quad node: {node.x}, {node.y}')
-
-    def get_energy_field_blocks(self, energy_field: Energy_Field):
+    def energy_field_apply(self):
         block_list = list(self.blocks)
-        block_dists = [self.all_blocks[b].position for b in block_list]
-        dists = spatial.distance.cdist([energy_field.position], block_dists)
-        affected_blocks = set()
-        for i, block in enumerate(block_list):  # indices should line up
-            if dists[0][i] < energy_field.event_horizon:
-                affected_blocks.add(block)
-        return affected_blocks
+        block_pos = [self.all_blocks[b].position for b in block_list]
+        energy_fields = list(self.game.environ.energy_fields)
+        e_field_pos = [e.position for e in self.game.environ.energy_fields]
+        dists = spatial.distance.cdist(e_field_pos, block_pos, 'euclidean')
+        for j, e in enumerate(energy_fields):
+            for i, block_id in enumerate(block_list):  # indices should line up
+                if dists[j][i] < e.kill_zone:
+                    self.energy_field_destroy_block(block_id)
+                elif dists[j][i] < e.event_horizon:
+                    self.apply_energy_field_force(block_id, e)
 
+    def apply_energy_field_force(self, block_id: int, energy_field: Energy_Field):
+        # get orientation of block relative to the center of the field
+        block = self.all_blocks[block_id]
+        x_rel = block.position[0] - energy_field.position[0]
+        y_rel = block.position[1] - energy_field.position[1]
+        x_force = round(x_rel / energy_field.event_horizon * energy_field.energy)
+        y_force = round(y_rel / energy_field.event_horizon * energy_field.energy)
+        block.horiz_velocity += x_force
+        block.vert_velocity += y_force
+
+    def energy_field_destroy_block(self, block_id: int):
+        if block_id in self.blocks:
+            self.game.spaces_to_clear.add_pos(self.all_blocks[block_id].position)
+            self.blocks.remove(block_id)
 

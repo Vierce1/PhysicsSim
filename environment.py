@@ -1,5 +1,6 @@
 from Blocks.block import Block
-
+import pygame as pg
+from scipy import spatial
 
 BLACK_HOLE = 1
 SMALL_BLACK_HOLE = 2
@@ -18,20 +19,22 @@ class Energy_Field:
         self.position = (0,0)
         self.event_horizon = 1  # total radius of effect, objects at (0,0) position destroyed
         self.quad_node = None
+        self.color = (0, 0, 0)
+        self.kill_zone = 5
 
     
 class Black_Hole(Energy_Field):
     def __init__(self, position: (int, int)):
         super().__init__()
-        self.energy = 10
+        self.energy = -6
         self.position = position
-        self.event_horizon = 20
+        self.event_horizon = 200
 
 
 class Large_Black_Hole(Energy_Field):
     def __init__(self, position: (int, int)):
         super().__init__()
-        self.energy = 50
+        self.energy = -50
         self.position = position
         self.event_horizon = 100
 
@@ -40,10 +43,22 @@ class Large_Black_Hole(Energy_Field):
 class Environment:
     def __init__(self, wind: int, energy_fields: [Energy_Field]):
         self.wind = wind
-        self.energy_fields = None
+        self.energy_fields: [Energy_Field] = None
         if energy_fields:
             self.energy_fields = {e for e in energy_fields}
 
     def get_wind(self):
         return self.wind
 
+    # def get_e_field_color_pos(self, position: (int, int)):
+    #     if not self.energy_fields:
+    #         return None
+    #     for e in self.energy_fields:
+    #         dist = spatial.distance.cdist([e.position], [position], 'euclidean')
+    #         if dist[0][0] < e.event_horizon:
+    #             return e.color
+    #     return None
+
+    def render_energy_fields(self, screen: pg.Surface):
+        for e in self.energy_fields:
+            pg.draw.circle(screen, (0,0,0), e.position, e.event_horizon)

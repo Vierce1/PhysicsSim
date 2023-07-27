@@ -203,7 +203,7 @@ class Player:
                     verti = -force if y < location[1] else force
                     if -force_radius / 2 < location[1] - y < force_radius / 2:
                         verti = round(verti / 2)
-                    self.terrain_manager.trigger_ungrounding(block.position)
+                    self.terrain_manager.trigger_ungrounding(block.id, block.position)
                     block.collision_detection = True
                     block.horiz_velocity = horiz
                     block.vert_velocity = verti
