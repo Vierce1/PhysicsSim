@@ -140,13 +140,10 @@ class Game:
         #TODO: Don't add spaces if occupied same frame
         for pos in list(clear_spaces):
             empty = self.terrain_manager.matrix[pos] == -1
-            if empty:
-                # e_field_color = self.environ.get_e_field_color_pos(pos)
-                # if e_field_color:
-                #     self.render_image.set_at(pos, e_field_color)
-                # else:
-                self.render_image.set_at(pos, self.backdrop_surface.get_at(pos))
+            self.render_image.set_at(pos, self.backdrop_surface.get_at(pos))
 
+
+#TODO: On first frame (loading) wait to render image til complete a physics loop
     def update_physics(self):
         self.physics_processing = True
         asyncio.run(self.terrain_manager.update())

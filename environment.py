@@ -20,7 +20,7 @@ class Energy_Field:
         self.event_horizon = 1  # total radius of effect, objects at (0,0) position destroyed
         self.quad_node = None
         self.color = (0, 0, 0)
-        self.kill_zone = 5
+        self.kill_zone = 15
 
     
 class Black_Hole(Energy_Field):
@@ -50,14 +50,6 @@ class Environment:
     def get_wind(self):
         return self.wind
 
-    # def get_e_field_color_pos(self, position: (int, int)):
-    #     if not self.energy_fields:
-    #         return None
-    #     for e in self.energy_fields:
-    #         dist = spatial.distance.cdist([e.position], [position], 'euclidean')
-    #         if dist[0][0] < e.event_horizon:
-    #             return e.color
-    #     return None
 
     def render_energy_fields(self, screen: pg.Surface):
         for e in self.energy_fields:

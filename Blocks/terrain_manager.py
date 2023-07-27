@@ -228,6 +228,7 @@ class Terrain_Manager:
             #     block.trail_created = True
             #     self.create_trail(block_id)
 
+
         elif block.id in self.blocks:
             self.blocks.remove(block.id)
 
@@ -405,7 +406,7 @@ class Terrain_Manager:
         block.vert_velocity += y_force
 
     def energy_field_destroy_block(self, block_id: int):
+        self.game.spaces_to_clear.add_pos(self.all_blocks[block_id].position)
         if block_id in self.blocks:
-            self.game.spaces_to_clear.add_pos(self.all_blocks[block_id].position)
             self.blocks.remove(block_id)
 
