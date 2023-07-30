@@ -190,7 +190,7 @@ class Player:
                         self.terrain_manager.destroy_block(id)
                         continue
 
-                    #TODO: Should this be revamped? Currently particles on the edges of the explosion get more force.
+                    #TODO: Should this be revamped? Currently, particles on the edges of the explosion get more force.
                     # horiz = round((location[0] - x) / force_radius * force)
                     # verti = round((location[1] - y) / force_radius * force)
                     # middle gets full force. Doesn't work well.

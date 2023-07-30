@@ -52,5 +52,7 @@ class Environment:
 
 
     def render_energy_fields(self, screen: pg.Surface):
+        if not self.energy_fields:
+            return
         for e in self.energy_fields:
             pg.draw.circle(screen, (0,0,0), e.position, e.event_horizon)
